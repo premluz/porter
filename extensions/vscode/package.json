@@ -1,8 +1,8 @@
 {
-  "name": "porter-vscode-probe",
-  "displayName": "Porter VS Code probe (development)",
-  "description": "Lists Claude Code editor tabs and measures which methods can bring one forward. Sends nothing anywhere.",
-  "version": "0.0.1",
+  "name": "porter-vscode",
+  "displayName": "Porter",
+  "description": "Shows this window's Claude Code tabs to the Porter Mac app and brings the one you choose forward. Reads no conversation content; talks only to Porter on this Mac.",
+  "version": "0.1.0",
   "publisher": "porter-dev",
   "private": true,
   "license": "UNLICENSED",
@@ -16,12 +16,12 @@
   "contributes": {
     "commands": [
       {
-        "command": "porter.probeTabs",
-        "title": "Porter: List Claude Code tabs"
+        "command": "porter.showStatus",
+        "title": "Porter: Show connection status"
       },
       {
-        "command": "porter.probeFocus",
-        "title": "Porter: Test bringing a Claude Code tab forward"
+        "command": "porter.listTabs",
+        "title": "Porter: List Claude Code tabs in this window"
       }
     ]
   },
@@ -34,5 +34,8 @@
     "@types/node": "^26.6.4",
     "@types/vscode": "1.94.0",
     "typescript": "^7.0.2"
-  }
+  },
+  "activationEvents": [
+    "onStartupFinished"
+  ]
 }

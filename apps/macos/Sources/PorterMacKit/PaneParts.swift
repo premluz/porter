@@ -94,7 +94,7 @@ struct FeedbackView: View {
         switch action {
         case .tryAgain: "Try again"
         case .refreshList: "Refresh"
-        case .reconnectSource: "Open Chrome"
+        case .openHostApplication(let host): "Open \(host.displayName)"
         case .allowSiteAccess: nil
         case .openInDesktopApp: "Open in Claude app"
         case .openSavedLinkInDefaultBrowser: "Open saved link in default browser…"

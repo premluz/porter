@@ -1,11 +1,10 @@
 import AppKit
 import Foundation
+import PorterPanelModel
 
 /// The real-world side of recovery buttons. Both are explicit user actions.
 @MainActor
 public final class WorkspaceRecoveryPerformer: RecoveryPerformer {
-    static let chromeBundleIdentifier = "com.google.Chrome"
-
     public init() {}
 
     /// May open a different profile or account than the one the shortcut came from; the button says so.
@@ -22,8 +21,8 @@ public final class WorkspaceRecoveryPerformer: RecoveryPerformer {
         NSPasteboard.general.setString(text, forType: .string)
     }
 
-    public func launchBrowser() {
-        guard let chrome = NSWorkspace.shared.urlForApplication(withBundleIdentifier: Self.chromeBundleIdentifier) else { return }
-        NSWorkspace.shared.openApplication(at: chrome, configuration: NSWorkspace.OpenConfiguration())
+    public func launch(_ host: HostApplication) {
+        guard let application = NSWorkspace.shared.urlForApplication(withBundleIdentifier: host.bundleIdentifier) else { return }
+        NSWorkspace.shared.openApplication(at: application, configuration: NSWorkspace.OpenConfiguration())
     }
 }

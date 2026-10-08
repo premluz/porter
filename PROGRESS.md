@@ -155,6 +155,18 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Decision: build the real companion on this route. Each window reports its Claude Code tabs to the registry over the local socket; Porter opens the window's folder, then sends an activation request over the same socket (no `vscode://` link and no confirmation popup). VS Code tabs have no stable ID, so identity is workspace plus title plus ordinal and a rename changes it (a documented limit).
 - Next action: contract and core changes for editor tabs, then the companion, then the panel.
 
+## LOG-20261008-012 — VS Code companion built
+
+- Date: 2026-10-08.
+- Author: assistant.
+- Tasks: TASK-015.
+- Tags: area/macos, area/identity, area/security, phase/r1.
+- Changed: contracts and core gained a `vscode` connector kind (IDs prefixed `vscode-`), editor tab reports and an `editorTab` destination, an optional `editor` target in activation requests, and an activation "prepare" step. Editor connectors report whole snapshots only; browser and editor kinds cannot be mixed (tested both ways, with a mutation check). The registry service opens the window's folder, waits 0.8 s, then sends the request; the connector's own check decides the outcome. `extensions/vscode` is now the companion: it connects straight to the registry socket (no relay), derives its identity from the window's folder, reports Claude Code tabs, and answers activation requests only if position, title and a derived identity all still agree, confirming success from VS Code's tab API. The probe's link handler and countdown test were removed. The panel and recovery messages say VS Code for VS Code items, and the recovery action launches the right application.
+- Verified (automated): contracts 11 schemas / 65 fixtures; ConversationCore 75 tests, PorterPanelModel 39; native-host 16 (three new use a fake editor window over the real socket); Mac app 38; companion 34 (including that everything it sends satisfies the shared schemas). A real Node companion connected to the real Swift registry over a temporary socket: it appeared as a `vscode-` connector with two routes for two same-titled tabs and went disconnected when it stopped.
+- Not verified: the companion inside a running VS Code; the folder-opening step triggered by the Mac app (observed working by hand earlier); the panel showing VS Code rows; any multi-root workspace, remote window, or window without a folder (those are not reported by design); the OpenAI extension.
+- Known limits recorded: an editor tab has no stable ID, so identity is folder plus title plus order and a rename makes a new route (FACT-020); a snapshot is capped to fit the 64 KiB frame (it reports how many were left out); there is no continuity memory for editor routes.
+- Next action: Prem runs manual batch F.
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.

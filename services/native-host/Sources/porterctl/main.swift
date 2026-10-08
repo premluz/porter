@@ -27,6 +27,12 @@ private func roundTrip(_ request: ControlRequest) -> ControlResponse {
     }
 }
 
+/// Browser rows have a tab and window; editor rows have neither, so say nothing rather than -1.
+private func position(of row: DestinationRow) -> String {
+    guard let tab = row.tabId, let window = row.windowId else { return "" }
+    return "tab \(tab) window \(window)  "
+}
+
 private func printListing(_ response: ControlResponse, json: Bool) {
     if json {
         let data = (try? JSONEncoder().encode(response)) ?? Data()
@@ -38,7 +44,7 @@ private func printListing(_ response: ControlResponse, json: Bool) {
     }
     for row in response.rows ?? [] {
         let ambiguity = row.routeCount > 1 ? "  AMBIGUOUS x\(row.routeCount)" : ""
-        print("\(row.destinationId) r\(row.revision)  [\(row.profileAlias ?? "?")] \(row.title)  tab \(row.tabId ?? -1) window \(row.windowId ?? -1)  \(row.reachability.rawValue)\(ambiguity)")
+        print("\(row.destinationId) r\(row.revision)  [\(row.profileAlias ?? "?")] \(row.title)  \(position(of: row))\(row.reachability.rawValue)\(ambiguity)")
     }
     if (response.rows ?? []).isEmpty { print("no destinations") }
 }

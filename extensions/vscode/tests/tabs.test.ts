@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
-  commandsFor, findClaudeTabs, isClaudeViewType, judge, matchByLabel, parseLabelRequest,
+  commandsFor, findClaudeTabs, isClaudeViewType, judge,
   type ClaudeTab, type GroupLike,
 } from "../src/tabs.js";
 
@@ -26,13 +26,6 @@ describe("finding Claude Code tabs", () => {
     for (const type of [undefined, "", "claudePlanPreview", "mainThreadWebview-claudeVSCodePanelX", "xclaudeVSCodePanel"]) {
       assert.equal(isClaudeViewType(type), false, String(type));
     }
-  });
-
-  it("identical titles stay distinct and label matching reports the ambiguity", () => {
-    const tabs = findClaudeTabs(groups);
-    assert.equal(matchByLabel(tabs, "Release plan").length, 2);
-    assert.equal(matchByLabel(tabs, "Notes").length, 1);
-    assert.equal(matchByLabel(tabs, "missing").length, 0);
   });
 });
 
@@ -64,14 +57,5 @@ describe("judging an attempt", () => {
   it("refuses to call an already-active tab a success, and flags unreachable ones", () => {
     assert.equal(judge(target, true, target, true), "alreadyActive");
     assert.equal(judge(target, false, target, false), "unreachable");
-  });
-});
-
-describe("label requests from a link", () => {
-  it("accepts a label and rejects missing, empty or oversized ones", () => {
-    assert.deepEqual(parseLabelRequest("label=Release%20plan"), { label: "Release plan" });
-    assert.deepEqual(parseLabelRequest(""), { error: "missing label" });
-    assert.deepEqual(parseLabelRequest("label="), { error: "missing label" });
-    assert.deepEqual(parseLabelRequest(`label=${"x".repeat(201)}`), { error: "label too long" });
   });
 });

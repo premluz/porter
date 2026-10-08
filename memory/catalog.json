@@ -247,8 +247,8 @@
         "DOC-QUESTIONS"
       ],
       "path": "memory/FACTS.md",
-      "revision": "sha256:6434a93f3df7ae4ebf0571fcaba2653ea4da68c2187f72d06efc7823cff94a00",
-      "line_count": 177
+      "revision": "sha256:b3eab5bceb88e43b50eb503a58dc885d022631144cc38289dc9ca761257fbf69",
+      "line_count": 185
     },
     {
       "id": "DOC-HANDOFF",
@@ -358,8 +358,8 @@
         "DOC-TEMPLATES"
       ],
       "path": "PROGRESS.md",
-      "revision": "sha256:59e3df0308b01eec4465dfa219b0ecfad5cf2f6575df7d7ef86e2eb9f9dc7c95",
-      "line_count": 160
+      "revision": "sha256:20341897d2d95806f56d6fe70be98703b345d8fcc5337a6f1ea256c67d6a6177",
+      "line_count": 172
     },
     {
       "id": "DOC-QUESTIONS",
@@ -382,8 +382,8 @@
         "ADR-003"
       ],
       "path": "memory/QUESTIONS.md",
-      "revision": "sha256:78965cd58df3280e86bdbdc7c192f185930305049c6379559dcc47e29da9b41b",
-      "line_count": 57
+      "revision": "sha256:9ef07279eb58785cc762031cb0eb90ddf57da59201f293ec0d9ee19dd021f80b",
+      "line_count": 58
     },
     {
       "id": "DOC-README",
@@ -523,7 +523,7 @@
         "DOC-VALIDATION"
       ],
       "path": "TASKS.md",
-      "revision": "sha256:6488cacfe5419f8db95ea671bc2c9eefa0b3b53249c6433c8595e1b9ae86f8bf",
+      "revision": "sha256:85af3a139f4fbee6582fd3e776528fb033ee0472012389b695ea9f7ab231a4d6",
       "line_count": 52
     },
     {
@@ -593,8 +593,8 @@
         "DOC-SECURITY"
       ],
       "path": "docs/VALIDATION_RELEASE.md",
-      "revision": "sha256:3de2c1cd66066d27a98150cfbc4a63d0db28f467ecc4ca4cafabfdcac751f98e",
-      "line_count": 181
+      "revision": "sha256:6cc58a51ea7f1bf2e1ce13c76f4bbfb8a2510da3951667fc9656b57a44c726cc",
+      "line_count": 185
     },
     {
       "id": "PLAN-001",

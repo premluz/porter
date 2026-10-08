@@ -40,3 +40,17 @@ struct DesktopLinkActionTests {
         #expect(harness.model.notice == nil)
     }
 }
+
+@MainActor
+@Suite("Opening the host application")
+struct HostApplicationActionTests {
+    @Test("the recovery button launches exactly the application the conversation lives in")
+    func launchesTheRightHost() async throws {
+        let harness = try Harness(rows: [Harness.row("a")])
+        await harness.model.refresh()
+        let item = try #require(harness.model.items.first)
+        await harness.model.perform(.openHostApplication(.vscode), for: item)
+        await harness.model.perform(.openHostApplication(.chrome), for: item)
+        #expect(harness.performer.launched == [.vscode, .chrome])
+    }
+}

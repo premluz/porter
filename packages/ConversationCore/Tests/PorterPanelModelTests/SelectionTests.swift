@@ -163,3 +163,69 @@ struct PresentationTests {
         #expect(spoken.contains("browser not connected") && spoken.contains("pinned"))
     }
 }
+
+@Suite("Editor items in the panel")
+struct EditorItemTests {
+    private func editorItem(closed: Bool = false) -> PanelItem {
+        PanelItem(
+            key: Fixture.key("a1b2c3d4e5f60708", connector: "vscode-abc"), title: "Release plan", provider: "claude-code",
+            profileAlias: "Porter", canonicalUrl: nil, pinned: closed, hidden: false,
+            availability: closed ? .unavailable(.closed) : .open([]), status: .unknown, sharesTitle: false
+        )
+    }
+
+    @Test("provider names and host applications read correctly")
+    func names() {
+        #expect(ProviderNames.display("claude-code") == "Claude Code")
+        #expect(ProviderNames.host(for: "claude-code") == .vscode)
+        #expect(ProviderNames.host(for: "claude") == .chrome)
+        #expect(ProviderNames.host(for: "chatgpt") == .chrome)
+        #expect(HostApplication.vscode.bundleIdentifier == "com.microsoft.VSCode")
+        #expect(HostApplication.vscode.displayName == "VS Code")
+    }
+
+    @Test("a closed editor tab talks about VS Code, never Chrome or a browser profile")
+    func closedMessages() {
+        let gone = ActivationFeedbackBuilder.feedback(for: .targetGone, item: editorItem(closed: true))
+        #expect(gone.detail.contains("VS Code window") && !gone.detail.contains("browser"))
+        let offline = ActivationFeedbackBuilder.feedback(for: .connectorOffline, item: editorItem())
+        #expect(offline.title == "VS Code is not connected" && !offline.detail.contains("Chrome"))
+        #expect(offline.recovery.contains(.openHostApplication(.vscode)))
+    }
+
+    @Test("browser items still talk about Chrome")
+    func browserMessages() {
+        let item = Fixture.build(rows: [Fixture.row("a")]).open[0]
+        let offline = ActivationFeedbackBuilder.feedback(for: .connectorOffline, item: item)
+        #expect(offline.title == "Chrome is not connected")
+        #expect(offline.recovery.contains(.openHostApplication(.chrome)))
+    }
+
+    @Test("an editor item has no browser-only recovery: no saved link and no Claude app link")
+    func noBrowserRecovery() {
+        let gone = ActivationFeedbackBuilder.feedback(for: .targetGone, item: editorItem(closed: true))
+        #expect(!gone.recovery.contains { if case .openSavedLinkInDefaultBrowser = $0 { true } else { false } })
+        #expect(!gone.recovery.contains { if case .openInDesktopApp = $0 { true } else { false } })
+        #expect(editorItem().desktopLink == nil)
+    }
+
+    @Test("a Chrome chat and a VS Code chat with the same title are separate rows, both showing where they live")
+    func mixedList() {
+        let browser = Fixture.row("chat-a", title: "Release plan", connector: "chrome-x", alias: "Personal")
+        let editor = DestinationRow(
+            destinationId: UUID(), revision: 1, conversationId: UUID(), providerConversationId: "a1b2c3d4e5f60708",
+            provider: "claude-code", title: "Release plan", profileAlias: "Porter", connectorId: "vscode-abc",
+            reachability: .connected, tabId: nil, windowId: nil, url: nil, routeCount: 1
+        )
+        let snapshot = Fixture.build(
+            rows: [browser, editor],
+            connectors: [Fixture.connector("chrome-x", alias: "Personal"), Fixture.connector("vscode-abc", alias: "Porter")]
+        )
+        #expect(snapshot.open.count == 2 && snapshot.open.allSatisfy(\.sharesTitle))
+        let labels = snapshot.open.map { StatusPresentation.accessibilityLabel(for: $0) }
+        #expect(labels.contains { $0.contains("Claude Code") && $0.contains("profile Porter") })
+        #expect(labels.contains { $0.contains("Claude,") && $0.contains("profile Personal") })
+        let item = snapshot.open.first { $0.provider == "claude-code" }
+        #expect(item?.routes.count == 1 && item?.routes.first?.tabId == nil)
+    }
+}

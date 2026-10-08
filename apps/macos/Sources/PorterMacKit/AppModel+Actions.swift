@@ -11,7 +11,7 @@ public protocol RecoveryPerformer: Sendable {
     func openInDesktopApp(_ url: URL)
     /// Puts text on the pasteboard. Only ever called on an explicit user action.
     func copyToPasteboard(_ text: String)
-    func launchBrowser()
+    func launch(_ host: HostApplication)
 }
 
 extension AppModel {
@@ -49,7 +49,7 @@ extension AppModel {
         switch action {
         case .tryAgain: await activateSelected()
         case .refreshList: feedback = nil; await refresh()
-        case .reconnectSource: performer.launchBrowser()
+        case .openHostApplication(let host): performer.launch(host)
         case .allowSiteAccess: break
         case .removeShortcut: await unpin(item)
         case .openInDesktopApp(let text): openInDesktopApp(text)

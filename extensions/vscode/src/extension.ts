@@ -1,14 +1,32 @@
+import { randomUUID } from "node:crypto";
+import { basename } from "node:path";
 import * as vscode from "vscode";
-import {
-  commandsFor, findClaudeTabs, judge, matchByLabel, parseLabelRequest,
-  type ClaudeTab, type FocusVerdict, type GroupLike,
-} from "./tabs.js";
+import { activate as activateTab, type ActivationApi } from "./activation.js";
+import { EditorClient, type ClientStatus } from "./client.js";
+import { connectorIdFor, installationIdFor } from "./identity.js";
+import { bridgeSocketPath, connectToRegistry } from "./socket.js";
+import { buildReports } from "./snapshot.js";
+import { findClaudeTabs, type GroupLike } from "./tabs.js";
 
+const SNAPSHOT_DEBOUNCE_MS = 250;
 const SETTLE_MS = 400;
-const COUNTDOWN_SECONDS = 5;
-const output = vscode.window.createOutputChannel("Porter probe");
 
-function snapshot(): GroupLike[] {
+interface WindowWorkspace {
+  /** A workspace file for multi-root windows, otherwise the single folder. Always a local path. */
+  path: string;
+  name: string;
+}
+
+/** Only local folders can be found again by the host, so remote and unsaved windows are not reported. */
+function currentWorkspace(): WindowWorkspace | null {
+  const file = vscode.workspace.workspaceFile;
+  if (file !== undefined && file.scheme === "file") return { path: file.fsPath, name: vscode.workspace.name ?? basename(file.fsPath) };
+  const folder = vscode.workspace.workspaceFolders?.[0];
+  if (folder === undefined || folder.uri.scheme !== "file") return null;
+  return { path: folder.uri.fsPath, name: vscode.workspace.name ?? basename(folder.uri.fsPath) };
+}
+
+function groupsNow(): GroupLike[] {
   return vscode.window.tabGroups.all.map((group) => ({
     viewColumn: group.viewColumn,
     tabs: group.tabs.map((tab) => ({
@@ -19,99 +37,77 @@ function snapshot(): GroupLike[] {
   }));
 }
 
-function activeClaudeTab(tabs: readonly ClaudeTab[]): ClaudeTab | undefined {
-  return tabs.find((tab) => tab.isActive);
-}
-
 function pause(milliseconds: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
-/** Lists what Porter would report for this window. Nothing is sent anywhere. */
-function listTabs(): void {
-  const tabs = findClaudeTabs(snapshot());
-  output.appendLine(`--- ${new Date().toISOString()} window "${vscode.workspace.name ?? "(no folder)"}" focused=${vscode.window.state.focused}`);
-  output.appendLine(`Claude Code tabs: ${tabs.length}`);
-  for (const tab of tabs) {
-    output.appendLine(`  group ${tab.viewColumn}, position ${tab.index + 1}, ${tab.isActive ? "ACTIVE" : "background"}: ${tab.label}`);
-  }
-  output.show(true);
-}
-
-/** Tries the position-based commands and judges the result from the tab API, not from the call. */
-async function tryFocus(target: ClaudeTab): Promise<FocusVerdict> {
-  const wasActive = target.isActive;
-  const commands = commandsFor(target);
-  if (commands !== null && !wasActive) {
-    await vscode.commands.executeCommand(commands.focusGroup);
-    await vscode.commands.executeCommand(commands.openAtIndex);
-    await pause(SETTLE_MS);
-  }
-  const after = activeClaudeTab(findClaudeTabs(snapshot()));
-  return judge(target, wasActive, after, commands !== null);
-}
-
-async function probeFocus(preset?: ClaudeTab): Promise<void> {
-  const tabs = findClaudeTabs(snapshot());
-  const target = preset ?? (await choose(tabs));
-  if (target === undefined) return;
-  void vscode.window.showInformationMessage(
-    `Porter probe: switch to a DIFFERENT tab now. Trying "${target.label}" in ${COUNTDOWN_SECONDS} seconds.`,
-  );
-  await pause(COUNTDOWN_SECONDS * 1000);
-  const fresh = findClaudeTabs(snapshot()).find((tab) => tab.viewColumn === target.viewColumn && tab.index === target.index && tab.label === target.label);
-  if (fresh === undefined) {
-    output.appendLine(`focus test: "${target.label}" is no longer at group ${target.viewColumn} position ${target.index + 1}`);
-    return;
-  }
-  const verdict = await tryFocus(fresh);
-  output.appendLine(`focus test: group ${fresh.viewColumn} position ${fresh.index + 1} "${fresh.label}" -> ${verdict}; window focused=${vscode.window.state.focused}`);
-  output.show(true);
-}
-
-async function choose(tabs: readonly ClaudeTab[]): Promise<ClaudeTab | undefined> {
-  if (tabs.length === 0) {
-    void vscode.window.showWarningMessage("Porter probe: no Claude Code tabs open in this window.");
-    return undefined;
-  }
-  const picked = await vscode.window.showQuickPick(
-    tabs.map((tab) => ({ label: tab.label, description: `group ${tab.viewColumn}, position ${tab.index + 1}`, tab })),
-    { placeHolder: "Which Claude Code tab should be brought forward?" },
-  );
-  return picked?.tab;
-}
-
-/** Entry point for `open "vscode://porter-dev.porter-vscode-probe/focus?label=..."`, the route Porter would use. */
-class ProbeUriHandler implements vscode.UriHandler {
-  async handleUri(uri: vscode.Uri): Promise<void> {
-    output.appendLine(`link received in window "${vscode.workspace.name ?? "(no folder)"}": ${uri.path}`);
-    if (uri.path !== "/focus") {
-      output.appendLine("  ignored: only /focus is handled");
-      return;
-    }
-    const request = parseLabelRequest(uri.query);
-    if ("error" in request) {
-      output.appendLine(`  refused: ${request.error}`);
-      return;
-    }
-    const matches = matchByLabel(findClaudeTabs(snapshot()), request.label);
-    if (matches.length !== 1) {
-      output.appendLine(`  not opened: ${matches.length} tabs here are titled "${request.label}"`);
-      return;
-    }
-    const verdict = await tryFocus(matches[0] as ClaudeTab);
-    output.appendLine(`  ${verdict}; window focused=${vscode.window.state.focused}`);
-  }
-}
-
 export function activate(context: vscode.ExtensionContext): void {
+  const output = vscode.window.createOutputChannel("Porter");
+  const statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 0);
+  let client: EditorClient | null = null;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+
+  const show = (status: ClientStatus): void => {
+    const text = { idle: "off", connecting: "connecting…", connected: "connected", unavailable: "not connected" }[status.state];
+    statusBar.text = `$(plug) Porter ${text}`;
+    statusBar.tooltip = status.state === "connected"
+      ? `Reporting ${status.reported} Claude Code tab(s)${status.dropped > 0 ? `; ${status.dropped} left out to fit` : ""}`
+      : (status.detail ?? "Porter is not running");
+    output.appendLine(`${new Date().toISOString()} ${status.state}${status.detail === null ? "" : ` (${status.detail})`}`);
+  };
+
+  const begin = (): void => {
+    client?.stop();
+    client = null;
+    const workspace = currentWorkspace();
+    if (workspace === null) {
+      statusBar.text = "$(plug) Porter: no local folder";
+      statusBar.tooltip = "Porter reports Claude Code tabs only for windows that have a local folder open.";
+      statusBar.show();
+      return;
+    }
+    const installationId = installationIdFor(workspace.path);
+    const api: ActivationApi = {
+      groups: groupsNow,
+      workspacePath: () => workspace.path,
+      runCommand: async (command) => void (await vscode.commands.executeCommand(command)),
+      settle: () => pause(SETTLE_MS),
+      log: (message) => output.appendLine(message),
+    };
+    client = new EditorClient({
+      window: { installationId, connectorId: connectorIdFor(installationId), folderName: workspace.name },
+      connect: () => connectToRegistry(bridgeSocketPath(process.env)),
+      reports: () => buildReports(workspace.path, findClaudeTabs(groupsNow())),
+      activate: (request) => activateTab(request, api),
+      randomId: randomUUID,
+      now: () => new Date(),
+      schedule: (callback, delayMs) => void setTimeout(callback, delayMs),
+      onStatus: show,
+    });
+    statusBar.show();
+    client.start();
+  };
+
+  const scheduleSnapshot = (): void => {
+    clearTimeout(timer);
+    timer = setTimeout(() => client?.sendSnapshot(), SNAPSHOT_DEBOUNCE_MS);
+  };
+
   context.subscriptions.push(
-    output,
-    vscode.commands.registerCommand("porter.probeTabs", listTabs),
-    vscode.commands.registerCommand("porter.probeFocus", () => probeFocus()),
-    vscode.window.registerUriHandler(new ProbeUriHandler()),
+    output, statusBar,
+    vscode.window.tabGroups.onDidChangeTabs(scheduleSnapshot),
+    vscode.window.tabGroups.onDidChangeTabGroups(scheduleSnapshot),
+    vscode.workspace.onDidChangeWorkspaceFolders(begin),
+    vscode.commands.registerCommand("porter.showStatus", () => output.show(true)),
+    vscode.commands.registerCommand("porter.listTabs", () => {
+      const tabs = findClaudeTabs(groupsNow());
+      output.appendLine(`Claude Code tabs here: ${tabs.length}`);
+      for (const tab of tabs) output.appendLine(`  group ${tab.viewColumn}, position ${tab.index + 1}${tab.isActive ? " (active)" : ""}: ${tab.label}`);
+      output.show(true);
+    }),
+    { dispose: () => client?.stop() },
   );
-  output.appendLine("Porter probe active. Commands: 'Porter: List Claude Code tabs', 'Porter: Test bringing a Claude Code tab forward'.");
+  begin();
 }
 
 export function deactivate(): void {}

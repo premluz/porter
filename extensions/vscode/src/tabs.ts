@@ -40,11 +40,6 @@ export function findClaudeTabs(groups: readonly GroupLike[]): ClaudeTab[] {
   );
 }
 
-/** Tabs a "focus by label" request could mean. More than one means it is ambiguous. */
-export function matchByLabel(tabs: readonly ClaudeTab[], label: string): ClaudeTab[] {
-  return tabs.filter((tab) => tab.label === label);
-}
-
 /** The built-in commands that can reach a tab by position. Both only exist for small numbers. */
 export const MAX_GROUP = 8;
 export const MAX_INDEX = 9;
@@ -73,11 +68,4 @@ export function judge(target: ClaudeTab, wasActive: boolean, afterActive: Claude
   if (afterActive === undefined) return "didNotChange";
   const same = afterActive.viewColumn === target.viewColumn && afterActive.index === target.index;
   return same ? "worked" : "wrongTab";
-}
-
-export function parseLabelRequest(query: string): { label: string } | { error: string } {
-  const label = new URLSearchParams(query).get("label");
-  if (label === null || label.length === 0) return { error: "missing label" };
-  if (label.length > 200) return { error: "label too long" };
-  return { label };
 }

@@ -172,6 +172,14 @@ Evidence classes: `user_requirement`, `source_documentation`, `verified_test`. P
 - Implication: the VS Code route has to come from a companion extension using public VS Code APIs, not from Anthropic's account or from Claude Code's private files. Whether a specific tab can be brought forward externally is unproven and is measured by the probe.
 - Tags: area/security, area/identity, area/macos.
 
+## FACT-020 — VS Code tabs have no stable identity
+
+- Class: verified_test for the derivation; the limits follow from VS Code's tab API.
+- Statement: the tab API gives a label, position and whether the tab is active, with no ID that survives a rename, a reload or a move. The companion therefore derives an ID from the window's folder, the title and the order among same-titled tabs. Consequences: renaming a Claude Code chat makes a new route and strands a pin on the old one; two same-titled tabs swapping order swap identities; a truncated title is part of the identity. Activation re-checks position, title and that derived ID before acting, so a mismatch is refused, not guessed.
+- Source: `extensions/vscode/src/identity.ts`, tests, LOG-20261008-012.
+- Tags: area/identity, area/macos.
+- Review trigger: if VS Code exposes a session ID for a tab, or Claude Code's extension offers one.
+
 ## Adding a fact
 
 Include statement, evidence class, source/test reference, observed date, tags, and review trigger if volatile. A failed experiment can be a fact when its exact environment and outcome are recorded. Do not transform a plausible architectural assumption into a tested capability.

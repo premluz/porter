@@ -5,7 +5,7 @@ import Foundation
 public enum RecoveryAction: Sendable, Equatable {
     case tryAgain
     case refreshList
-    case reconnectSource
+    case openHostApplication(HostApplication)
     case allowSiteAccess
     /// Opens the saved link in the default browser, which may be a different profile.
     case openSavedLinkInDefaultBrowser(url: String)
@@ -30,24 +30,29 @@ public enum ActivationFeedbackBuilder {
         case .activated:
             return ActivationFeedback(title: "Opened", detail: "", recovery: [], dismissesPane: true)
         case .targetGone:
-            return failure("That tab was closed", "\(item.title) is no longer open in its browser profile.", [.refreshList, desktop, saved, .removeShortcut])
+            return failure("That tab was closed", "\(item.title) is no longer open in \(location(of: item)).", [.refreshList, desktop, saved, .removeShortcut])
         case .targetChanged:
             return failure("That tab now shows something else", "Porter did not open it. The list has been refreshed.", [.refreshList])
         case .accountChanged:
             return failure("The account changed", "Porter will not open a chat from a different account. Check the list again.", [.refreshList])
         case .connectorOffline:
-            return failure("Chrome is not connected", "Open Chrome with the Porter extension, then try again.", [.reconnectSource, desktop, saved])
+            let host = ProviderNames.host(for: item.provider)
+            return failure("\(host.displayName) is not connected", "Open \(host.displayName) with Porter\'s extension, then try again.", [.openHostApplication(host), desktop, saved])
         case .permissionDenied:
             return failure("Porter cannot see that tab", "Allow access to claude.ai in the extension options.", [.allowSiteAccess])
         case .unsupported:
             return failure("This can't be opened from here", "That destination does not support opening.", [desktop, saved])
         case .versionMismatch:
-            return failure("Porter and its extension need updating", "They use different versions of the bridge.", [.reconnectSource])
+            return failure("Porter and its extension need updating", "They use different versions of the bridge.", [.openHostApplication(ProviderNames.host(for: item.provider))])
         case .timeout:
             return failure("No answer from Chrome", "It may have opened anyway. Check Chrome before trying again.", [.tryAgain, .refreshList])
         case .failed:
             return failure("Could not open it", "Something went wrong in the browser.", [.tryAgain, .refreshList])
         }
+    }
+
+    private static func location(of item: PanelItem) -> String {
+        ProviderNames.host(for: item.provider) == .vscode ? "that VS Code window" : "its browser profile"
     }
 
     private static func failure(_ title: String, _ detail: String, _ actions: [RecoveryAction?]) -> ActivationFeedback {

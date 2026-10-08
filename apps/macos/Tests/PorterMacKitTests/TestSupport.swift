@@ -9,7 +9,7 @@ import Testing
 @MainActor
 final class RecordingPerformer: RecoveryPerformer {
     var opened: [URL] = []
-    var launched = 0
+    var launched: [HostApplication] = []
 
     var desktopOpened: [URL] = []
     var copied: [String] = []
@@ -17,7 +17,7 @@ final class RecordingPerformer: RecoveryPerformer {
     func openInDefaultBrowser(_ url: URL) { opened.append(url) }
     func openInDesktopApp(_ url: URL) { desktopOpened.append(url) }
     func copyToPasteboard(_ text: String) { copied.append(text) }
-    func launchBrowser() { launched += 1 }
+    func launch(_ host: HostApplication) { launched.append(host) }
 }
 
 /// A source whose single route answers with whatever outcome the test sets.

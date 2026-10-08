@@ -35,6 +35,7 @@ Open questions are not automatic blockers to unrelated work. Proceed with docume
 | Q-018 | Does the installed Claude app honour `claude://claude.ai/chat/<id>` for a chat from another account? | Documented to show recent chats on an invalid ID; Porter says it cannot confirm the account | Manual batch step B4; record exact behavior |
 | Q-019 | Where do context packets come from in practice (file from Atlas/Manager/Memento, or a shared store)? | A JSON file the user opens in Porter; held in memory only | ADR-004 round trip with a real Atlas/Memento export |
 | Q-020 | How should chats inside VS Code (Claude Code panel, OpenAI extension) appear in Porter? | Prem chose a VS Code companion extension (2026-10-08); a probe comes first because bringing one tab forward from outside is unproven | TASK-015; account-API route ruled out by S14 / FACT-019; OpenAI extension not yet examined |
+| Q-021 | Can a stable ID for a Claude Code tab be had without reading conversation files? | Folder plus title plus order, with the limits in FACT-020 | Ask whether the extension exposes a session ID for its panels; otherwise accept the limit |
 | Q-015 | Where are suite context links stored, and what ID formats do Manager and Atlas use? | Store in the product where the user created the link; opaque string IDs | ADR-004 validation round trip |
 
 ## Risks

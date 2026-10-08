@@ -62,6 +62,7 @@ Added later the same day (all pass; see LOG-20261008-008):
 swift test --package-path packages/ConversationCore     # core, PorterStore, PorterPanelModel
 swift test --package-path services/native-host
 swift test --package-path apps/macos
+cd extensions/vscode && npm ci && npm test      # 34 tests; also validates what it sends against the schemas
 cd apps/macos && swift build -c release && .build/release/Porter --self-test   # headless, shows no window
 cd apps/ios && xcodebuild -project Porter.xcodeproj -scheme Porter -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
 cd packages/contracts && node scripts/validate-messages.mjs <captured-messages.json>
@@ -108,13 +109,16 @@ Everything above is automated. This batch covers what automation cannot: appeara
 1. In Chrome, extension Options: Claude and ChatGPT are listed; ChatGPT is marked untested. Allow ChatGPT, open a `chatgpt.com/c/…` chat: record whether it appears with a sensible title and activates correctly. Remove the permission afterwards if you prefer.
 2. Rename a Claude chat. In `chrome://extensions`, open Porter's service worker console: if the tab drops out of the list, a `[porter] tab N left the list but still exists` line appears with the page status and an address shape. Copy it to me (it contains no chat ID).
 
-**F. VS Code probe** (needs VS Code 1.94 or later; you have 1.140). Open at least two VS Code windows on different folders, each with a Claude Code tab or two, and give two tabs the same title if you can.
-1. `extensions/vscode/scripts/link-dev.sh link`, then in each VS Code window run "Developer: Reload Window".
-2. In one window: Command Palette, "Porter: List Claude Code tabs". Expect the Output panel ("Porter probe") to list that window's Claude Code tabs with group, position and which is active. Record: any Claude Code tab missing, or other tabs wrongly listed. If the list is empty while a tab is open, tell me; the type name is the first thing to check.
-3. "Porter: Test bringing a Claude Code tab forward": pick a tab, then switch to a different tab within 5 seconds. Expect the output line to end `-> worked`. Record any other verdict: alreadyActive (you did not switch), didNotChange, wrongTab, unreachable (more than 8 groups or 9 tabs).
-4. From Terminal, with VS Code focused on window A: `open "vscode://porter-dev.porter-vscode-probe/focus?label=<exact tab title, URL-encoded>"`. Expect that tab to come forward. Then focus window B and send the same link: record which window receives it and what the output says. Do the same with VS Code in the background and another app in front (does VS Code come forward, and which window?).
-5. A tab title that two tabs share must produce "2 tabs here are titled …" and open nothing.
-6. When done: `extensions/vscode/scripts/link-dev.sh unlink` and reload windows.
+**F. VS Code companion** (VS Code 1.94 or later; you have 1.140). It replaces the earlier probe, which this step unlinks automatically.
+1. `/Users/przemek/Porter/extensions/vscode/scripts/link-dev.sh link`, then run "Developer: Reload Window" in each VS Code window. Expect a "Porter" item in the status bar (bottom right): "not connected" until the Mac app runs.
+2. Start the live Mac app (`apps/macos/.build/release/Porter`, after `swift build -c release`; stop `porter-registryd` first). Within about 30 seconds each VS Code window's status bar should say "Porter connected", and its tooltip should say how many Claude Code tabs it reports.
+3. Open the pane (⌃⌥Space). Expect each open Claude Code tab as a row labelled "Claude Code · <folder name>", next to your Chrome chats. Two windows with same-titled tabs must show two rows with different folder names.
+4. In VS Code, put a **file tab** in front in window A. With another app in front, choose window A's Claude Code row in the pane and press Return. Expect: VS Code comes forward, window A is the one in front, its Claude Code tab is selected, the pane closes. Note any delay or flicker. (The Mac app opens the window's folder first, then asks the window to select the tab.)
+5. Repeat with window B in front when you choose a row from window A. Expect window A to come forward, not a new window.
+6. Close the tab, choose its (now stale) pinned row: expect a message about the VS Code window, not Chrome. Quit VS Code: expect "VS Code is not connected" with an "Open VS Code" button.
+7. Rename a Claude Code chat: expect the old row to disappear and a new one to appear (a known limit, see FACT-020). If you had pinned the old one it stays as a closed pin.
+8. Reload the VS Code window: the status bar should reconnect by itself. Command Palette: "Porter: Show connection status" and "Porter: List Claude Code tabs in this window".
+9. To remove: `link-dev.sh unlink`, reload windows.
 
 Record, for each step that differs: what you saw, macOS and Chrome versions, and whether it was dark or light mode.
 
