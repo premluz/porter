@@ -1,0 +1,8 @@
+{
+  "packetVersion": "1.0",
+  "id": "6f1c2a3e-aaaa-4a1a-8a1a-000000000001",
+  "createdAt": "2026-10-08T07:00:00Z",
+  "createdBy": "memento",
+  "title": "Fix pane hit-testing",
+  "sources": []
+}

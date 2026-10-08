@@ -1,0 +1,10 @@
+{
+  "protocolVersion": "1.0",
+  "messageId": "6f1c2a3e-7777-4a1a-8a1a-000000000001",
+  "connectorId": "chrome-personal",
+  "connectionEpoch": "epoch-1",
+  "sequence": 0,
+  "type": "prompt.send",
+  "sentAt": "2026-10-08T07:00:00Z",
+  "payload": {}
+}

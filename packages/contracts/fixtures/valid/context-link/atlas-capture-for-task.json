@@ -1,0 +1,18 @@
+{
+  "id": "6f1c2a3e-9999-4a1a-8a1a-000000000001",
+  "from": {
+    "contract": "suite-ref/1",
+    "type": "atlas.capture",
+    "id": "fixture-capture-1"
+  },
+  "to": {
+    "contract": "suite-ref/1",
+    "type": "manager.task",
+    "id": "fixture-task-1",
+    "workspaceId": "fixture-workspace",
+    "label": "Fix pane hit-testing"
+  },
+  "relation": "capturedFor",
+  "origin": "userLinked",
+  "createdAt": "2026-10-08T07:00:00Z"
+}

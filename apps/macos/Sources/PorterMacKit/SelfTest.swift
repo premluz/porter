@@ -1,0 +1,69 @@
+import AppKit
+import Foundation
+import PorterPanelModel
+import PorterStore
+
+/// Headless smoke test of the AppKit layer: builds the real panel and views off screen, drives the
+/// state machine, and compares real window frames with the geometry. It never orders a window
+/// front, so it is safe to run while you work. A pass is not a visual review.
+@MainActor
+public enum SelfTest {
+    public static func run() async -> Bool {
+        var failures: [String] = []
+        func check(_ name: String, _ condition: Bool) {
+            print("\(condition ? "PASS" : "FAIL")  \(name)")
+            if !condition { failures.append(name) }
+        }
+        do {
+            let store = try PreferenceStore(path: PreferenceStore.inMemoryPath, deviceId: UUID())
+            try await SampleData.seedPins(into: store, at: Date())
+            let model = AppModel(source: FixtureSource(), store: store, performer: WorkspaceRecoveryPerformer())
+            await model.refresh()
+            let defaults = try ephemeralDefaults()
+            let controller = PanelController(model: model, settings: PanelSettings(), defaults: defaults)
+            checkModel(model, check)
+            checkPanel(controller, check)
+            checkHotKey(check)
+        } catch {
+            check("setup (\(error))", false)
+        }
+        print(failures.isEmpty ? "self test passed" : "self test FAILED: \(failures.joined(separator: "; "))")
+        return failures.isEmpty
+    }
+
+    private static func checkModel(_ model: AppModel, _ check: (String, Bool) -> Void) {
+        check("fixture list has several items", model.items.count >= 7)
+        check("an ambiguous item exists", model.items.contains { $0.isAmbiguous })
+        check("a closed pin and an offline pin exist", model.snapshot.pinned.count == 2)
+    }
+
+    private static func checkPanel(_ controller: PanelController, _ check: (String, Bool) -> Void) {
+        let capsule = controller.frame(expanded: false)
+        let pane = controller.frame(expanded: true)
+        controller.applyInstantly(expanded: false)
+        check("window matches capsule geometry (window \(controller.panel.frame), expected \(capsule))", controller.panel.frame == capsule)
+        check("capsule is a narrow shape, not full height", capsule.width == Tokens.Size.capsuleWidth && capsule.height < pane.height)
+        controller.applyInstantly(expanded: true)
+        check("window matches pane geometry (window \(controller.panel.frame), expected \(pane))", controller.panel.frame == pane)
+        check("panel is non-activating and floats", controller.panel.styleMask.contains(.nonactivatingPanel))
+        controller.applyInstantly(expanded: false)
+        check("collapsing returns to the capsule frame (window \(controller.panel.frame), expected \(capsule))", controller.panel.frame == capsule)
+        check("collapsed panel cannot take keyboard focus", !controller.panel.canBecomeKey)
+        controller.panel.contentView?.layoutSubtreeIfNeeded()
+        check("SwiftUI content lays out", (controller.panel.contentView?.subviews.count ?? 0) > 0)
+    }
+
+    private static func checkHotKey(_ check: (String, Bool) -> Void) {
+        let keys = GlobalHotKey.controlOptionSpace
+        let registered = (try? GlobalHotKey(keyCode: keys.keyCode, modifiers: keys.modifiers, action: {})) != nil
+        check("global shortcut ⌃⌥Space can be registered (fails if another app owns it)", registered)
+    }
+
+    private static func ephemeralDefaults() throws -> UserDefaults {
+        let name = "porter.selftest.\(UUID().uuidString)"
+        guard let defaults = UserDefaults(suiteName: name) else { throw SelfTestError.noDefaults }
+        return defaults
+    }
+
+    private enum SelfTestError: Error { case noDefaults }
+}

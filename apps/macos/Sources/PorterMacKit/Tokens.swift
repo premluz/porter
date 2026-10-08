@@ -1,0 +1,43 @@
+import CoreGraphics
+import Foundation
+
+/// Design tokens. Values are starting points from docs/UX_DESIGN.md, to be tuned by looking at
+/// the real panel, so they live here and nowhere else.
+public enum Tokens {
+    public enum Space {
+        public static let xs: CGFloat = 4
+        public static let s: CGFloat = 8
+        public static let m: CGFloat = 12
+        public static let l: CGFloat = 16
+        public static let xl: CGFloat = 24
+    }
+
+    public enum Size {
+        public static let capsuleWidth: CGFloat = 40
+        public static let paneWidth: CGFloat = 360
+        public static let rowHeight: CGFloat = 56
+        public static let searchHeight: CGFloat = 36
+        public static let headerHeight: CGFloat = 52
+        public static let footerHeight: CGFloat = 32
+        public static let sectionHeaderHeight: CGFloat = 28
+        public static let statusDot: CGFloat = 10
+        public static let capsuleDot: CGFloat = 26
+        public static let expandButton: CGFloat = 28
+        public static let capsuleCorner: CGFloat = 20
+        public static let paneCorner: CGFloat = 28
+        public static let edgeMargin: CGFloat = 8
+        public static let minimumPaneHeight: CGFloat = 160
+    }
+
+    public enum Capsule {
+        public static let maximumDots = 6
+    }
+
+    public enum Motion {
+        /// Within the 220–320 ms range in the UX document.
+        public static let duration: TimeInterval = 0.28
+        public static let hoverLabelDelay: TimeInterval = 0.5
+        /// Pane content appears only once this much of the width exists, so text never stretches.
+        public static let contentRevealStart: CGFloat = 0.55
+    }
+}

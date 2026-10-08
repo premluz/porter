@@ -1,0 +1,9 @@
+{
+  "id": "6f1c2a3e-2222-4a1a-8a1a-000000000002",
+  "provider": "claude",
+  "providerConversationId": "fixture-chat-b",
+  "title": "Release plan",
+  "createdAt": "2026-10-08T07:00:00Z",
+  "lastObservedAt": "2026-10-08T07:00:00Z",
+  "revision": 1
+}

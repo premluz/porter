@@ -1,0 +1,1 @@
+{ "tabs": [ { "tabId": 1, "windowId": 1, "provider": "claude", "providerConversationId": "x", "title": "t", "canonicalUrl": "http://claude.ai/chat/x" } ] }

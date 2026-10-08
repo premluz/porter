@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.porter.invalid/v1/context-link.schema.json",
+  "title": "ContextLink",
+  "description": "A user-created link between two suite records. Each product owns its records; a reference carries only an opaque ID and optional revision, never content. See ADR-004.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "from", "to", "relation", "origin", "createdAt"],
+  "properties": {
+    "id": { "$ref": "common.schema.json#/$defs/uuid" },
+    "from": { "$ref": "#/$defs/reference" },
+    "to": { "$ref": "#/$defs/reference" },
+    "relation": { "enum": ["relatesTo", "capturedFor", "citesSource"] },
+    "origin": { "enum": ["userLinked"] },
+    "createdAt": { "$ref": "common.schema.json#/$defs/timestamp" }
+  },
+  "$defs": {
+    "reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract", "type", "id"],
+      "properties": {
+        "contract": { "const": "suite-ref/1" },
+        "type": { "enum": ["porter.conversation", "porter.destination", "manager.project", "manager.task", "atlas.capture", "memento.project", "memento.source", "memento.entry"] },
+        "id": { "$ref": "common.schema.json#/$defs/opaqueId" },
+        "workspaceId": { "$ref": "common.schema.json#/$defs/opaqueId" },
+        "revision": { "$ref": "common.schema.json#/$defs/opaqueId" },
+        "label": { "$ref": "common.schema.json#/$defs/label" }
+      }
+    }
+  }
+}

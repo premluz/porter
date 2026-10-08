@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.porter.invalid/v1/context-packet.schema.json",
+  "title": "ContextPacket",
+  "description": "Context assembled by Atlas, Manager or Memento for the user to review in Porter. Porter shows it, copies it on request and opens the chosen destination; it never types or sends it. Source records stay in their owning product: a packet holds references and short cited excerpts only, and is not stored by Porter.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["packetVersion", "id", "createdAt", "createdBy", "title", "sources"],
+  "properties": {
+    "packetVersion": { "const": "1.0" },
+    "id": { "$ref": "common.schema.json#/$defs/uuid" },
+    "createdAt": { "$ref": "common.schema.json#/$defs/timestamp" },
+    "createdBy": { "enum": ["atlas", "manager", "memento"] },
+    "title": { "$ref": "common.schema.json#/$defs/label" },
+    "instruction": { "type": "string", "minLength": 1, "maxLength": 2000 },
+    "capture": { "$ref": "#/$defs/reference" },
+    "task": { "$ref": "#/$defs/reference" },
+    "sources": { "type": "array", "maxItems": 20, "items": { "$ref": "#/$defs/source" } },
+    "requestedDestination": { "$ref": "#/$defs/destination" }
+  },
+  "$defs": {
+    "reference": { "$ref": "context-link.schema.json#/$defs/reference" },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reference", "citation", "excerpt", "freshness"],
+      "properties": {
+        "reference": {
+          "allOf": [
+            { "$ref": "context-link.schema.json#/$defs/reference" },
+            { "type": "object", "properties": { "type": { "enum": ["memento.source", "memento.entry"] } } }
+          ]
+        },
+        "citation": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "excerpt": { "type": "string", "minLength": 1, "maxLength": 4000 },
+        "freshness": { "enum": ["current", "stale", "unknown"] }
+      }
+    },
+    "destination": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "providerConversationId"],
+      "properties": {
+        "provider": { "$ref": "common.schema.json#/$defs/provider" },
+        "providerConversationId": { "$ref": "common.schema.json#/$defs/opaqueId" }
+      }
+    }
+  }
+}

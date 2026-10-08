@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.porter.invalid/v1/conversation.schema.json",
+  "title": "Conversation",
+  "description": "A provider conversation. Titles are display data and never identity.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "provider", "title", "createdAt", "lastObservedAt", "revision"],
+  "properties": {
+    "id": { "$ref": "common.schema.json#/$defs/uuid" },
+    "provider": { "$ref": "common.schema.json#/$defs/provider" },
+    "providerConversationId": { "$ref": "common.schema.json#/$defs/opaqueId" },
+    "accountScopeId": { "$ref": "common.schema.json#/$defs/uuid" },
+    "workspaceScopeId": { "$ref": "common.schema.json#/$defs/opaqueId" },
+    "title": { "$ref": "common.schema.json#/$defs/title" },
+    "createdAt": { "$ref": "common.schema.json#/$defs/timestamp" },
+    "lastObservedAt": { "$ref": "common.schema.json#/$defs/timestamp" },
+    "revision": { "$ref": "common.schema.json#/$defs/revision" }
+  }
+}

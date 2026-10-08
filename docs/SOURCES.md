@@ -1,0 +1,97 @@
+---
+id: "DOC-SOURCES"
+type: "sources"
+title: "Sources and attribution"
+status: "active"
+updated: "2026-10-08"
+owner: "project-maintainer"
+tags: ["area/memory", "area/mcp", "area/browser", "area/macos", "phase/foundation"]
+summary: "Published sources and the limits of their applicability."
+related: ["DOC-MEMORY", "DOC-FACTS"]
+---
+
+# Sources and attribution
+
+Reviewed 2026-10-08. These are public documents, not access to private OpenAI or Anthropic team workflows. The proposed constitution, naming, tagging, task ledger, and folder structure are a project-specific synthesis. No single official “best-in-class internal setup” has been established.
+
+## S01 — OpenAI project instructions
+
+[Custom instructions with AGENTS.md](https://learn.chatgpt.com/docs/agent-configuration/agents-md)
+
+Supports using repository instructions and directory-scoped guidance. We use a short root AGENTS.md with task-relevant document routing. This does not imply a project file overrides the user's current request or host instructions.
+
+## S02 — OpenAI living work plans
+
+[Using PLANS.md for multi-hour problem solving](https://developers.openai.com/cookbook/articles/codex_exec_plans)
+
+Supports resumable plans that capture progress, discoveries, decisions, validation and outcomes. Our roadmap and PLAN-001 adapt that idea; they are original documents, not copied vendor templates or mandatory Codex filenames beyond ordinary instruction discovery.
+
+## S03 — Anthropic project memory
+
+[How Claude remembers your project](https://code.claude.com/docs/en/memory)
+
+Documents CLAUDE.md, imports, scoped rules and auto memory. We provide a thin CLAUDE.md import of shared instructions and portable repository records. Machine-local auto memory is distinct from this shared project catalog. Keeping always-loaded guidance short reduces duplicated context.
+
+## S04 — Chrome tab APIs
+
+[Tabs API](https://developer.chrome.com/docs/extensions/reference/api/tabs)
+
+Supports tab/window locators, tab activation, tab metadata and lifecycle concepts including discarded/frozen tabs. Browser loading state is not AI task state. Exact app/account behavior still needs integration tests.
+
+## S05 — Chrome native messaging
+
+[Native messaging](https://developer.chrome.com/docs/extensions/develop/concepts/native-messaging)
+
+Documents extension-to-native-host messaging and host setup. Our Swift helper, XPC packaging and multi-profile registry are implementation proposals that must be tested on a real Mac.
+
+## S06 — Chrome page observation
+
+[Content scripts](https://developer.chrome.com/docs/extensions/develop/concepts/content-scripts)
+
+Supports permitted DOM access and communication with the extension. Provider-specific status interpretation and its reliability are not guaranteed by this capability.
+
+## S07 — Apple Liquid Glass
+
+[Applying Liquid Glass to custom views](https://developer.apple.com/documentation/swiftui/applying-liquid-glass-to-custom-views)
+
+Documents glass grouping and related-view morphing. The requested full capsule-to-pane transition, window geometry, hit testing and supported OS minimum need a native prototype and SDK check.
+
+## S08 — Apple destination links
+
+[Allowing apps and websites to link to your content](https://developer.apple.com/documentation/xcode/allowing-apps-and-websites-to-link-to-your-content)
+
+Explains app/web association for universal links. It does not guarantee that another provider exposes any particular chat link or switches accounts on navigation.
+
+## S09 — OpenAI desktop chat links
+
+[Commands and deep links](https://learn.chatgpt.com/docs/reference/commands)
+
+Documents chat deep links for the described desktop product. Installed product/version behavior, account handling, discovery and status must be tested separately. Do not infer universal access to consumer chat history from an API or CLI integration.
+
+Reviewed again 2026-10-08 (page: [Commands for the desktop app](https://learn.chatgpt.com/docs/app/commands)): the app keeps the `codex://` scheme, and `codex://threads/<thread-id>` opens an existing local Codex thread by its technical ID. No documented link opens a ChatGPT web conversation and no documented way lists thread IDs, so Porter cannot offer this link without a user-supplied ID.
+
+## S10 — MCP resources
+
+[Resources, specification revision 2025-11-25](https://modelcontextprotocol.io/specification/2025-11-25/server/resources)
+
+Provides the resource concept for contextual data. Used for conceptual design only; this is a versioned reference, not a claim that it is the newest release. Select a compatible current protocol/SDK during TASK-070.
+
+## S11 — MCP tools
+
+[Tools, specification revision 2025-11-25](https://modelcontextprotocol.io/specification/2025-11-25/server/tools)
+
+Provides the tool concept for retrieval/actions. Our `project_memory.*` names and payloads are proposed application contracts. Tool annotations are not a replacement for implemented access enforcement.
+
+## S12 — Claude desktop links
+
+[Open Claude desktop with a link](https://support.claude.com/en/articles/14729294-open-claude-desktop-with-a-link), accessed 2026-10-08.
+
+Documents the `claude://` scheme for macOS, Windows and Linux: `claude://claude.ai/chat/{conversation-id}` opens an existing chat, `claude://claude.ai/new` (optional `q` prefill) starts one, and a missing or invalid ID opens the recent chats list. The article names no minimum app version and states no account rules. Porter uses only the existing-chat form; the prefill form puts text into a prompt and is out of scope for R1.
+
+## Product evidence
+
+The user supplied a product analysis of One and reference screenshots, then explicitly narrowed scope during the 2026-10-08 conversation. Those messages establish intent, not proof of any integration. This pack records the relevant requirements in memory/FACTS.md without copying private conversations or embedding the reference product's marketing claims as our own capabilities.
+
+## Verification still required
+
+CloudKit is a proposed transport, and no detailed CloudKit privacy/latency/revocation guarantee is established here. Research the current official Apple documentation and prove the required behavior in TASK-030. Signing, minimum OS, browser-store distribution and native API availability also need current verification at implementation time.

@@ -1,0 +1,625 @@
+{
+  "schema_version": 1,
+  "project": "conversation-switcher",
+  "documents": [
+    {
+      "id": "ADR-001",
+      "type": "decision",
+      "title": "Navigation-first product boundary",
+      "status": "accepted",
+      "updated": "2026-10-08",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/product",
+        "area/security",
+        "phase/r1"
+      ],
+      "summary": "Records the user-selected shortcut-first product boundary.",
+      "related": [
+        "DOC-CONSTITUTION",
+        "DOC-SCOPE"
+      ],
+      "path": "decisions/ADR-001-navigation-first.md",
+      "revision": "sha256:38ca593f46657416d43f4012297b90f62946e269592efd3f9b55efd013ea40a0",
+      "line_count": 37
+    },
+    {
+      "id": "ADR-002",
+      "type": "decision",
+      "title": "Native Mac shell and browser connector",
+      "status": "proposed",
+      "updated": "2026-10-08",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/macos",
+        "area/browser",
+        "area/identity",
+        "phase/r1"
+      ],
+      "summary": "Proposed implementation split for native UI and browser-aware navigation.",
+      "related": [
+        "DOC-ARCHITECTURE",
+        "PLAN-001"
+      ],
+      "path": "decisions/ADR-002-native-and-extension.md",
+      "revision": "sha256:ac85c8f553e693718676305d7659c70e4ab5c1e0908ebab6f4689f377896de6e",
+      "line_count": 37
+    },
+    {
+      "id": "ADR-003",
+      "type": "decision",
+      "title": "Metadata-only iPhone sync proposal",
+      "status": "proposed",
+      "updated": "2026-10-08",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/ios",
+        "area/sync",
+        "area/security",
+        "phase/r2"
+      ],
+      "summary": "Proposed simple iPhone companion and unresolved transport constraints.",
+      "related": [
+        "DOC-ARCHITECTURE",
+        "DOC-SECURITY",
+        "DOC-QUESTIONS"
+      ],
+      "path": "decisions/ADR-003-mobile-sync.md",
+      "revision": "sha256:616f15ac44e6d469bd759346e538246a8ebabfa99502d9321f512ae6e643b39c",
+      "line_count": 41
+    },
+    {
+      "id": "ADR-004",
+      "type": "decision",
+      "title": "Suite reference contract for Manager, Atlas, and Memento",
+      "status": "proposed",
+      "updated": "2026-10-08",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/product",
+        "area/identity",
+        "area/security",
+        "phase/r1"
+      ],
+      "summary": "How Porter links to sibling-product records without becoming their source of truth.",
+      "related": [
+        "DOC-DATA",
+        "DOC-CONSTITUTION",
+        "ADR-001"
+      ],
+      "path": "decisions/ADR-004-suite-references.md",
+      "revision": "sha256:26d30122b2ab3a0583365b22d3ab58cddf81d522af5de4e92cabf6f2608da774",
+      "line_count": 53
+    },
+    {
+      "id": "ADR-005",
+      "type": "decision",
+      "title": "Prototype local IPC: same-user Unix sockets",
+      "status": "proposed",
+      "updated": "2026-10-08",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/macos",
+        "area/browser",
+        "area/security",
+        "phase/r1"
+      ],
+      "summary": "Why the bridge prototype uses Unix domain sockets instead of the XPC service ADR-002 proposed, and what that does not yet protect.",
+      "related": [
+        "ADR-002",
+        "DOC-ARCHITECTURE",
+        "DOC-SECURITY",
+        "PLAN-001"
+      ],
+      "path": "decisions/ADR-005-prototype-local-ipc.md",
+      "revision": "sha256:4a0f8d8343057b12823089cf369b2b5e62c3b84654bca225f8a37c3bd15c366e",
+      "line_count": 57
+    },
+    {
+      "id": "DOC-AGENTS",
+      "type": "instructions",
+      "title": "Shared agent instructions",
+      "status": "active",
+      "updated": "2026-10-08",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/memory",
+        "phase/foundation"
+      ],
+      "summary": "Small shared entry point for coding agents.",
+      "related": [
+        "DOC-STATE",
+        "DOC-CONSTITUTION",
+        "DOC-MEMORY"
+      ],
+      "path": "AGENTS.md",
+      "revision": "sha256:e20583e0f7868b41207e7f3c53e9f1ac13671b65a2c74967973f2e178b307d8a",
+      "line_count": 50
+    },
+    {
+      "id": "DOC-ARCHITECTURE",
+      "type": "spec",
+      "title": "Component architecture",
+      "status": "draft",
+      "updated": "2026-10-08",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/macos",
+        "area/browser",
+        "area/ios",
+        "area/identity",
+        "phase/r1",
+        "phase/r2"
+      ],
+      "summary": "Proposed component boundaries, event flow, and synchronization.",
+      "related": [
+        "ADR-002",
+        "ADR-003",
+        "DOC-DATA",
+        "DOC-SECURITY"
+      ],
+      "path": "docs/ARCHITECTURE.md",
+      "revision": "sha256:66a9c9c39e47df2d07036422a4940ec0c2cad40a7185566d95905ccd348fabcb",
+      "line_count": 117
+    },
+    {
+      "id": "DOC-CLAUDE",
+      "type": "instructions",
+      "title": "Claude Code entry point",
+      "status": "active",
+      "updated": "2026-10-08",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/memory",
+        "phase/foundation"
+      ],
+      "summary": "Routes Claude Code to the shared project instructions.",
+      "related": [
+        "DOC-AGENTS"
+      ],
+      "path": "CLAUDE.md",
+      "revision": "sha256:88e66b8d5983c29074b90fb47ff083e47430191365714c1833da04dcd92b0186",
+      "line_count": 21
+    },
+    {
+      "id": "DOC-CONSTITUTION",
+      "type": "constitution",
+      "title": "Project constitution",
+      "status": "active",
+      "updated": "2026-10-08",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/product",
+        "area/security",
+        "area/memory",
+        "phase/foundation"
+      ],
+      "summary": "Product principles and boundaries for implementation decisions.",
+      "related": [
+        "DOC-FACTS",
+        "DOC-SCOPE",
+        "DOC-SECURITY"
+      ],
+      "path": "CONSTITUTION.md",
+      "revision": "sha256:997f0c46242362568f94a2e9f1af09a4d438fa419c5863f3595475dfd1032f0e",
+      "line_count": 59
+    },
+    {
+      "id": "DOC-DATA",
+      "type": "spec",
+      "title": "Data model and protocol contracts",
+      "status": "draft",
+      "updated": "2026-10-08",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/identity",
+        "area/browser",
+        "area/macos",
+        "area/ios",
+        "phase/r1"
+      ],
+      "summary": "Conversation identity, status evidence, IPC, and later send semantics.",
+      "related": [
+        "DOC-ARCHITECTURE",
+        "DOC-SECURITY",
+        "DOC-VALIDATION"
+      ],
+      "path": "docs/DATA_CONTRACTS.md",
+      "revision": "sha256:8dc64e79ee664ba5de5e92fbd0b792c6913bcd862817e9c420aed26d0e2db62a",
+      "line_count": 114
+    },
+    {
+      "id": "DOC-FACTS",
+      "type": "memory",
+      "title": "Durable project facts",
+      "status": "active",
+      "updated": "2026-10-08",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/memory",
+        "area/product",
+        "phase/foundation"
+      ],
+      "summary": "User requirements and established findings with evidence classification.",
+      "related": [
+        "DOC-CONSTITUTION",
+        "DOC-SOURCES",
+        "DOC-QUESTIONS"
+      ],
+      "path": "memory/FACTS.md",
+      "revision": "sha256:dfb7ae0b1e1d431e180fb1fba2c37ba6457c97a1a91e2342cbfa8ca9ba548175",
+      "line_count": 162
+    },
+    {
+      "id": "DOC-HANDOFF",
+      "type": "handoff",
+      "title": "Current handoff",
+      "status": "active",
+      "updated": "2026-10-08",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/memory",
+        "phase/foundation",
+        "phase/r0"
+      ],
+      "summary": "Minimal restart packet for the next implementation agent.",
+      "related": [
+        "DOC-STATE",
+        "PLAN-001",
+        "DOC-PROGRESS"
+      ],
+      "path": "memory/HANDOFF.md",
+      "revision": "sha256:d39ecc95054244d8abeff53b52852ef8660e14bdeba3baa0ba1eb56149e2091d",
+      "line_count": 31
+    },
+    {
+      "id": "DOC-INDEX",
+      "type": "index",
+      "title": "Generated project memory index",
+      "status": "active",
+      "updated": "2026-10-08",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/memory",
+        "phase/foundation"
+      ],
+      "summary": "Generated entry points and topic map; rebuild with the local utility.",
+      "related": [
+        "DOC-README",
+        "DOC-MEMORY"
+      ],
+      "path": "memory/INDEX.md",
+      "revision": "sha256:337d481d3467361ee0f052e662e76995c3aaef7c0a39921c3e93bc3530508dbe",
+      "line_count": 48
+    },
+    {
+      "id": "DOC-MEMORY",
+      "type": "spec",
+      "title": "Project memory and MCP contract",
+      "status": "active",
+      "updated": "2026-10-08",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/memory",
+        "area/mcp",
+        "area/security",
+        "phase/foundation"
+      ],
+      "summary": "Portable Markdown conventions, tagging, retrieval, and future MCP tools.",
+      "related": [
+        "DOC-AGENTS",
+        "DOC-CLAUDE",
+        "DOC-TASKS",
+        "DOC-SOURCES"
+      ],
+      "path": "docs/MCP_MEMORY.md",
+      "revision": "sha256:e7e4a81175d1c46dbac099688f31ce44e7dfda3cb28927598bd405556d8fd3d7",
+      "line_count": 145
+    },
+    {
+      "id": "DOC-PLAN",
+      "type": "plan",
+      "title": "Delivery roadmap",
+      "status": "active",
+      "updated": "2026-10-08",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/product",
+        "area/quality",
+        "phase/foundation",
+        "phase/r0",
+        "phase/r1",
+        "phase/r2"
+      ],
+      "summary": "Milestones, dependency order, and planning conventions.",
+      "related": [
+        "DOC-TASKS",
+        "PLAN-001",
+        "DOC-SCOPE"
+      ],
+      "path": "PLANS.md",
+      "revision": "sha256:a12e8b7208adec5236ecdcfd366c0e01b535dd41fb8573a70e9e74b6425752e9",
+      "line_count": 71
+    },
+    {
+      "id": "DOC-PROGRESS",
+      "type": "log",
+      "title": "Project progress log",
+      "status": "active",
+      "updated": "2026-10-08",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/memory",
+        "phase/foundation"
+      ],
+      "summary": "Append-only checkpoint history with evidence and next actions.",
+      "related": [
+        "DOC-README",
+        "DOC-TEMPLATES"
+      ],
+      "path": "PROGRESS.md",
+      "revision": "sha256:34b87e0a474ac2f40854726f8c9aee0198647fc18a4e84b72212a80cd47a742f",
+      "line_count": 124
+    },
+    {
+      "id": "DOC-QUESTIONS",
+      "type": "questions",
+      "title": "Open questions and risks",
+      "status": "active",
+      "updated": "2026-10-08",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/memory",
+        "area/identity",
+        "area/security",
+        "area/sync",
+        "phase/r0"
+      ],
+      "summary": "Unresolved choices and experiments that can settle them.",
+      "related": [
+        "DOC-STATE",
+        "PLAN-001",
+        "ADR-003"
+      ],
+      "path": "memory/QUESTIONS.md",
+      "revision": "sha256:c57eebb67b1e594d7628e0894d37ffaa48de02144b5a5cab9d08bc5d275c7157",
+      "line_count": 56
+    },
+    {
+      "id": "DOC-README",
+      "type": "index",
+      "title": "Conversation Switcher — project entry",
+      "status": "active",
+      "updated": "2026-10-08",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/product",
+        "area/memory",
+        "phase/foundation"
+      ],
+      "summary": "Entry point and navigation for the complete project pack.",
+      "related": [
+        "DOC-STATE",
+        "DOC-SCOPE",
+        "DOC-MEMORY"
+      ],
+      "path": "README.md",
+      "revision": "sha256:9fff4fdcb9dcd6d2ed762bc23265150863929b638b02daa7a3f7716872547f44",
+      "line_count": 67
+    },
+    {
+      "id": "DOC-SCOPE",
+      "type": "spec",
+      "title": "Technical scope and release boundaries",
+      "status": "draft",
+      "updated": "2026-10-08",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/product",
+        "area/macos",
+        "area/browser",
+        "area/ios",
+        "phase/r1",
+        "phase/r2"
+      ],
+      "summary": "Testable functional requirements and phased scope.",
+      "related": [
+        "DOC-CONSTITUTION",
+        "DOC-ARCHITECTURE",
+        "DOC-UX",
+        "DOC-VALIDATION"
+      ],
+      "path": "docs/TECHNICAL_SCOPE.md",
+      "revision": "sha256:2bdfeae05b7b4ec0df836e4dfee4b549c1a8f13c5dc62ea575bb960d651c44e3",
+      "line_count": 90
+    },
+    {
+      "id": "DOC-SECURITY",
+      "type": "spec",
+      "title": "Security and privacy boundaries",
+      "status": "draft",
+      "updated": "2026-10-08",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/security",
+        "area/identity",
+        "area/browser",
+        "area/ios",
+        "phase/r1",
+        "phase/r2"
+      ],
+      "summary": "Concrete data access and destination-protection requirements.",
+      "related": [
+        "DOC-SCOPE",
+        "DOC-DATA",
+        "DOC-VALIDATION"
+      ],
+      "path": "docs/SECURITY_PRIVACY.md",
+      "revision": "sha256:19deb0eb262b3a99170551e1523d2e7978e055edb33ebab87cc35b1a01d44889",
+      "line_count": 77
+    },
+    {
+      "id": "DOC-SOURCES",
+      "type": "sources",
+      "title": "Sources and attribution",
+      "status": "active",
+      "updated": "2026-10-08",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/memory",
+        "area/mcp",
+        "area/browser",
+        "area/macos",
+        "phase/foundation"
+      ],
+      "summary": "Published sources and the limits of their applicability.",
+      "related": [
+        "DOC-MEMORY",
+        "DOC-FACTS"
+      ],
+      "path": "docs/SOURCES.md",
+      "revision": "sha256:bdca85814dfb85ed1cb1d920c4a7fdfa546c4e40877b9ab6f2a2c2fa4cf28e45",
+      "line_count": 97
+    },
+    {
+      "id": "DOC-STATE",
+      "type": "state",
+      "title": "Current project state",
+      "status": "active",
+      "updated": "2026-10-08",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/memory",
+        "area/product",
+        "phase/foundation"
+      ],
+      "summary": "Short current checkpoint and exact next action.",
+      "related": [
+        "PLAN-001",
+        "DOC-TASKS",
+        "DOC-QUESTIONS"
+      ],
+      "path": "PROJECT_STATE.md",
+      "revision": "sha256:e2cec57dca7d998bc2a1eb1e69f16c38257aa2a8fbf8f75d43244499b2906a93",
+      "line_count": 62
+    },
+    {
+      "id": "DOC-TASKS",
+      "type": "tasks",
+      "title": "Canonical task ledger",
+      "status": "active",
+      "updated": "2026-10-08",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/product",
+        "area/memory",
+        "area/quality",
+        "phase/foundation"
+      ],
+      "summary": "Single task-status source with dependencies and completion evidence.",
+      "related": [
+        "DOC-PLAN",
+        "DOC-PROGRESS",
+        "DOC-VALIDATION"
+      ],
+      "path": "TASKS.md",
+      "revision": "sha256:7b69eab6e280465c53070e44120ea700ebc029645db80c50c33c7ad0b0f584ad",
+      "line_count": 51
+    },
+    {
+      "id": "DOC-TEMPLATES",
+      "type": "template",
+      "title": "Reusable record templates",
+      "status": "template",
+      "updated": "2026-10-08",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/memory",
+        "area/quality",
+        "phase/foundation"
+      ],
+      "summary": "Small templates for tasks, evidence, decisions, plans, and handoffs.",
+      "related": [
+        "DOC-MEMORY",
+        "DOC-TASKS"
+      ],
+      "path": "templates/RECORDS.md",
+      "revision": "sha256:8506d076a3a4c4b35b5b72852ec693065131e031828b05cc7de62993528d6e08",
+      "line_count": 121
+    },
+    {
+      "id": "DOC-UX",
+      "type": "spec",
+      "title": "UX and visual design specification",
+      "status": "draft",
+      "updated": "2026-10-08",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/ux",
+        "area/macos",
+        "area/ios",
+        "phase/r1",
+        "phase/r2"
+      ],
+      "summary": "Interaction flows, liquid-glass motion, and accessibility behavior.",
+      "related": [
+        "DOC-SCOPE",
+        "DOC-DATA",
+        "DOC-VALIDATION"
+      ],
+      "path": "docs/UX_DESIGN.md",
+      "revision": "sha256:e5a633bcfdb5c308a079cd214deae093199852e59d65132fa563287c32393824",
+      "line_count": 96
+    },
+    {
+      "id": "DOC-VALIDATION",
+      "type": "spec",
+      "title": "Validation and release plan",
+      "status": "draft",
+      "updated": "2026-10-08",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/quality",
+        "area/macos",
+        "area/browser",
+        "area/ios",
+        "phase/r1",
+        "phase/r2"
+      ],
+      "summary": "Evidence requirements, test matrix, and release procedures.",
+      "related": [
+        "DOC-SCOPE",
+        "DOC-DATA",
+        "DOC-SECURITY"
+      ],
+      "path": "docs/VALIDATION_RELEASE.md",
+      "revision": "sha256:7c9217007e245bade5144dd48e8d262f679341bd426d3ecb5e89158807b6ee79",
+      "line_count": 173
+    },
+    {
+      "id": "PLAN-001",
+      "type": "plan",
+      "title": "Prove the Mac conversation-switcher foundations",
+      "status": "active",
+      "updated": "2026-10-08",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/macos",
+        "area/browser",
+        "area/identity",
+        "area/quality",
+        "phase/r0"
+      ],
+      "summary": "Executable first milestone with platform experiments and evidence gates.",
+      "related": [
+        "DOC-ARCHITECTURE",
+        "DOC-DATA",
+        "DOC-VALIDATION",
+        "ADR-002"
+      ],
+      "path": "plans/PLAN-001-feasibility.md",
+      "revision": "sha256:a77d684d40d753f16f2233f1e99698bb70c512de2bd964d8c712993aaa44c266",
+      "line_count": 124
+    }
+  ]
+}

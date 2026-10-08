@@ -1,0 +1,110 @@
+:root {
+  --color-background: #ffffff;
+  --color-text: #1d1d1f;
+  --color-muted: #6e6e73;
+  --color-border: #d2d2d7;
+  --color-accent: #0071e3;
+  --color-accent-text: #ffffff;
+  --space-small: 8px;
+  --space-medium: 16px;
+  --space-large: 32px;
+  --radius: 8px;
+  --measure: 36rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: #1d1d1f;
+    --color-text: #f5f5f7;
+    --color-muted: #a1a1a6;
+    --color-border: #424245;
+    --color-accent: #2997ff;
+    --color-accent-text: #000000;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--color-background);
+  color: var(--color-text);
+  font: 14px/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+}
+
+main {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: var(--space-large) var(--space-medium);
+}
+
+section {
+  margin-top: var(--space-large);
+}
+
+h1, h2 {
+  margin: 0 0 var(--space-small);
+}
+
+.note {
+  color: var(--color-muted);
+  margin: 0 0 var(--space-small);
+}
+
+.state {
+  margin: 0 0 var(--space-small);
+  font-weight: 600;
+}
+
+label {
+  display: block;
+  margin-bottom: var(--space-small);
+}
+
+input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--space-small);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+button {
+  margin-top: var(--space-small);
+  padding: var(--space-small) var(--space-medium);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+button[hidden] {
+  display: none;
+}
+
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.provider {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-medium);
+  padding: var(--space-small) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.badge {
+  margin-left: var(--space-small);
+  padding: 0 var(--space-small);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  color: var(--color-muted);
+  font-weight: 400;
+}

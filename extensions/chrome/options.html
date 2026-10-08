@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Porter</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <main>
+    <h1>Porter</h1>
+    <p class="note">This browser profile shows your Claude conversation tabs to Porter. It reads tab addresses and titles for claude.ai chats only, never page content.</p>
+
+    <section>
+      <h2>Profile name</h2>
+      <p class="note">Chrome does not tell Porter which profile this is. Use a name you will recognize, such as Personal or Work.</p>
+      <label for="alias">Name</label>
+      <input id="alias" type="text" maxlength="120" autocomplete="off">
+      <button id="save-alias" type="button">Save</button>
+    </section>
+
+    <section>
+      <h2>Sites</h2>
+      <p class="note">Porter only sees tabs on sites you allow here, and only their address and title.</p>
+      <ul id="providers"></ul>
+    </section>
+
+    <section>
+      <h2>Connection</h2>
+      <p id="connection-state" class="state"></p>
+      <p id="connection-detail" class="note"></p>
+    </section>
+  </main>
+  <script type="module" src="dist/options.js"></script>
+</body>
+</html>

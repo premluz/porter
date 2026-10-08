@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.porter.invalid/v1/account-scope.schema.json",
+  "title": "AccountScope",
+  "description": "Provider account context. Only providerReported evidence with an opaque ID and verification time counts as verified.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "provider", "evidence"],
+  "properties": {
+    "id": { "$ref": "common.schema.json#/$defs/uuid" },
+    "provider": { "$ref": "common.schema.json#/$defs/provider" },
+    "evidence": { "enum": ["providerReported", "userLabel", "unknown"] },
+    "opaqueProviderAccountId": { "$ref": "common.schema.json#/$defs/opaqueId" },
+    "displayLabel": { "$ref": "common.schema.json#/$defs/label" },
+    "verifiedAt": { "$ref": "common.schema.json#/$defs/timestamp" }
+  },
+  "if": { "properties": { "evidence": { "const": "providerReported" } } },
+  "then": { "required": ["opaqueProviderAccountId", "verifiedAt"] }
+}

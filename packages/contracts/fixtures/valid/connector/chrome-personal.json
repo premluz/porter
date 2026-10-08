@@ -1,0 +1,14 @@
+{
+  "id": "chrome-personal",
+  "deviceId": "6f1c2a3e-1111-4a1a-8a1a-000000000001",
+  "providerType": "chromeExtension",
+  "profileAlias": "Personal",
+  "installationId": "6f1c2a3e-4444-4a1a-8a1a-000000000001",
+  "connectionEpoch": "epoch-1",
+  "protocolVersion": "1.0",
+  "adapterVersions": {
+    "claude": "0.1.0"
+  },
+  "connectedAt": "2026-10-08T07:00:00Z",
+  "lastHeartbeatAt": "2026-10-08T07:00:00Z"
+}

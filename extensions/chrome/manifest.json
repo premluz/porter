@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Porter",
+  "description": "Shows your supported conversation tabs to the Porter Mac app and focuses the one you choose. Reads no page content.",
+  "version": "0.1.0",
+  "minimum_chrome_version": "120",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzIwNJjnVaM03ykmxAIMUQbvqp9Ur8+9dknyZP737SawPboamW5Sw/9Na/Bv0ygtHfHsuFAsH3k2EU5JkxmUBJ+vXRwt6Pt790D7DSaJ+Iz40fzFSUc7xqKRgeeroTOvaheSmR1H1Zp5mtRLa+irXGbu+NY1tk5SNKxQtGJTTT9t0Tes1f1rfxHer0rLDInQ++MBP1yOMV3M+aNeKV4tdPRd28rLcWbzskFrto8SP65oN9H2ojOxGtSS0CXSo+h9j67M4H3n1xB1eJcVjCc0ZUDGIE63ALVRoPol7ZYNMISuSkOzbEQdAOY/r1TpikQNVKST+ppXVXq79AtPiinZFLwIDAQAB",
+  "permissions": [
+    "nativeMessaging",
+    "storage",
+    "alarms"
+  ],
+  "optional_host_permissions": [
+    "https://claude.ai/*",
+    "https://chatgpt.com/*"
+  ],
+  "background": {
+    "service_worker": "dist/background.js",
+    "type": "module"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  }
+}

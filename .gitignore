@@ -1,0 +1,21 @@
+# macOS
+.DS_Store
+
+# Swift build output and Xcode per-user state
+.build/
+.swiftpm/
+DerivedData/
+xcuserdata/
+*.xcuserstate
+
+# Node
+node_modules/
+
+# Compiled extension output; rebuilt with `npm run build`
+extensions/chrome/dist/
+extensions/chrome/dist-test/
+
+# Local databases and logs
+*.sqlite
+*.sqlite-journal
+*.log

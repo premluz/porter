@@ -1,0 +1,20 @@
+{
+  "id": "6f1c2a3e-5555-4a1a-8a1a-000000000002",
+  "conversationId": "6f1c2a3e-2222-4a1a-8a1a-000000000001",
+  "deviceId": "6f1c2a3e-1111-4a1a-8a1a-000000000001",
+  "identityEpoch": "identity-1",
+  "locator": {
+    "kind": "desktopLink",
+    "bundleId": "com.anthropic.claudefordesktop",
+    "deepLink": "claude://fixture/link"
+  },
+  "capabilities": [
+    {
+      "name": "activate",
+      "supported": false,
+      "reason": "Deep link not verified"
+    }
+  ],
+  "lastVerifiedAt": "2026-10-08T07:00:00Z",
+  "revision": 1
+}

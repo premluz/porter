@@ -1,0 +1,45 @@
+{
+  "packetVersion": "1.0",
+  "id": "6f1c2a3e-aaaa-4a1a-8a1a-000000000001",
+  "createdAt": "2026-10-08T07:00:00Z",
+  "createdBy": "atlas",
+  "title": "Fix pane hit-testing",
+  "instruction": "Make clicks pass through transparent areas.",
+  "capture": {
+    "contract": "suite-ref/1",
+    "type": "atlas.capture",
+    "id": "fixture-capture-1"
+  },
+  "task": {
+    "contract": "suite-ref/1",
+    "type": "manager.task",
+    "id": "fixture-task-1",
+    "label": "Fix pane hit-testing"
+  },
+  "sources": [
+    {
+      "reference": {
+        "contract": "suite-ref/1",
+        "type": "memento.source",
+        "id": "61228bfb-5c85-4d0a-a3fe-640dc751ce29",
+        "revision": "b637ea0a-4ee9-42f1-9152-891e6a8c8f7f"
+      },
+      "excerpt": "Resize the host window and update hit testing deliberately; transparent panel regions must not intercept unrelated desktop input.",
+      "freshness": "current"
+    },
+    {
+      "reference": {
+        "contract": "suite-ref/1",
+        "type": "memento.entry",
+        "id": "91d47823-9149-422d-ba4c-de06912b2f2d"
+      },
+      "citation": "TASKS.md task ledger",
+      "excerpt": "TASK-014 Native glass morph prototype.",
+      "freshness": "stale"
+    }
+  ],
+  "requestedDestination": {
+    "provider": "claude",
+    "providerConversationId": "fixture-chat-a"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.porter.invalid/v1/status-observation.schema.json",
+  "title": "StatusObservation",
+  "description": "One evidence-backed activity observation. Conversation status only; project-task status belongs to Manager.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "destinationId", "activity", "attention", "evidenceKind", "observedAt", "receivedAt", "expiresAt", "sequence", "connectionEpoch", "adapterVersion"],
+  "properties": {
+    "id": { "$ref": "common.schema.json#/$defs/uuid" },
+    "destinationId": { "$ref": "common.schema.json#/$defs/uuid" },
+    "activity": { "$ref": "common.schema.json#/$defs/activity" },
+    "attention": { "$ref": "common.schema.json#/$defs/attention" },
+    "evidenceKind": { "$ref": "common.schema.json#/$defs/evidenceKind" },
+    "observedAt": { "$ref": "common.schema.json#/$defs/timestamp" },
+    "receivedAt": { "$ref": "common.schema.json#/$defs/timestamp" },
+    "expiresAt": { "$ref": "common.schema.json#/$defs/timestamp" },
+    "sequence": { "$ref": "common.schema.json#/$defs/sequence" },
+    "connectionEpoch": { "$ref": "common.schema.json#/$defs/opaqueId" },
+    "adapterVersion": { "$ref": "common.schema.json#/$defs/version" }
+  }
+}

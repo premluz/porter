@@ -1,0 +1,27 @@
+{
+  "id": "6f1c2a3e-5555-4a1a-8a1a-000000000001",
+  "conversationId": "6f1c2a3e-2222-4a1a-8a1a-000000000001",
+  "deviceId": "6f1c2a3e-1111-4a1a-8a1a-000000000001",
+  "identityEpoch": "identity-1",
+  "locator": {
+    "kind": "browserTab",
+    "connectorId": "chrome-personal",
+    "connectionEpoch": "epoch-1",
+    "tabId": 42,
+    "windowIdHint": 7,
+    "canonicalUrl": "https://claude.ai/chat/fixture-chat-a"
+  },
+  "capabilities": [
+    {
+      "name": "activate",
+      "supported": true
+    },
+    {
+      "name": "observeStatus",
+      "supported": false,
+      "reason": "Adapter signal not yet verified"
+    }
+  ],
+  "lastVerifiedAt": "2026-10-08T07:00:00Z",
+  "revision": 3
+}

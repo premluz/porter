@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.porter.invalid/v1/activation-result.schema.json",
+  "title": "ActivationResult",
+  "description": "Typed outcome of a user-requested open. timeout means acknowledgment was lost, not that activation failed or succeeded.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["requestId", "destinationId", "destinationRevision", "outcome"],
+  "properties": {
+    "requestId": { "$ref": "common.schema.json#/$defs/uuid" },
+    "destinationId": { "$ref": "common.schema.json#/$defs/uuid" },
+    "destinationRevision": { "$ref": "common.schema.json#/$defs/revision" },
+    "outcome": {
+      "enum": ["activated", "targetGone", "targetChanged", "accountChanged", "connectorOffline", "permissionDenied", "unsupported", "versionMismatch", "timeout", "failed"]
+    }
+  }
+}

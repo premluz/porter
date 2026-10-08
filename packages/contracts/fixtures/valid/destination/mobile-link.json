@@ -1,0 +1,14 @@
+{
+  "id": "6f1c2a3e-5555-4a1a-8a1a-000000000003",
+  "conversationId": "6f1c2a3e-2222-4a1a-8a1a-000000000001",
+  "deviceId": "6f1c2a3e-1111-4a1a-8a1a-000000000001",
+  "identityEpoch": "identity-1",
+  "locator": {
+    "kind": "mobileLink",
+    "url": "https://claude.ai/chat/fixture-chat-a",
+    "accountRequirement": "Work account"
+  },
+  "capabilities": [],
+  "lastVerifiedAt": "2026-10-08T07:00:00Z",
+  "revision": 1
+}

@@ -1,0 +1,173 @@
+---
+id: "DOC-VALIDATION"
+type: "spec"
+title: "Validation and release plan"
+status: "draft"
+updated: "2026-10-08"
+owner: "project-maintainer"
+tags: ["area/quality", "area/macos", "area/browser", "area/ios", "phase/r1", "phase/r2"]
+summary: "Evidence requirements, test matrix, and release procedures."
+related: ["DOC-SCOPE", "DOC-DATA", "DOC-SECURITY"]
+---
+
+# Validation and release
+
+## Current implemented verification
+
+From the project root, Python 3.10+:
+
+```sh
+python3 tools/project_memory.py index
+python3 tools/project_memory.py check
+python3 tools/test_project_memory.py
+python3 tools/project_memory.py search "account" --tag area/identity
+python3 tools/project_memory.py read DOC-STATE
+```
+
+These validate and retrieve documentation only.
+
+Product contract and core checks (added 2026-10-08):
+
+```sh
+cd packages/contracts && npm ci && npm run validate
+# expected: "9 schemas compiled, 29 fixtures behaved as expected"; invalid fixtures must fail
+swift test --package-path packages/ConversationCore
+# expected: all Swift Testing tests pass; fixture test decodes every valid contract fixture
+cd packages/ConversationCore && xcodebuild -scheme ConversationCore -destination 'generic/platform=iOS Simulator' build
+# expected: BUILD SUCCEEDED
+```
+
+```sh
+swift test --package-path services/native-host
+# expected: 13 tests pass; six launch the real porter-native-host binary from simulated Chrome processes
+cd extensions/chrome && npm ci && npm test
+# expected: 25 tests pass; one validates the messages the extension produces against packages/contracts schemas
+cd extensions/chrome && npm run typecheck
+services/native-host/scripts/install-dev.sh      # writes only the Chrome host manifest and the origin list
+services/native-host/scripts/uninstall-dev.sh    # removes only those two files
+```
+
+Real two-profile check (TEST-001, TEST-002, TEST-011; requires a person at the Mac, so it is a procedure, not a pass/fail script):
+
+1. Run `install-dev.sh`, then in each Chrome profile load `extensions/chrome` unpacked, confirm the printed extension ID, name the profile in the extension's Options, and click Allow access to claude.ai.
+2. Open a disposable claude.ai chat in each profile and give both the same title.
+3. Run `.build/release/porter-registryd`, then `.build/release/porterctl list`. Expect both profiles connected and two rows with different profile names.
+4. Run `porterctl activate <id> <revision>` for each row and note which profile, window and tab comes forward, and whether Chrome itself comes to the front (`app:` in the output).
+5. Negatives: close a tab then activate (targetGone); navigate a tab to another chat then activate with the old revision (targetChanged); quit Chrome then activate (connectorOffline); relaunch Chrome and confirm routes return with new IDs.
+6. Record versions, results and surprises in PLAN-001 Discoveries. Use only disposable chats; do not paste chat contents into project memory.
+
+Added later the same day (all pass; see LOG-20261008-008):
+
+```sh
+swift test --package-path packages/ConversationCore     # core, PorterStore, PorterPanelModel
+swift test --package-path services/native-host
+swift test --package-path apps/macos
+cd apps/macos && swift build -c release && .build/release/Porter --self-test   # headless, shows no window
+cd apps/ios && xcodebuild -project Porter.xcodeproj -scheme Porter -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
+cd packages/contracts && node scripts/validate-messages.mjs <captured-messages.json>
+```
+
+No status adapter exists yet (status is Unknown everywhere); add its commands when it does.
+
+## Manual test batch 2 (needs a person)
+
+Everything above is automated. This batch covers what automation cannot: appearance, feel, real apps and accounts. Run it once, note only what differs from "Expect", and send that back. Use disposable chats. Build first: `cd apps/macos && swift build -c release`; the program is `apps/macos/.build/release/Porter`. Stop `porter-registryd` before running the live app (they share a socket).
+
+**A. Mac panel with sample data** (`Porter --fixtures`; a menu-bar icon appears and a slim capsule at the right edge)
+1. Expect a narrow glass capsule at the screen edge, no Dock icon, no focus taken from the app you were using. Menu-bar item: choose Left edge and back.
+2. Press ⌃⌥Space. Expect the capsule to grow into a pane; search field focused; rows grouped Pinned (two) and Open. Look at: corner shape during the move, whether text ever looks stretched, readability over a bright window and a busy wallpaper.
+3. Press ⌃⌥Space again part-way through opening, several times quickly. Expect it to reverse smoothly with no flash and no leftover window.
+4. Type `release`: two rows both titled "Release plan", each showing its profile (Personal, Work). Clear with Esc (first Esc clears search; next closes).
+5. ↑/↓ then Return on each sample and note the message: Release plan (either) closes the pane; Design review is open in two tabs and asks which; its second tab says the tab was closed; Quarterly numbers says no answer and "may have opened"; Unlabelled chat says the tab shows something else; Last week's draft says the account changed. Pinned "Old research thread" offers recovery; "Archived notes" says Chrome is not connected.
+6. ⌘P pins/unpins the selected row, ⌘⌫ hides it (a "Show n hidden" link appears), right-click shows the same plus "Open in Claude app". Relaunch: in fixture mode pins are not kept; in live mode they are.
+7. Click a dot in the capsule: a single-tab chat opens directly; an ambiguous one opens the pane.
+8. System Settings, Accessibility: turn on Reduce Motion (expect a fade or jump, no spring) then Reduce Transparency (expect an opaque pane). Turn both off again.
+9. Click the desktop or another window while open: expect the pane to collapse. With the capsule showing, click the desktop right beside it: expect the click to reach the desktop.
+10. If you have two displays or a full-screen app: invoke the shortcut over each; the capsule should be on the screen you used it from and stay usable.
+11. VoiceOver (⌘F5): arrow through the rows; each should read title, provider, profile, status, and whether it is pinned or not open.
+
+**B. Mac panel live, with real Chrome** (quit sample mode; run `Porter` with no flag; leave the Chrome extension from TEST-001 installed)
+1. Expect your open Claude chats from both profiles, with profile names.
+2. Return on one: Chrome comes forward on exactly that tab, the pane collapses. Repeat for the other profile.
+3. Pin one, close its tab: it stays listed as "not open" with recovery. Reopen the chat: it returns as open and pinned.
+4. Right-click a row, "Open in Claude app" (or ⌘O) with the Claude desktop app installed. Record: does it open that chat, which account does the app show, what if the chat belongs to the other account? Expect the footer to say Porter cannot see which account.
+5. Quit Chrome: expect "browser not connected" on pins and an empty or reduced list. Reopen: routes return.
+
+**C. Context packet**
+1. Menu-bar icon, "Open context packet…", choose `packages/contracts/fixtures/valid/context-packet/atlas-capture-with-memento-sources.json`.
+2. Expect a review: title, one current source checked, one stale source unchecked with a warning, character count, destination empty (its requested chat is not open) with a "Choose a different chat…" menu.
+3. Press Copy, paste into TextEdit: expect the title, instruction, task and the single included source with its citation and revision, and nothing from the stale one. Nothing should have been sent or typed anywhere.
+4. Tick the stale source: expect a warning that it is included. Choose a destination and press "Copy and open chat": expect the chat to open and the text to be on the clipboard.
+5. Try a file that is not a packet: expect a refusal message and no review.
+
+**D. iPhone app** (open `apps/ios/Porter.xcodeproj` in Xcode, run on an iPhone simulator)
+1. Expect a "Sample data" banner, Pinned and Open sections, status in words, a dashed marker for anything not live. Tap a row: details sheet with a note that the account on the phone may differ and no open button (sample links go nowhere).
+2. Settings, Accessibility, larger text at the maximum: expect no clipped rows. Rotate to landscape. Search for "release".
+
+**E. Other provider and diagnostics**
+1. In Chrome, extension Options: Claude and ChatGPT are listed; ChatGPT is marked untested. Allow ChatGPT, open a `chatgpt.com/c/…` chat: record whether it appears with a sensible title and activates correctly. Remove the permission afterwards if you prefer.
+2. Rename a Claude chat. In `chrome://extensions`, open Porter's service worker console: if the tab drops out of the list, a `[porter] tab N left the list but still exists` line appears with the page status and an address shape. Copy it to me (it contains no chat ID).
+
+Record, for each step that differs: what you saw, macOS and Chrome versions, and whether it was dark or light mode.
+
+## Testing strategy
+
+Keep the status reducer, identity matching, protocol validation, and preference merge in deterministic unit tests. Use DOM fixtures with representative streaming, idle, pending-question, navigation, logout, and layout-change states for each adapter. Use live integration tests for actual browser/native focus and real-device tests for mobile behavior. A mock cannot prove cross-profile activation, permissions, code signing, background sync, or glass behavior.
+
+## Acceptance matrix
+
+| Test ID | Scenario | Expected result | Requirements |
+| --- | --- | --- | --- |
+| TEST-001 | Two profiles, identical chat titles, multiple windows | Intended tab and window activated; no cross-profile confusion | REQ-004, REQ-005, REQ-006 |
+| TEST-002 | Close/move/navigate target after selection | Current locator resolved or typed failure; no wrong tab activation | REQ-004 |
+| TEST-003 | Sign out/change provider account | Previous identity invalidated or capability limited; no false account assertion | REQ-006 |
+| TEST-004 | Disconnect browser, freeze/discard tab | Stale/unknown visible with age; no completed-task claim | REQ-007 |
+| TEST-005 | Restart browser with changed tab IDs | Snapshot reconciles; old locators not reused as identities | REQ-010 |
+| TEST-006 | Adapter selector no longer matches | Navigation retained if valid; status becomes unknown | REQ-007 |
+| TEST-007 | Fresh response then source/source-view acknowledgment | Unread behavior follows evidence and local acknowledgment rules | REQ-007 |
+| TEST-008 | Multiple displays, full-screen Space, Dock edges | Panel remains accessible, bounded, and correctly positioned | REQ-001 |
+| TEST-009 | Open, reverse mid-transition, reduce motion/transparency | No flash, stale hit region, stretched text, or inaccessible control | REQ-001, REQ-008 |
+| TEST-010 | VoiceOver and keyboard-only navigation | All core actions and status meanings available | REQ-008 |
+| TEST-011 | Malformed IPC, forged source, unknown version | Rejected safely; existing registry remains usable | REQ-012 |
+| TEST-012 | Uninstall/disable extension and deny optional permissions | Explain reduced functionality; no repeated permission loop | REQ-011, REQ-012 |
+| TEST-013 | Native deep link with correct/wrong account | Correct chat where supported; limitation surfaced where not | REQ-009 |
+| TEST-014 | Phone refresh, Mac asleep, network unavailable | Cached list with last update; no live status claim | REQ-013 |
+| TEST-015 | Phone has different provider account | Original app owns login; no silent account substitution | REQ-014 |
+| TEST-016 | Revoke device, delete source, delayed old update | Revocation/tombstone policy holds; old data cannot resurrect | REQ-015 |
+| TEST-017 | Preview off/on/off, expired excerpt | No collection when off; cache deletion verified | REQ-016 |
+| TEST-018 | Send wrong revision, acknowledgment loss, duplicate request | Reject changed target; uncertain outcome remains uncertain | REQ-017 |
+| TEST-019 | Summary source changes or contains injected instructions | Invalidate old summary; source text cannot trigger actions | REQ-018 |
+| TEST-020 | New agent starts with this folder only | Finds current task, constraints, decisions, and actual evidence | REQ-019 |
+| TEST-021 | Future MCP tries path traversal/write through read tools | Access confined to allowlisted docs; read tools cannot mutate | REQ-020 |
+
+## Compatibility evidence format
+
+For each integration record exact OS version, app/browser version, extension/adapter version, account/profile setup using non-sensitive labels, tested capabilities, date, test IDs, and result. Label unsupported and not-tested separately. Do not claim “supports ChatGPT desktop” based solely on a working web link or provider SDK.
+
+## Proposed build verification after scaffold
+
+Native core: `swift test --package-path packages/ConversationCore` after that package exists. Mac app: use `xcodebuild -list` to discover the real project/scheme, then record the actual build/test invocation. Extension: create and document real package scripts for typecheck, unit tests, and bundling; do not run fictional npm scripts. iPhone: simulator layout/unit tests plus a physical device for cloud sign-in, mobile links, and background behavior.
+
+Continuous integration can validate docs, protocol fixtures, core logic, and extension tests. macOS runners are required for native builds. Physical-device/manual evidence remains part of R2 readiness.
+
+## R1 release gate
+
+- All P0 R1 task acceptance criteria and TEST-001 through TEST-013 pass or an explicit scope limitation removes the affected claim.
+- No unresolved wrong-destination defect.
+- Packaging validated on a clean user account, including native helper registration and browser extension onboarding.
+- Measured performance budgets and accessibility review captured.
+- Signing/notarization verified with the actual distribution artifact.
+- Adapter compatibility table, limitations, and privacy text match tested behavior.
+- Update/rollback paths documented and checked before automatic updates are offered.
+
+## R2 release gate
+
+R1 gate plus TEST-014 through TEST-016 on a physical iPhone, selected sync transport verification, cloud sign-out/deletion behavior, clear last-updated UX, and TestFlight install validation. Background refresh is best effort; foreground convergence is the defined baseline unless stronger delivery evidence is obtained.
+
+## Release record and rollback
+
+Record version, source commit, toolchain, supported OS versions, adapter versions, artifact checksum, test evidence, migrations, known limitations, and rollback instructions. Source can be rolled back independently only when data migrations remain compatible. Back up test fixtures before migration tests; never claim downgrading a database is automatically safe.
+
+## Evidence hygiene
+
+Store reproducible steps and sanitized excerpts. Screenshots may contain private chat titles; use fixtures or redact them. Do not store credentials or source chat content in logs. Mark not-run checks explicitly and name the environment limitation.

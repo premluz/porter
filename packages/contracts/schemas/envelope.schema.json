@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.porter.invalid/v1/envelope.schema.json",
+  "title": "Local bridge envelope",
+  "description": "Connector-to-registry message wrapper. The 64 KiB size limit is enforced before decoding, outside this schema.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["protocolVersion", "messageId", "connectorId", "connectionEpoch", "sequence", "type", "sentAt", "payload"],
+  "properties": {
+    "protocolVersion": { "$ref": "common.schema.json#/$defs/protocolVersion" },
+    "messageId": { "$ref": "common.schema.json#/$defs/uuid" },
+    "connectorId": { "$ref": "common.schema.json#/$defs/opaqueId" },
+    "connectionEpoch": { "$ref": "common.schema.json#/$defs/opaqueId" },
+    "sequence": { "$ref": "common.schema.json#/$defs/sequence" },
+    "type": {
+      "enum": ["hello", "hello.ack", "inventory.snapshot", "destination.upsert", "destination.remove", "status.observed", "heartbeat", "snapshot.request", "activate.request", "activate.result", "error"]
+    },
+    "sentAt": { "$ref": "common.schema.json#/$defs/timestamp" },
+    "payload": { "type": "object" }
+  }
+}

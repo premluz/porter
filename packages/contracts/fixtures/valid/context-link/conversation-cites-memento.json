@@ -1,0 +1,17 @@
+{
+  "id": "6f1c2a3e-9999-4a1a-8a1a-000000000002",
+  "from": {
+    "contract": "suite-ref/1",
+    "type": "porter.conversation",
+    "id": "6f1c2a3e-2222-4a1a-8a1a-000000000001"
+  },
+  "to": {
+    "contract": "suite-ref/1",
+    "type": "memento.source",
+    "id": "61228bfb-5c85-4d0a-a3fe-640dc751ce29",
+    "revision": "b637ea0a-4ee9-42f1-9152-891e6a8c8f7f"
+  },
+  "relation": "citesSource",
+  "origin": "userLinked",
+  "createdAt": "2026-10-08T07:00:00Z"
+}
