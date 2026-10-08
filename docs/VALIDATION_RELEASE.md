@@ -75,7 +75,7 @@ Everything above is automated. This batch covers what automation cannot: appeara
 
 **A. Mac panel with sample data** (`Porter --fixtures`; a menu-bar icon appears and a slim capsule at the right edge)
 1. Expect a narrow glass capsule at the screen edge, no Dock icon, no focus taken from the app you were using. Menu-bar item: choose Left edge and back.
-2. Press ⌃⌥Space. Expect the capsule to grow into a pane; search field focused; rows grouped Pinned (two) and Open. Look at: corner shape during the move, whether text ever looks stretched, readability over a bright window and a busy wallpaper.
+2. Press ⌃⌥Space. Expect the glass to morph from the capsule into the pane with one small overshoot and settle, then the search field and rows to fade in one after another (first ~8 rows). Search field focused; rows grouped Pinned (two) and Open. Look at: smoothness (the window is no longer resized frame by frame, so jitter should be gone), whether the bounce feels right or too much, corner shape during the move, readability over a bright window and a busy wallpaper. Scrollbar: it must not flash while opening, closing or resizing, and should appear only while you scroll (with a mouse wheel rather than a trackpad it may not appear at all; tell me if so).
 3. Press ⌃⌥Space again part-way through opening, several times quickly. Expect it to reverse smoothly with no flash and no leftover window.
 4. Type `release`: two rows both titled "Release plan", each showing its profile (Personal, Work). Clear with Esc (first Esc clears search; next closes).
 5. ↑/↓ then Return on each sample and note the message: Release plan (either) closes the pane; Design review is open in two tabs and asks which; its second tab says the tab was closed; Quarterly numbers says no answer and "may have opened"; Unlabelled chat says the tab shows something else; Last week's draft says the account changed. Pinned "Old research thread" offers recovery; "Archived notes" says Chrome is not connected.
@@ -107,6 +107,14 @@ Everything above is automated. This batch covers what automation cannot: appeara
 **E. Other provider and diagnostics**
 1. In Chrome, extension Options: Claude and ChatGPT are listed; ChatGPT is marked untested. Allow ChatGPT, open a `chatgpt.com/c/…` chat: record whether it appears with a sensible title and activates correctly. Remove the permission afterwards if you prefer.
 2. Rename a Claude chat. In `chrome://extensions`, open Porter's service worker console: if the tab drops out of the list, a `[porter] tab N left the list but still exists` line appears with the page status and an address shape. Copy it to me (it contains no chat ID).
+
+**F. VS Code probe** (needs VS Code 1.94 or later; you have 1.140). Open at least two VS Code windows on different folders, each with a Claude Code tab or two, and give two tabs the same title if you can.
+1. `extensions/vscode/scripts/link-dev.sh link`, then in each VS Code window run "Developer: Reload Window".
+2. In one window: Command Palette, "Porter: List Claude Code tabs". Expect the Output panel ("Porter probe") to list that window's Claude Code tabs with group, position and which is active. Record: any Claude Code tab missing, or other tabs wrongly listed. If the list is empty while a tab is open, tell me; the type name is the first thing to check.
+3. "Porter: Test bringing a Claude Code tab forward": pick a tab, then switch to a different tab within 5 seconds. Expect the output line to end `-> worked`. Record any other verdict: alreadyActive (you did not switch), didNotChange, wrongTab, unreachable (more than 8 groups or 9 tabs).
+4. From Terminal, with VS Code focused on window A: `open "vscode://porter-dev.porter-vscode-probe/focus?label=<exact tab title, URL-encoded>"`. Expect that tab to come forward. Then focus window B and send the same link: record which window receives it and what the output says. Do the same with VS Code in the background and another app in front (does VS Code come forward, and which window?).
+5. A tab title that two tabs share must produce "2 tabs here are titled …" and open nothing.
+6. When done: `extensions/vscode/scripts/link-dev.sh unlink` and reload windows.
 
 Record, for each step that differs: what you saw, macOS and Chrome versions, and whether it was dark or light mode.
 

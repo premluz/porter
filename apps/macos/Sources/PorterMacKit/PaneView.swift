@@ -7,17 +7,23 @@ struct PaneView: View {
     @Bindable var model: AppModel
     let close: () -> Void
     @FocusState private var searchFocused: Bool
+    @State private var isScrolling = false
+    /// Flips on the pane's first appearance, which is what starts the staggered fade-in.
+    @State private var revealed = false
 
     var body: some View {
         VStack(spacing: 0) {
-            searchField
+            searchField.reveal(revealed, order: 0)
             if let shown = model.feedback { FeedbackView(model: model, shown: shown) }
             content
-            footer
+            footer.reveal(revealed, order: Tokens.Motion.staggerLimit)
         }
         .frame(width: Tokens.Size.paneWidth)
         .onChange(of: model.focusRequest) { searchFocused = true }
-        .onAppear { searchFocused = true }
+        .onAppear {
+            searchFocused = true
+            revealed = true
+        }
     }
 
     private var searchField: some View {
@@ -51,12 +57,16 @@ struct PaneView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 0) {
-                    section("Pinned", model.snapshot.pinned)
-                    section("Open", model.snapshot.open)
+                    section("Pinned", model.snapshot.pinned, firstOrder: 1)
+                    section("Open", model.snapshot.open, firstOrder: 1 + model.snapshot.pinned.count)
                 }
                 .padding(.horizontal, Tokens.Space.s)
                 .background(Palette.contentBacking)
             }
+            // The bar belongs to scrolling, not to layout: it stays hidden during resize and
+            // appears only while a scroll is under way.
+            .scrollIndicators(isScrolling ? .automatic : .hidden)
+            .onScrollPhaseChange { _, phase in isScrolling = phase.isScrolling }
             .onChange(of: model.selection.selectedId) { _, id in
                 if let id { proxy.scrollTo(id) }
             }
@@ -64,17 +74,18 @@ struct PaneView: View {
     }
 
     @ViewBuilder
-    private func section(_ title: String, _ items: [PanelItem]) -> some View {
+    private func section(_ title: String, _ items: [PanelItem], firstOrder: Int) -> some View {
         if !items.isEmpty {
             Text(title).font(.caption).textCase(.uppercase).foregroundStyle(Palette.textSecondary)
                 .frame(height: Tokens.Size.sectionHeaderHeight, alignment: .bottom)
                 .padding(.horizontal, Tokens.Space.m)
                 .accessibilityAddTraits(.isHeader)
-            ForEach(items) { item in
+            ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
                 ItemRowView(item: item, isSelected: item.id == model.selection.selectedId) {
                     model.select(item)
                     Task { await submit() }
                 }
+                .reveal(revealed, order: firstOrder + index)
                 .id(item.id)
                 .contextMenu { menu(for: item) }
             }

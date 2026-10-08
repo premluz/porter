@@ -1,0 +1,38 @@
+{
+  "name": "porter-vscode-probe",
+  "displayName": "Porter VS Code probe (development)",
+  "description": "Lists Claude Code editor tabs and measures which methods can bring one forward. Sends nothing anywhere.",
+  "version": "0.0.1",
+  "publisher": "porter-dev",
+  "private": true,
+  "license": "UNLICENSED",
+  "engines": {
+    "vscode": "^1.94.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "porter.probeTabs",
+        "title": "Porter: List Claude Code tabs"
+      },
+      {
+        "command": "porter.probeFocus",
+        "title": "Porter: Test bringing a Claude Code tab forward"
+      }
+    ]
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "build": "tsc -p tsconfig.json",
+    "test": "tsc -p tsconfig.test.json && node --test \"dist-test/tests/*.test.js\""
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "@types/vscode": "1.94.0",
+    "typescript": "^7.0.2"
+  }
+}

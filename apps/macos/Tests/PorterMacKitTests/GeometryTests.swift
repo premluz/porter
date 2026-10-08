@@ -77,33 +77,25 @@ struct GeometryTests {
         }
     }
 
-    @Test("progress follows the live width, and corner and opacity curves are monotonic and bounded")
-    func curves() {
-        #expect(EdgeGeometry.progress(width: 0) == 0)
-        #expect(EdgeGeometry.progress(width: Tokens.Size.capsuleWidth) == 0)
-        #expect(EdgeGeometry.progress(width: Tokens.Size.paneWidth) == 1)
-        #expect(EdgeGeometry.progress(width: 10_000) == 1)
-        var previousCorner = EdgeGeometry.cornerRadius(progress: 0)
-        var previousPane: CGFloat = 0
-        var previousCapsule: CGFloat = 1
-        for step in 1...20 {
-            let progress = CGFloat(step) / 20
-            let corner = EdgeGeometry.cornerRadius(progress: progress)
-            #expect(corner >= previousCorner)
-            #expect(EdgeGeometry.paneContentOpacity(progress: progress) >= previousPane)
-            #expect(EdgeGeometry.capsuleContentOpacity(progress: progress) <= previousCapsule)
-            previousCorner = corner
-            previousPane = EdgeGeometry.paneContentOpacity(progress: progress)
-            previousCapsule = EdgeGeometry.capsuleContentOpacity(progress: progress)
-        }
-        #expect(EdgeGeometry.cornerRadius(progress: 1) == Tokens.Size.paneCorner)
+    @Test("a screen rectangle becomes top-left window coordinates, so SwiftUI places it where AppKit does")
+    func localRects() {
+        let window = CGRect(x: 1000, y: 100, width: 360, height: 600)
+        let capsule = CGRect(x: 1320, y: 300, width: 40, height: 200)
+        let local = EdgeGeometry.localRect(of: capsule, in: window)
+        #expect(local == CGRect(x: 320, y: 200, width: 40, height: 200))
+        #expect(EdgeGeometry.localRect(of: window, in: window) == CGRect(x: 0, y: 0, width: 360, height: 600))
+        #expect(EdgeGeometry.localRect(of: capsule, in: capsule) == CGRect(x: 0, y: 0, width: 40, height: 200))
     }
 
-    @Test("pane text appears only after enough width exists, so it is never shown stretched")
-    func contentRevealsLate() {
-        #expect(EdgeGeometry.paneContentOpacity(progress: 0.3) == 0)
-        #expect(EdgeGeometry.paneContentOpacity(progress: 1) == 1)
-        #expect(EdgeGeometry.capsuleContentOpacity(progress: 1) == 0)
+    @Test("the capsule sits inside the pane window at the same screen position, so opening does not move it")
+    func capsuleInsidePaneWindow() {
+        for edge in PanelEdge.allCases {
+            let capsule = EdgeGeometry.capsuleFrame(in: screen, edge: edge, anchor: 0.4, dotCount: 4, hasOverflow: false)
+            let pane = EdgeGeometry.paneFrame(in: screen, edge: edge, anchor: 0.4, rowCount: 6, sectionCount: 2)
+            let local = EdgeGeometry.localRect(of: capsule, in: pane)
+            #expect(CGRect(origin: .zero, size: pane.size).contains(local), "\(edge)")
+            #expect(local.minX + pane.minX == capsule.minX && pane.maxY - local.maxY == capsule.minY)
+        }
     }
 }
 

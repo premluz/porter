@@ -19,3 +19,7 @@ extensions/chrome/dist-test/
 *.sqlite
 *.sqlite-journal
 *.log
+
+# VS Code probe output
+extensions/vscode/dist/
+extensions/vscode/dist-test/

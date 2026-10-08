@@ -28,22 +28,10 @@ public enum EdgeGeometry {
         return frame(width: Tokens.Size.paneWidth, height: height, in: screen, edge: edge, anchor: anchor)
     }
 
-    /// 0 at the capsule, 1 at the pane, from the live window width during the animation.
-    public static func progress(width: CGFloat) -> CGFloat {
-        let span = Tokens.Size.paneWidth - Tokens.Size.capsuleWidth
-        return min(max((width - Tokens.Size.capsuleWidth) / span, 0), 1)
-    }
-
-    public static func cornerRadius(progress: CGFloat) -> CGFloat {
-        Tokens.Size.capsuleCorner + (Tokens.Size.paneCorner - Tokens.Size.capsuleCorner) * progress
-    }
-
-    public static func capsuleContentOpacity(progress: CGFloat) -> CGFloat {
-        min(max(1 - progress / Tokens.Motion.contentRevealStart, 0), 1)
-    }
-
-    public static func paneContentOpacity(progress: CGFloat) -> CGFloat {
-        min(max((progress - Tokens.Motion.contentRevealStart) / (1 - Tokens.Motion.contentRevealStart), 0), 1)
+    /// A screen-space rectangle expressed in a window's own top-left coordinates, which is how SwiftUI
+    /// places things. AppKit measures from the bottom, so the vertical axis is flipped.
+    public static func localRect(of rect: CGRect, in window: CGRect) -> CGRect {
+        CGRect(x: rect.minX - window.minX, y: window.maxY - rect.maxY, width: rect.width, height: rect.height)
     }
 
     /// Anchor is the vertical centre as a fraction of the visible screen height, from the top.

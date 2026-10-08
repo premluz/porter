@@ -88,6 +88,18 @@ Provides the tool concept for retrieval/actions. Our `project_memory.*` names an
 
 Documents the `claude://` scheme for macOS, Windows and Linux: `claude://claude.ai/chat/{conversation-id}` opens an existing chat, `claude://claude.ai/new` (optional `q` prefill) starts one, and a missing or invalid ID opens the recent chats list. The article names no minimum app version and states no account rules. Porter uses only the existing-chat form; the prefill form puts text into a prompt and is out of scope for R1.
 
+## S13 — Claude Code in VS Code
+
+[Use Claude Code in VS Code](https://code.claude.com/docs/en/vs-code) and [Launch sessions from links](https://code.claude.com/docs/en/deep-links), accessed 2026-10-08.
+
+The extension registers `vscode://anthropic.claude-code/open` with optional `prompt` (pre-fills, never sent) and `session` (resume a session ID). The session must belong to the workspace open in the VS Code window that receives the link, which is whichever window is focused; if it is not found, a fresh conversation starts instead; if it is already open in a tab, that tab is focused. A separate `claude-cli://open` scheme opens a terminal session. No page documents a way to list open sessions or to target a specific VS Code window.
+
+## S14 — Claude Code authentication and credential use
+
+[Legal and compliance](https://code.claude.com/docs/en/legal-and-compliance), accessed 2026-10-08.
+
+Subscription OAuth is intended for Anthropic's own applications. Developers building products must use API keys; Anthropic "does not permit third-party developers to offer Claude.ai login into their own applications, or to route requests through Free, Pro, or Max plan credentials", and developers "may not collect, store, or intermediate Claude.ai credentials or session tokens". This rules out any Porter feature that signs in to a Claude account or reuses its tokens to list sessions. No documented API lists a user's claude.ai conversations or local Claude Code sessions.
+
 ## Product evidence
 
 The user supplied a product analysis of One and reference screenshots, then explicitly narrowed scope during the 2026-10-08 conversation. Those messages establish intent, not proof of any integration. This pack records the relevant requirements in memory/FACTS.md without copying private conversations or embedding the reference product's marketing claims as our own capabilities.

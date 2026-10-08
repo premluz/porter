@@ -34,10 +34,17 @@ public enum Tokens {
     }
 
     public enum Motion {
-        /// Within the 220–320 ms range in the UX document.
-        public static let duration: TimeInterval = 0.28
-        public static let hoverLabelDelay: TimeInterval = 0.5
-        /// Pane content appears only once this much of the width exists, so text never stretches.
-        public static let contentRevealStart: CGFloat = 0.55
+        /// One settle-bounce: the shape grows slightly past its size, then rests.
+        public static let springDuration: TimeInterval = 0.42
+        public static let springBounce: Double = 0.3
+        /// Reduce Motion: a brief fade with no overshoot.
+        public static let reducedDuration: TimeInterval = 0.12
+        /// Content waits for the shape to have grown, then rises into place one row after another.
+        public static let contentDelay: TimeInterval = 0.1
+        public static let contentFade: TimeInterval = 0.22
+        public static let staggerStep: TimeInterval = 0.03
+        public static let staggerLimit = 8
+        public static let rowRise: CGFloat = 6
+        public static let hideFade: TimeInterval = 0.1
     }
 }

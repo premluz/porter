@@ -45,9 +45,14 @@ public enum SelfTest {
         check("capsule is a narrow shape, not full height", capsule.width == Tokens.Size.capsuleWidth && capsule.height < pane.height)
         controller.applyInstantly(expanded: true)
         check("window matches pane geometry (window \(controller.panel.frame), expected \(pane))", controller.panel.frame == pane)
+        let local = controller.presentation.capsule
+        check("capsule keeps its screen position inside the pane window",
+              local.minX + pane.minX == capsule.minX && pane.maxY - local.maxY == capsule.minY)
+        check("presentation shows the pane when expanded", controller.presentation.isExpanded)
         check("panel is non-activating and floats", controller.panel.styleMask.contains(.nonactivatingPanel))
         controller.applyInstantly(expanded: false)
         check("collapsing returns to the capsule frame (window \(controller.panel.frame), expected \(capsule))", controller.panel.frame == capsule)
+        check("presentation shows the capsule when collapsed", !controller.presentation.isExpanded)
         check("collapsed panel cannot take keyboard focus", !controller.panel.canBecomeKey)
         controller.panel.contentView?.layoutSubtreeIfNeeded()
         check("SwiftUI content lays out", (controller.panel.contentView?.subviews.count ?? 0) > 0)

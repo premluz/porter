@@ -157,6 +157,20 @@ Evidence classes: `user_requirement`, `source_documentation`, `verified_test`. P
 - Tags: area/ux, area/macos, area/ios, phase/r1.
 - Review trigger: the manual batch in docs/VALIDATION_RELEASE.md.
 
+## FACT-018 — VS Code Claude Code chats are not visible to Porter and the documented link is weak
+
+- Class: source_documentation (accessed 2026-10-08); local inspection of installed extensions.
+- Statement: Porter's connector sees only browser tabs, so Claude Code conversations in VS Code do not appear. The documented `vscode://anthropic.claude-code/open?session=<id>` link resumes a session only if it belongs to the workspace of whichever VS Code window is focused, and otherwise silently starts a fresh conversation ([S13](../docs/SOURCES.md)). Nothing documented lists open sessions. Session IDs exist as file names under `~/.claude/projects/<project>/`, but their titles live inside the conversation files. Installed here: `anthropic.claude-code` and `openai.chatgpt` VS Code extensions.
+- Implication: opening by this link can land on a new empty chat instead of the right one, which Porter must say before offering it. Listing sessions from files would need an explicit decision about reading metadata versus conversation text.
+- Tags: area/macos, area/identity, area/security.
+
+## FACT-019 — No account-level way to list sessions; hosts are known locally
+
+- Class: source_documentation (accessed 2026-10-08) plus local inspection of names and structure only.
+- Statement: Anthropic's terms forbid a third-party tool from offering Claude.ai login or collecting, storing or relaying Claude.ai credentials or session tokens ([S14](../docs/SOURCES.md)); no documented API lists claude.ai conversations or local Claude Code sessions, so an account-wide view is not available to Porter. A Claude Code session does know its host: its environment carries `CLAUDE_CODE_ENTRYPOINT` (here `claude-vscode`) and its session ID, and each VS Code window leaves a file under `~/.claude/ide/` naming the IDE, process ID and workspace folders next to a websocket auth token. Those files and `~/.claude/sessions/*.key` hold tokens, are undocumented internals, and about two thirds of the lock files seen were stale. Porter does not read them. The Claude Code editor tab is a webview of type `claudeVSCodePanel`, which the VS Code tab API can list.
+- Implication: the VS Code route has to come from a companion extension using public VS Code APIs, not from Anthropic's account or from Claude Code's private files. Whether a specific tab can be brought forward externally is unproven and is measured by the probe.
+- Tags: area/security, area/identity, area/macos.
+
 ## Adding a fact
 
 Include statement, evidence class, source/test reference, observed date, tags, and review trigger if volatile. A failed experiment can be a fact when its exact environment and outcome are recorded. Do not transform a plausible architectural assumption into a tested capability.

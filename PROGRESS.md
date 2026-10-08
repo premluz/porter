@@ -119,6 +119,28 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Corrections: a sources entry was first numbered S11 in error (S11 already existed); it is S12, and the ChatGPT note was folded into S09.
 - Next action: Prem runs the manual batch in docs/VALIDATION_RELEASE.md and reports what differs.
 
+## LOG-20261008-009 — Panel feedback: smoother morph, bounce, stagger, scrollbar
+
+- Date: 2026-10-08.
+- Author: assistant; feedback from Prem after running the sample panel: aesthetics and glass look good, opening felt slightly jittery, scrollbar flashed during resize and hide, and a Spotlight-like bounce and staggered fade-in were requested, using a native liquid transition if one applies.
+- Tasks: TASK-014, TASK-023.
+- Changed: the window is now set once to the pane size when opening (and back to the capsule size when fully closed) and only the glass shape animates inside it, using a spring with one bounce and the SDK's `glassEffectID` / `matchedGeometry` glass transition; this replaces per-frame window resizing. Search, rows and footer fade and lift in with a short stagger. The list's scroll indicators are hidden except while a scroll is in progress. Reduce Motion uses a short fade with no bounce; Reduce Transparency uses an opaque surface. Removed the old progress-based curves and their tests. Timing values live in `Tokens.Motion`.
+- Verified (automated): Mac app 37 tests; `Porter --self-test` passes, including that the capsule keeps its screen position inside the pane window.
+- Not verified: how it now looks and feels, whether the glass morph renders as intended, whether the bounce is right, whether the scrollbar stays hidden when it should, and the brief period during a move when the window is pane-sized (so a transparent area is present for a fraction of a second). Previous behavior is in commit 92b0dbf if this should be reverted.
+- Next action: Prem re-runs manual batch step A2 and A3.
+
+## LOG-20261008-010 — VS Code probe built; account-wide route ruled out
+
+- Date: 2026-10-08.
+- Author: assistant; Prem chose a VS Code companion extension (Q-020) and asked whether an account API or login could list all sessions and where they run.
+- Tasks: TASK-015.
+- Tags: area/macos, area/security, area/identity, phase/r1.
+- Answers recorded: Anthropic's terms forbid Porter from offering Claude.ai login or storing or relaying Claude.ai credentials or session tokens, and no documented API lists claude.ai conversations or local Claude Code sessions (S14, FACT-019). A Claude Code session does know its host (its environment names the entry point, here `claude-vscode`), and each VS Code window leaves a lock file naming the IDE, process and workspace beside a websocket token; those are undocumented internals holding tokens, mostly stale, and Porter does not read them.
+- Changed: `extensions/vscode`, a development-only extension that (1) lists Claude Code editor tabs in its window by webview type `claudeVSCodePanel`, (2) tries to bring a chosen tab forward with built-in editor-group and editor-index commands and judges the result from VS Code's own tab API, and (3) registers `vscode://porter-dev.porter-vscode-probe/focus?label=...` so an outside link can trigger the same. It sends nothing anywhere. `scripts/link-dev.sh link|unlink` links it into `~/.vscode/extensions` without packaging.
+- Verified: 8 tests of the pure logic pass (tab detection, identical titles, position limits, verdict rules, link parsing); the extension typechecks and builds; the link script was run against a temporary folder only.
+- Not verified: everything that needs a running VS Code. Whether the tab type name is right, whether position commands reach the tab, whether an outside link reaches the right window when several are open, and whether the OpenAI extension's chats can be seen the same way.
+- Next action: Prem runs the probe (manual batch F); the result decides the shape of the real companion.
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.
