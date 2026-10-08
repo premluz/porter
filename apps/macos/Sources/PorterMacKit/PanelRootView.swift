@@ -15,12 +15,15 @@ struct PanelRootView: View {
 
     var body: some View {
         TimelineView(.animation(paused: !presentation.isMoving)) { context in
-            frame(progress: presentation.motion.progress(at: context.date))
+            frame(
+                progress: presentation.motion.progress(at: context.date),
+                content: presentation.motion.contentProgress(at: context.date)
+            )
         }
     }
 
     @ViewBuilder
-    private func frame(progress: Double) -> some View {
+    private func frame(progress: Double, content: Double) -> some View {
         let rect = PanelPhases.lerp(presentation.capsule, presentation.pane, progress)
         let shape = RoundedRectangle(cornerRadius: PanelPhases.cornerRadius(progress: progress), style: .continuous)
         let anchor: Alignment = presentation.edge == .right ? .trailing : .leading
@@ -34,13 +37,14 @@ struct PanelRootView: View {
             }
             // Always built, so opening only has to fade it in: creating it at the first frame of the move
             // cost about 75 ms and showed as a stutter. Hidden from touch and VoiceOver while collapsed.
-            PaneView(model: model, progress: progress, close: close)
-                .opacity(PanelPhases.paneOpacity(progress: progress))
+            PaneView(model: model, progress: content, close: close)
+                .opacity(PanelPhases.paneOpacity(progress: content))
                 .allowsHitTesting(progress > 0.9)
                 .accessibilityHidden(progress < 0.5)
         }
         .frame(width: rect.width, height: rect.height, alignment: anchor)
-        .background { surface(shape) }
+        // A new generation rebuilds the glass, which is how its edge is redrawn after the window has resized.
+        .background { surface(shape).id(presentation.surfaceGeneration) }
         .clipShape(shape)
         .offset(x: rect.minX, y: rect.minY)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)

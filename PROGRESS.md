@@ -206,6 +206,18 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Not verified: the square outline is gone (the cause is inferred, not photographed); how the motion feels; behavior with many rows; Reduce Motion and Reduce Transparency visually.
 - Next action: Prem re-runs batch A2 and A3 and says whether the outline and the abruptness are fixed.
 
+## LOG-20261008-016 — Content fades in last; glass edge rebuilt after the window resizes
+
+- Date: 2026-10-08.
+- Author: assistant; Prem asked for the inner items to be staggered with easing so they are fully visible only toward the end, and reported that after a collapse the glass border disappeared on the last frame and returned only after pressing and dragging the panel.
+- Tasks: TASK-014, TASK-023.
+- Tags: area/macos, area/ux, phase/r1.
+- Finding: the spring takes the shape to its full size in about a third of the move and then bounces, so any fade tied to the shape's progress is complete early. The content needs its own clock.
+- Changed: `MotionState.contentProgress` runs linearly over the move (closing runs 0.4× as long), rows start at 0.25 and follow one another by 0.035 with a 0.45 smoothstep each, so the last row is complete at about 0.98 of the move. Reversal continues from the current value. For the border: the likely cause is that the glass draws its edge when built and nothing redrew it after the window shrank and resigned key with the timeline paused (dragging forced a redraw). The glass surface is now rebuilt (`refreshSurface`, new identity) one turn after the window has settled, on collapse and on open.
+- Verified: Mac app 52 tests; `--self-test` passes; `--probe-animation` 22 distinct sizes, settles at 360 pt.
+- Not verified: that the border now stays (a cause inferred from the symptom, not reproduced or photographed); how the new fade feels.
+- Next action: Prem re-runs batch A2 and A3, checking the border after collapse and the fade timing.
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.

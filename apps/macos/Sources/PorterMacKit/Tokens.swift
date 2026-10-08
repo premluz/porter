@@ -39,12 +39,15 @@ public enum Tokens {
         public static let springBounce: Double = 0.3
         /// Reduce Motion: a brief fade with no overshoot.
         public static let reducedDuration: TimeInterval = 0.12
-        /// Fractions of the move: the capsule's dots are gone by `capsuleFadeEnd`; the pane's content starts
-        /// at `contentRevealStart` and each row follows the one before by `staggerStep`.
+        /// The capsule's dots are gone by `capsuleFadeEnd` of the shape's progress. The content has its own
+        /// timeline: it starts at `contentRevealStart`, each row follows the one before by `staggerStep`, and
+        /// the last row is fully visible only at the very end of the move.
         public static let capsuleFadeEnd = 0.3
-        public static let contentRevealStart = 0.3
-        public static let contentRevealSpan = 0.35
-        public static let staggerStep = 0.03
+        public static let contentRevealStart = 0.25
+        public static let contentRevealSpan = 0.45
+        public static let staggerStep = 0.035
+        /// Closing runs the content's timeline this much faster than opening.
+        public static let contentCloseFraction = 0.4
         public static let staggerLimit = 8
         public static let rowRise: CGFloat = 6
         /// Extra window around the pane while it opens, so the overshoot of the bounce is not clipped.

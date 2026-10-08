@@ -146,4 +146,32 @@ struct PhaseTests {
         #expect(PanelPhases.rowOffset(progress: 0, order: 0) == Tokens.Motion.rowRise)
         #expect(PanelPhases.rowOpacity(progress: progress, order: -4) == PanelPhases.rowOpacity(progress: progress, order: 0))
     }
+
+    @Test("content arrives last: the final row is not fully visible until near the end of the move, and closing is quicker")
+    func contentTimeline() {
+        let curve = SpringCurve(duration: Tokens.Motion.springDuration, bounce: Tokens.Motion.springBounce)
+        let start = Date(timeIntervalSinceReferenceDate: 1000)
+        var motion = MotionState(curve: curve)
+        motion.start(toward: 1, at: start, curve: curve)
+        let settling = curve.settlingTime
+        // The shape has already reached its size well before the content is done.
+        #expect(motion.progress(at: start.addingTimeInterval(settling * 0.4)) > 0.95)
+        #expect(motion.contentProgress(at: start.addingTimeInterval(settling * 0.4)) < 0.5)
+        let last = Tokens.Motion.staggerLimit
+        #expect(PanelPhases.rowOpacity(progress: 0.9, order: last) < 1)
+        #expect(PanelPhases.rowOpacity(progress: 1, order: last) == 1)
+        #expect(abs(motion.contentProgress(at: start.addingTimeInterval(settling)) - 1) < 1e-9)
+
+        // Closing from fully open: the content is gone in the first part of the move.
+        motion.start(toward: 0, at: start.addingTimeInterval(settling), curve: curve)
+        let closeSpan = settling * Tokens.Motion.contentCloseFraction
+        #expect(abs(motion.contentProgress(at: start.addingTimeInterval(settling + closeSpan))) < 1e-9)
+        // Reversing halfway through the opening continues the content from where it was.
+        var reversed = MotionState(curve: curve)
+        reversed.start(toward: 1, at: start, curve: curve)
+        let halfway = start.addingTimeInterval(settling * 0.5)
+        let before = reversed.contentProgress(at: halfway)
+        reversed.start(toward: 0, at: halfway, curve: curve)
+        #expect(reversed.contentProgress(at: halfway) == before)
+    }
 }

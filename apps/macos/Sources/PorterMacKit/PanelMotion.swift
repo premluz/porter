@@ -47,6 +47,8 @@ public struct MotionState: Sendable, Equatable {
     public private(set) var target = 0.0
     public private(set) var startedAt = Date.distantPast
     public private(set) var curve: SpringCurve
+    /// Where the content's fade stood when this move began, so a reversal continues it.
+    public private(set) var contentFrom = 0.0
 
     public init(curve: SpringCurve) {
         self.curve = curve
@@ -56,11 +58,21 @@ public struct MotionState: Sendable, Equatable {
         from + (target - from) * curve.value(at: now.timeIntervalSince(startedAt))
     }
 
+    /// How far the content (rows, search, footer) has faded in, 0...1. It runs on the clock, not on the
+    /// spring: the shape reaches its size early and then bounces, but the content should arrive last.
+    /// Closing is quicker, so text is gone before the shape is too narrow to hold it.
+    public func contentProgress(at now: Date) -> Double {
+        let span = target > 0.5 ? curve.settlingTime : curve.settlingTime * Tokens.Motion.contentCloseFraction
+        let fraction = min(max(now.timeIntervalSince(startedAt) / span, 0), 1)
+        return contentFrom + (target - contentFrom) * fraction
+    }
+
     public func isSettled(at now: Date) -> Bool {
         now.timeIntervalSince(startedAt) >= curve.settlingTime
     }
 
     public mutating func start(toward newTarget: Double, at now: Date, curve newCurve: SpringCurve) {
+        contentFrom = contentProgress(at: now)
         from = progress(at: now)
         target = newTarget
         startedAt = now
@@ -70,6 +82,7 @@ public struct MotionState: Sendable, Equatable {
     /// Jumps to an end with no motion, used when the screen is not being drawn or in tests.
     public mutating func snap(to newTarget: Double) {
         from = newTarget
+        contentFrom = newTarget
         target = newTarget
         startedAt = .distantPast
     }
@@ -105,6 +118,7 @@ public enum PanelPhases {
     }
 
     /// The pane's content waits until the shape has grown, so text is never shown on a narrow shape.
+    /// `progress` here and in `rowOpacity` is the content's own timeline (`MotionState.contentProgress`).
     public static func paneOpacity(progress: Double) -> Double {
         smooth((progress - Tokens.Motion.contentRevealStart) / Tokens.Motion.contentRevealSpan)
     }

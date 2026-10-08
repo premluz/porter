@@ -13,6 +13,8 @@ public final class PanelPresentation {
     public private(set) var isMoving = false
     public private(set) var motion = MotionState(curve: SpringCurve(duration: Tokens.Motion.springDuration, bounce: Tokens.Motion.springBounce))
     public var edge: PanelEdge = .right
+    /// Bumped to make the glass surface rebuild; see `refreshSurface()`.
+    public private(set) var surfaceGeneration = 0
     /// Attached only by the animation probe, to see each frame of a move.
     @ObservationIgnored public var recorder: (@Sendable (CGRect) -> Void)?
     /// Both rectangles in the window's top-left coordinates; the shape moves between them.
@@ -31,6 +33,12 @@ public final class PanelPresentation {
         motion.start(toward: expanded ? 1 : 0, at: now, curve: curve)
         isExpanded = expanded
         isMoving = true
+    }
+
+    /// The glass draws its edge when it is built; resizing the window under it after the last frame of a
+    /// collapse left that edge missing until something forced a redraw (for example dragging the panel).
+    public func refreshSurface() {
+        surfaceGeneration += 1
     }
 
     public func endMove() {

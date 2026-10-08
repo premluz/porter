@@ -120,7 +120,10 @@ public final class PanelController {
     private func complete(_ animation: PanelAnimation) {
         guard machine.finished(animation) else { return }
         presentation.endMove()
-        if machine.phase == .expanded { settle(window: frame(expanded: true)) }
+        if machine.phase == .expanded {
+            settle(window: frame(expanded: true))
+            Task { @MainActor [weak self] in self?.presentation.refreshSurface() }
+        }
         finishIfCollapsed()
     }
 
@@ -130,6 +133,8 @@ public final class PanelController {
         settle(window: frame(expanded: false))
         panel.allowsKey = false
         panel.resignKey()
+        // After the resize and the key change have both been applied, so the glass is rebuilt last.
+        Task { @MainActor [weak self] in self?.presentation.refreshSurface() }
     }
 
     private func contentChanged() {
