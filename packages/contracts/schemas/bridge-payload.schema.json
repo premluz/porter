@@ -64,6 +64,9 @@
         },
         "canonicalUrl": {
           "$ref": "common.schema.json#/$defs/httpsUrl"
+        },
+        "lastActiveAt": {
+          "$ref": "common.schema.json#/$defs/timestamp"
         }
       }
     },
@@ -313,6 +316,9 @@
           "type": "integer",
           "minimum": 0,
           "maximum": 8
+        },
+        "lastActiveAt": {
+          "$ref": "common.schema.json#/$defs/timestamp"
         }
       }
     }

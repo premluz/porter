@@ -6,6 +6,7 @@ import { join } from "node:path";
 import { describe, it } from "node:test";
 import { EditorClient, RETRY_DELAYS_MS, type ClientDeps, type Transport } from "../src/client.js";
 import { connectorIdFor, installationIdFor } from "../src/identity.js";
+import { RecencyTracker } from "../src/recency.js";
 import { buildReports } from "../src/snapshot.js";
 
 const WINDOW_PATH = "/Users/example/Porter";
@@ -32,7 +33,7 @@ function setup() {
   const statuses: string[] = [];
   const activations: string[] = [];
   let counter = 0;
-  let tabs = buildReports(WINDOW_PATH, [{ label: "Release plan", viewColumn: 1, index: 0, isActive: true }]);
+  let tabs = buildReports(WINDOW_PATH, [{ provider: "claude-code", label: "Release plan", viewColumn: 1, index: 0, isActive: true }], new RecencyTracker(), 0);
   const deps: ClientDeps = {
     window: { installationId, connectorId, folderName: "Porter" },
     connect: () => { const t = new FakeTransport(); transports.push(t); return t; },

@@ -55,6 +55,8 @@ public struct PanelItem: Sendable, Equatable, Identifiable {
     public let status: ItemStatus
     /// Another item has the same title, so the profile must be shown, not implied.
     public let sharesTitle: Bool
+    /// The latest time any of its tabs was the visible one, when its connector reports it.
+    public private(set) var lastActiveAt: Date? = nil
 
     public var routes: [PanelRoute] {
         if case .open(let routes) = availability { return routes }

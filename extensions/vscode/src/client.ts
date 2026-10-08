@@ -3,7 +3,7 @@ import {
   PROTOCOL_VERSION,
   type ActivateRequest, type ActivationResultPayload, type OutboundMessage,
 } from "./protocol.js";
-import { ADAPTER_VERSION, PROVIDER, fitSnapshot, type EditorTabReport } from "./snapshot.js";
+import { ADAPTER_VERSIONS, fitSnapshot, type EditorTabReport } from "./snapshot.js";
 
 export interface Transport {
   send(message: unknown): void;
@@ -93,7 +93,7 @@ export class EditorClient {
       type: "hello",
       payload: {
         installationId: this.deps.window.installationId, profileAlias: this.deps.window.folderName,
-        connectorKind: "vscode", adapterVersions: { [PROVIDER]: ADAPTER_VERSION },
+        connectorKind: "vscode", adapterVersions: ADAPTER_VERSIONS,
       },
     });
   }

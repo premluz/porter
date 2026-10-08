@@ -41,7 +41,7 @@ cd packages/ConversationCore && xcodebuild -scheme ConversationCore -destination
 swift test --package-path services/native-host
 # expected: 13 tests pass; six launch the real porter-native-host binary from simulated Chrome processes
 cd extensions/chrome && npm ci && npm test
-# expected: 25 tests pass; one validates the messages the extension produces against packages/contracts schemas
+# expected: 35 tests pass; one validates the messages the extension produces against packages/contracts schemas
 cd extensions/chrome && npm run typecheck
 services/native-host/scripts/install-dev.sh      # writes only the Chrome host manifest and the origin list
 services/native-host/scripts/uninstall-dev.sh    # removes only those two files
@@ -62,7 +62,7 @@ Added later the same day (all pass; see LOG-20261008-008):
 swift test --package-path packages/ConversationCore     # core, PorterStore, PorterPanelModel
 swift test --package-path services/native-host
 swift test --package-path apps/macos
-cd extensions/vscode && npm ci && npm test      # 34 tests; also validates what it sends against the schemas
+cd extensions/vscode && npm ci && npm test      # 42 tests; also validates what it sends against the schemas
 cd apps/macos && swift build -c release && .build/release/Porter --self-test   # headless, shows no window
 cd apps/ios && xcodebuild -project Porter.xcodeproj -scheme Porter -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
 cd packages/contracts && node scripts/validate-messages.mjs <captured-messages.json>
@@ -79,6 +79,7 @@ Everything above is automated. This batch covers what automation cannot: appeara
 2. Press ⌃⌥Space. Expect the glass to morph from the capsule into the pane with one small overshoot and settle, then the search field and rows to fade in one after another (first ~8 rows). Search field focused; rows grouped Pinned (two) and Open. Look at: smoothness (the window is no longer resized frame by frame, so jitter should be gone), whether the bounce feels right or too much, corner shape during the move, readability over a bright window and a busy wallpaper. Scrollbar: it must not flash while opening, closing or resizing, and should appear only while you scroll (with a mouse wheel rather than a trackpad it may not appear at all; tell me if so).
 3. Press ⌃⌥Space again part-way through opening, several times quickly. Expect it to reverse smoothly with no flash and no leftover window.
 4. Type `release`: two rows both titled "Release plan", each showing its profile (Personal, Work). Clear with Esc (first Esc clears search; next closes).
+4b. The Open list is ordered by recent use: Design review first (used seconds ago), then Release plan (Personal), Release plan (Work), Quarterly numbers, Design review (second tab shown within its row), Last week's draft last, and the chat with no recorded use after all dated ones. Pinned rows stay in your own order.
 5. ↑/↓ then Return on each sample and note the message: Release plan (either) closes the pane; Design review is open in two tabs and asks which; its second tab says the tab was closed; Quarterly numbers says no answer and "may have opened"; Unlabelled chat says the tab shows something else; Last week's draft says the account changed. Pinned "Old research thread" offers recovery; "Archived notes" says Chrome is not connected.
 6. ⌘P pins/unpins the selected row, ⌘⌫ hides it (a "Show n hidden" link appears), right-click shows the same plus "Open in Claude app". Relaunch: in fixture mode pins are not kept; in live mode they are.
 7. Click a dot in the capsule: a single-tab chat opens directly; an ambiguous one opens the pane.
@@ -105,8 +106,10 @@ Everything above is automated. This batch covers what automation cannot: appeara
 1. Expect a "Sample data" banner, Pinned and Open sections, status in words, a dashed marker for anything not live. Tap a row: details sheet with a note that the account on the phone may differ and no open button (sample links go nowhere).
 2. Settings, Accessibility, larger text at the maximum: expect no clipped rows. Rotate to landscape. Search for "release".
 
+**E0. Recency (live).** Open three Claude chats in Chrome and, in VS Code, two Claude Code tabs. Click through them in a known order, then open the pane. Expect the one you used last on top, and the order to follow as you switch (click away and reopen the pane). Quirks to report: a chat you only returned to by switching windows should also rise; tabs nobody has focused since the window opened sit below those that were; the list must not reshuffle while the pane is open.
+
 **E. Other provider and diagnostics**
-1. In Chrome, extension Options: Claude and ChatGPT are listed; ChatGPT is marked untested. Allow ChatGPT, open a `chatgpt.com/c/…` chat: record whether it appears with a sensible title and activates correctly. Remove the permission afterwards if you prefer.
+1. In Chrome, reload the extension (chrome://extensions, the reload arrow on Porter), then open its Options: Claude and ChatGPT are listed; ChatGPT is marked untested. Allow ChatGPT, open a `chatgpt.com` chat, and record whether it appears with a sensible title and activates correctly. If it does not appear, open the extension's service worker console (chrome://extensions, "service worker" link) and copy any line starting `[porter] tab on an allowed site was not recognised`; it shows the address shape (identifiers hidden), which is what I need to fix the adapter. Remove the permission afterwards if you prefer.
 2. Rename a Claude chat. In `chrome://extensions`, open Porter's service worker console: if the tab drops out of the list, a `[porter] tab N left the list but still exists` line appears with the page status and an address shape. Copy it to me (it contains no chat ID).
 
 **F. VS Code companion** (VS Code 1.94 or later; you have 1.140). It replaces the earlier probe, which this step unlinks automatically.
@@ -118,7 +121,8 @@ Everything above is automated. This batch covers what automation cannot: appeara
 6. Close the tab, choose its (now stale) pinned row: expect a message about the VS Code window, not Chrome. Quit VS Code: expect "VS Code is not connected" with an "Open VS Code" button.
 7. Rename a Claude Code chat: expect the old row to disappear and a new one to appear (a known limit, see FACT-020). If you had pinned the old one it stays as a closed pin.
 8. Reload the VS Code window: the status bar should reconnect by itself. Command Palette: "Porter: Show connection status" and "Porter: List Claude Code tabs in this window".
-9. To remove: `link-dev.sh unlink`, reload windows.
+9. **ChatGPT (Codex) in VS Code.** The OpenAI extension shows its conversations either in its side panel (not visible to Porter) or as editor tabs (visible). Open one as an editor tab ("Codex: new panel", or open a conversation in the editor area). Expect a row labelled "ChatGPT Codex · <folder>" and the same bring-forward behaviour as Claude Code. If it does not appear, run "Porter: Describe all tabs in this window (diagnostic)" and paste the line for that tab: it shows the tab kind and view type, which is exactly what the matcher needs.
+10. To remove: `link-dev.sh unlink`, reload windows.
 
 Record, for each step that differs: what you saw, macOS and Chrome versions, and whether it was dark or light mode.
 

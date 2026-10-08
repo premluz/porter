@@ -19,11 +19,19 @@ extension PanelBuilder {
         inputs.records.first { $0.key == item.key }?.pinOrder ?? Int.max
     }
 
-    /// Stable default: profile, then title, then first tab. Frozen positions win while interacting.
+    /// Most recently used first. Items with no reported time follow, then ties and unknowns fall back to a
+    /// stable order (profile, title, first tab) so the list never shuffles by chance.
+    /// Frozen positions win while the user is interacting, so nothing moves under the pointer.
     private static func order(_ items: [PanelItem], frozen: [String]?) -> [PanelItem] {
-        let natural = items.sorted {
-            ($0.profileAlias ?? "", $0.title, $0.routes.first?.tabId ?? 0)
-                < ($1.profileAlias ?? "", $1.title, $1.routes.first?.tabId ?? 0)
+        let natural = items.sorted { lhs, rhs in
+            switch (lhs.lastActiveAt, rhs.lastActiveAt) {
+            case let (left?, right?) where left != right: return left > right
+            case (_?, nil): return true
+            case (nil, _?): return false
+            default:
+                return (lhs.profileAlias ?? "", lhs.title, lhs.routes.first?.tabId ?? 0, lhs.id)
+                    < (rhs.profileAlias ?? "", rhs.title, rhs.routes.first?.tabId ?? 0, rhs.id)
+            }
         }
         guard let frozen else { return natural }
         let position = Dictionary(uniqueKeysWithValues: frozen.enumerated().map { ($1, $0) })

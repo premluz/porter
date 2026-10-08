@@ -6,6 +6,18 @@ export interface TabLike {
   windowId?: number | undefined;
   url?: string | undefined;
   title?: string | undefined;
+  /** Milliseconds since the epoch, as Chrome reports it. */
+  lastAccessed?: number | undefined;
+  active?: boolean | undefined;
+}
+
+/**
+ * Chrome's own time says when a tab last became the visible one in its window. Returning to a window
+ * without changing tab is also use of that tab, so the later of the two is what the list is ordered by.
+ */
+export function withFocusTime(tab: TabLike, windowFocusedAtMs: number | undefined): TabLike {
+  if (tab.active !== true || windowFocusedAtMs === undefined) return tab;
+  return { ...tab, lastAccessed: Math.max(tab.lastAccessed ?? 0, windowFocusedAtMs) };
 }
 
 export { ADAPTER_VERSIONS };
@@ -20,7 +32,7 @@ export function grantedPatterns(origins: readonly string[] | undefined): string[
 export function reportFor(tab: TabLike): TabReport | null {
   const recognised = recognise(tab.url);
   if (recognised === null || tab.id === undefined || tab.windowId === undefined) return null;
-  return {
+  const report: TabReport = {
     tabId: tab.id,
     windowId: tab.windowId,
     provider: recognised.adapter.provider,
@@ -28,6 +40,8 @@ export function reportFor(tab: TabLike): TabReport | null {
     title: recognised.adapter.cleanTitle(tab.title),
     canonicalUrl: recognised.match.canonicalUrl,
   };
+  const used = lastActiveAt(tab.lastAccessed);
+  return used === undefined ? report : { ...report, lastActiveAt: used };
 }
 
 const LONG_IDENTIFIER = /[A-Za-z0-9-]{16,}/g;
@@ -47,6 +61,13 @@ export function urlShape(raw: string | undefined): string {
 export function missingTabIds(previous: ReadonlySet<number>, current: readonly TabReport[]): number[] {
   const now = new Set(current.map((report) => report.tabId));
   return [...previous].filter((id) => !now.has(id)).sort((a, b) => a - b);
+}
+
+/** A usable time, or nothing: an absent, zero or non-finite value is not "just now". */
+export function lastActiveAt(milliseconds: number | undefined): string | undefined {
+  if (milliseconds === undefined || !Number.isFinite(milliseconds) || milliseconds <= 0) return undefined;
+  const date = new Date(milliseconds);
+  return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
 }
 
 export function buildReports(tabs: readonly TabLike[]): TabReport[] {

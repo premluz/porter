@@ -180,6 +180,14 @@ Evidence classes: `user_requirement`, `source_documentation`, `verified_test`. P
 - Tags: area/identity, area/macos.
 - Review trigger: if VS Code exposes a session ID for a tab, or Claude Code's extension offers one.
 
+## FACT-021 — OpenAI (Codex) VS Code extension tab types
+
+- Class: source inspection of the installed extension (`openai.chatgpt` 26.51002.51308), not runtime evidence.
+- Statement: the extension contributes side-panel webview views (`chatgpt.sidebarView`, `chatgpt.sidebarSecondaryView`), which are not editor tabs and are invisible to the tab API; a webview panel type `chatgpt.panelView` created by "new Codex panel"; and a custom editor `chatgpt.conversationEditor` for `openai-codex:` resources. The companion matches the last two (provider `codex`). It is the Codex product, not the ChatGPT web app; the web app is a separate provider (`chatgpt`).
+- Not established: that these are what a conversation tab really is at runtime, and what titles they carry. The diagnostic command exists to settle that.
+- Tags: area/macos, area/identity.
+- Review trigger: any Codex tab that Porter fails to list.
+
 ## Adding a fact
 
 Include statement, evidence class, source/test reference, observed date, tags, and review trigger if volatile. A failed experiment can be a fact when its exact environment and outcome are recorded. Do not transform a plausible architectural assumption into a tested capability.

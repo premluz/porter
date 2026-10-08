@@ -29,9 +29,9 @@ export function connectorIdFor(installationId: string): string {
 
 /**
  * An editor tab has no ID of its own, so a stable-enough one is built from where it lives and what
- * it is called: the folder, the title, and which of several same-titled tabs it is. Renaming a chat
+ * it is called: the folder, the provider, the title, and which of several same-titled tabs it is. Renaming a chat
  * therefore gives it a new identity, a limit recorded in FACT-020.
  */
-export function conversationIdFor(workspacePath: string, title: string, ordinal: number): string {
-  return digest(CONVERSATION_DOMAIN, workspacePath, title, String(ordinal)).toString("hex").slice(0, CONVERSATION_ID_LENGTH);
+export function conversationIdFor(workspacePath: string, provider: string, title: string, ordinal: number): string {
+  return digest(CONVERSATION_DOMAIN, workspacePath, provider, title, String(ordinal)).toString("hex").slice(0, CONVERSATION_ID_LENGTH);
 }

@@ -167,6 +167,19 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Known limits recorded: an editor tab has no stable ID, so identity is folder plus title plus order and a rename makes a new route (FACT-020); a snapshot is capped to fit the 64 KiB frame (it reports how many were left out); there is no continuity memory for editor routes.
 - Next action: Prem runs manual batch F.
 
+## LOG-20261008-013 — Newest-first ordering, ChatGPT in VS Code (Codex), ChatGPT web diagnostics
+
+- Date: 2026-10-08.
+- Author: assistant; requests from Prem: the most recent chats should be on top, and ChatGPT is needed both on the web and in VS Code. Prem also found that the "missing" Claude Code chat had been listed all along, below the visible part of the list.
+- Tasks: TASK-015, TASK-021, TASK-023.
+- Tags: area/macos, area/browser, area/identity, phase/r1.
+- Changed (recency): tab reports gained an optional `lastActiveAt` (contract, core, rows, panel). The registry stores it per route without changing the revision, so reordering never invalidates a selection. The Open list sorts newest first, then items without a time, then a stable order; pinned items keep your order; the order on screen is still frozen while the pane is open. Chrome reports its own last-accessed time, raised to the window's focus time for the active tab. The VS Code companion tracks when each tab became the focused one (VS Code reports no such time); tabs never focused since the window opened carry none.
+- Changed (ChatGPT in VS Code): the companion now matches several providers. `codex` covers the OpenAI extension's webview panel (`chatgpt.panelView`) and custom editor (`chatgpt.conversationEditor`), taken from that extension's manifest and code, together with `claude-code`. Conversation IDs now include the provider, so same-titled tabs of different providers stay separate. A new diagnostic command lists every tab's kind and view type in a window. Rows read "ChatGPT Codex" and their messages name VS Code.
+- Changed (ChatGPT web): the existing adapter is unchanged (`chatgpt.com/c/<id>`, still marked untested); the extension now logs the address shape (identifiers hidden) of any tab on an allowed site that no adapter recognises, once per shape.
+- Verified (automated): contracts 11 schemas / 67 fixtures; ConversationCore 79, PorterPanelModel 45, native-host 16, Mac app 38; Chrome extension 35; VS Code companion 42. A real Node companion reported a Codex tab with a time and a never-focused Claude Code tab without one to the real Swift registry, which decoded both.
+- Not verified: how the new ordering feels; the Codex tab types at runtime (the OpenAI extension's side-panel view is not an editor tab and will not appear); any ChatGPT web chat; window-focus recency in practice.
+- Next action: Prem runs manual batches E0, E1 and F9, and reports any `[porter] ... not recognised` lines and the diagnostic output for a Codex tab.
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.

@@ -17,10 +17,12 @@ public struct TabReport: Codable, Sendable, Equatable {
     public let providerConversationId: String
     public let title: String
     public let canonicalUrl: String
+    /// When the tab last became the visible one, as the browser reports it. Used only to order the list.
+    public let lastActiveAt: Date?
 
     public init(
         tabId: Int, windowId: Int, provider: String, providerConversationId: String,
-        title: String, canonicalUrl: String
+        title: String, canonicalUrl: String, lastActiveAt: Date? = nil
     ) {
         self.tabId = tabId
         self.windowId = windowId
@@ -28,6 +30,7 @@ public struct TabReport: Codable, Sendable, Equatable {
         self.providerConversationId = providerConversationId
         self.title = title
         self.canonicalUrl = canonicalUrl
+        self.lastActiveAt = lastActiveAt
     }
 }
 
@@ -83,10 +86,11 @@ public struct EditorTabReport: Codable, Sendable, Equatable {
     public let workspacePath: String
     public let viewColumn: Int
     public let index: Int
+    public let lastActiveAt: Date?
 
     public init(
         provider: String, providerConversationId: String, title: String,
-        workspacePath: String, viewColumn: Int, index: Int
+        workspacePath: String, viewColumn: Int, index: Int, lastActiveAt: Date? = nil
     ) {
         self.provider = provider
         self.providerConversationId = providerConversationId
@@ -94,6 +98,7 @@ public struct EditorTabReport: Codable, Sendable, Equatable {
         self.workspacePath = workspacePath
         self.viewColumn = viewColumn
         self.index = index
+        self.lastActiveAt = lastActiveAt
     }
 }
 

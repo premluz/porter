@@ -95,6 +95,8 @@ public struct BridgeCoordinator: Sendable {
     var remembered: [RouteKey: RememberedRoute] = [:]
     /// Editor tabs have no tab ID, so a connector's routes are keyed by their provider conversation ID.
     var editorDestinations: [String: [String: UUID]] = [:]
+    /// When each route's tab was last the visible one, as its connector reports it. Ordering only.
+    var lastActive: [UUID: Date] = [:]
 
     public init(
         deviceId: UUID, locatorPolicy: LocatorPolicy = LocatorPolicy(), activationTimeout: TimeInterval = 5

@@ -1,8 +1,12 @@
 import { conversationIdFor } from "./identity.js";
-import type { ClaudeTab } from "./tabs.js";
+import { PROVIDER_RULES, type EditorTab } from "./tabs.js";
+import type { RecencyTracker } from "./recency.js";
 
-export const PROVIDER = "claude-code";
 export const ADAPTER_VERSION = "0.1.0";
+/** Every provider this companion can recognise, declared to the registry in hello. */
+export const ADAPTER_VERSIONS: Record<string, string> = Object.fromEntries(
+  PROVIDER_RULES.map((rule) => [rule.provider, ADAPTER_VERSION]),
+);
 /** Registry limit per snapshot; the frame size limit usually binds first. */
 export const MAX_TABS = 200;
 /** Headroom under the registry's 64 KiB frame limit for the envelope around the tabs. */
@@ -16,23 +20,40 @@ export interface EditorTabReport {
   workspacePath: string;
   viewColumn: number;
   index: number;
+  /** When the tab last became the focused one, if known. Orders the list only. */
+  lastActiveAt?: string;
 }
 
-/** Same-titled tabs are told apart by their order, which is the only difference an editor shows. */
-export function buildReports(workspacePath: string, tabs: readonly ClaudeTab[]): EditorTabReport[] {
+interface Identified {
+  tab: EditorTab;
+  id: string;
+  title: string;
+}
+
+/** Same-titled tabs of one provider are told apart by their order, the only difference an editor shows. */
+function identify(workspacePath: string, tabs: readonly EditorTab[]): Identified[] {
   const seen = new Map<string, number>();
   return tabs.map((tab) => {
     const title = tab.label.slice(0, MAX_TITLE_LENGTH) || "Untitled conversation";
-    const ordinal = seen.get(title) ?? 0;
-    seen.set(title, ordinal + 1);
-    return {
-      provider: PROVIDER,
-      providerConversationId: conversationIdFor(workspacePath, title, ordinal),
-      title,
-      workspacePath,
-      viewColumn: tab.viewColumn,
-      index: tab.index,
+    const key = `${tab.provider}\0${title}`;
+    const ordinal = seen.get(key) ?? 0;
+    seen.set(key, ordinal + 1);
+    return { tab, title, id: conversationIdFor(workspacePath, tab.provider, title, ordinal) };
+  });
+}
+
+export function buildReports(
+  workspacePath: string, tabs: readonly EditorTab[], recency: RecencyTracker, nowMs: number,
+): EditorTabReport[] {
+  const identified = identify(workspacePath, tabs);
+  recency.observe(identified.map(({ id, tab }) => ({ id, active: tab.isActive })), nowMs);
+  return identified.map(({ tab, id, title }) => {
+    const used = recency.lastActive(id);
+    const report: EditorTabReport = {
+      provider: tab.provider, providerConversationId: id, title, workspacePath,
+      viewColumn: tab.viewColumn, index: tab.index,
     };
+    return used === undefined ? report : { ...report, lastActiveAt: new Date(used).toISOString() };
   });
 }
 

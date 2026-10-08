@@ -1,7 +1,7 @@
 {
   "name": "porter-vscode",
   "displayName": "Porter",
-  "description": "Shows this window's Claude Code tabs to the Porter Mac app and brings the one you choose forward. Reads no conversation content; talks only to Porter on this Mac.",
+  "description": "Shows this window's Claude Code and Codex conversation tabs to the Porter Mac app and brings the one you choose forward. Reads no conversation content; talks only to Porter on this Mac.",
   "version": "0.1.0",
   "publisher": "porter-dev",
   "private": true,
@@ -21,7 +21,11 @@
       },
       {
         "command": "porter.listTabs",
-        "title": "Porter: List Claude Code tabs in this window"
+        "title": "Porter: List conversation tabs in this window"
+      },
+      {
+        "command": "porter.describeTabs",
+        "title": "Porter: Describe all tabs in this window (diagnostic)"
       }
     ]
   },

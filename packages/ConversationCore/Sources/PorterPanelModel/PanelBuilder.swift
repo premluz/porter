@@ -67,7 +67,8 @@ public enum PanelBuilder {
             return PanelItem(
                 key: key, title: first.title, provider: first.provider, profileAlias: first.profileAlias,
                 canonicalUrl: first.url, pinned: record?.pinned ?? false, hidden: record?.hidden ?? false,
-                availability: .open(routes), status: bestStatus(sorted, inputs: inputs), sharesTitle: false
+                availability: .open(routes), status: bestStatus(sorted, inputs: inputs), sharesTitle: false,
+                lastActiveAt: sorted.compactMap(\.lastActiveAt).max()
             )
         }
     }
@@ -103,7 +104,8 @@ public enum PanelBuilder {
             PanelItem(
                 key: item.key, title: item.title, provider: item.provider, profileAlias: item.profileAlias,
                 canonicalUrl: item.canonicalUrl, pinned: item.pinned, hidden: item.hidden,
-                availability: item.availability, status: item.status, sharesTitle: (counts[item.title.lowercased()] ?? 0) > 1
+                availability: item.availability, status: item.status, sharesTitle: (counts[item.title.lowercased()] ?? 0) > 1,
+                lastActiveAt: item.lastActiveAt
             )
         }
     }

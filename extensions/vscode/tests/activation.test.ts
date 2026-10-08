@@ -7,6 +7,7 @@ import type { GroupLike } from "../src/tabs.js";
 
 const VIEW = "mainThreadWebview-claudeVSCodePanel";
 const claude = (label: string, active = false) => ({ label, isActive: active, viewType: VIEW });
+const codex = (label: string, active = false) => ({ label, isActive: active, viewType: "chatgpt.conversationEditor" });
 const file = (label: string, active = false) => ({ label, isActive: active, viewType: undefined });
 
 function setup(groups: GroupLike[], afterCommands?: GroupLike[], workspace = "/p") {
@@ -25,7 +26,7 @@ function setup(groups: GroupLike[], afterCommands?: GroupLike[], workspace = "/p
   return { api, commands };
 }
 
-const request = (overrides: Partial<ActivateRequest["editor"]> = {}, conversation = conversationIdFor("/p", "Notes", 0)): ActivateRequest => ({
+const request = (overrides: Partial<ActivateRequest["editor"]> = {}, conversation = conversationIdFor("/p", "claude-code", "Notes", 0)): ActivateRequest => ({
   requestId: "r", destinationId: "d", destinationRevision: 3, expectedProvider: "claude-code", expectedConversationId: conversation,
   editor: { workspacePath: "/p", viewColumn: 1, index: 1, expectedTitle: "Notes", ...overrides },
 });
@@ -73,7 +74,7 @@ describe("activation in a window", () => {
 
   it("refuses requests for another provider or another window's folder", async () => {
     const { api, commands } = setup(before, after);
-    assert.equal((await activate({ ...request(), expectedProvider: "claude" }, api)).outcome, "targetChanged");
+    assert.equal((await activate({ ...request(), expectedProvider: "claude" }, api)).outcome, "targetGone");
     assert.equal((await activate(request({ workspacePath: "/other" }), api)).outcome, "targetChanged");
     assert.deepEqual(commands, []);
   });
@@ -84,5 +85,21 @@ describe("activation in a window", () => {
     const throwing = setup(before, after);
     throwing.api.runCommand = async () => { throw new Error("boom"); };
     assert.equal((await activate(request(), throwing.api)).outcome, "failed");
+  });
+
+  it("brings a Codex tab forward, and never lets a request for one provider act on the other's tab", async () => {
+    const mixed: GroupLike[] = [{ viewColumn: 1, tabs: [file("a.ts", true), claude("Notes"), codex("Notes")] }];
+    const codexFront: GroupLike[] = [{ viewColumn: 1, tabs: [file("a.ts"), claude("Notes"), codex("Notes", true)] }];
+    const codexRequest: ActivateRequest = {
+      ...request({ index: 2 }, conversationIdFor("/p", "codex", "Notes", 0)), expectedProvider: "codex",
+    };
+    const ok = setup(mixed, codexFront);
+    assert.equal((await activate(codexRequest, ok.api)).outcome, "activated");
+    assert.deepEqual(ok.commands, ["workbench.action.focusFirstEditorGroup", "workbench.action.openEditorAtIndex3"]);
+    // The same request with the other provider's identity must not be satisfied by the same-titled tab.
+    const crossed = setup(mixed, codexFront);
+    const wrongProvider: ActivateRequest = { ...request({ index: 2 }, conversationIdFor("/p", "codex", "Notes", 0)), expectedProvider: "claude-code" };
+    assert.equal((await activate(wrongProvider, crossed.api)).outcome, "targetChanged");
+    assert.deepEqual(crossed.commands, []);
   });
 });

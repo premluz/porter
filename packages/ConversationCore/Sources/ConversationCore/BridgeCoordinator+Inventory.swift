@@ -26,6 +26,7 @@ extension BridgeCoordinator {
         for tab in snapshot.tabs {
             result = result + store(tab, binding: binding, connection: connection, now: now)
         }
+        pruneRecency()
         return result
     }
 
@@ -96,7 +97,10 @@ extension BridgeCoordinator {
         // Revision moves only when the route changes, so a periodic identical snapshot does not
         // invalidate a selection the user is about to open.
         if let previous, previous.locator == locator, previous.conversationId == conversationId {
-            return BridgeResult()
+            // Same route: only its recency can have changed, which reorders the list but must not
+            // invalidate a selection, so the revision stays put.
+            let reordered = setRecency(previous.id, tab.lastActiveAt)
+            return reordered ? BridgeResult(events: [.inventoryChanged(connectorId: binding.connectorId)]) : BridgeResult()
         }
         let destination = Destination(
             id: existingId ?? returning?.destinationId ?? UUID(), conversationId: conversationId, deviceId: deviceId,
@@ -108,6 +112,7 @@ extension BridgeCoordinator {
         case .inserted, .updated:
             tabDestinations[binding.connectorId, default: [:]][tab.tabId] = destination.id
             remembered[key] = nil
+            setRecency(destination.id, tab.lastActiveAt)
             return BridgeResult(events: [.inventoryChanged(connectorId: binding.connectorId)])
         case .ignoredOlderRevision:
             return BridgeResult()
@@ -141,6 +146,18 @@ extension BridgeCoordinator {
             )
         }
         return id
+    }
+
+    @discardableResult
+    mutating func setRecency(_ destinationId: UUID, _ date: Date?) -> Bool {
+        guard let date, lastActive[destinationId] != date else { return false }
+        lastActive[destinationId] = date
+        return true
+    }
+
+    /// Routes that no longer exist take their recency with them, so the table stays as small as the list.
+    mutating func pruneRecency() {
+        lastActive = lastActive.filter { registry.destination($0.key) != nil }
     }
 
     static let browserCapabilities = [

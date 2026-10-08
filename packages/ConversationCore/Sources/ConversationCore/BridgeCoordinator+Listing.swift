@@ -17,11 +17,13 @@ public struct DestinationRow: Codable, Sendable, Equatable {
     public let url: String?
     /// More than one route to the same conversation: the user chooses, Porter never picks.
     public let routeCount: Int
+    /// When this route's tab was last the visible one, if its connector said. Orders the list.
+    public let lastActiveAt: Date?
 
     public init(
         destinationId: UUID, revision: Int, conversationId: UUID, providerConversationId: String, provider: String,
         title: String, profileAlias: String?, connectorId: String, reachability: Reachability,
-        tabId: Int?, windowId: Int?, url: String?, routeCount: Int
+        tabId: Int?, windowId: Int?, url: String?, routeCount: Int, lastActiveAt: Date? = nil
     ) {
         self.destinationId = destinationId
         self.revision = revision
@@ -36,6 +38,7 @@ public struct DestinationRow: Codable, Sendable, Equatable {
         self.windowId = windowId
         self.url = url
         self.routeCount = routeCount
+        self.lastActiveAt = lastActiveAt
     }
 }
 
@@ -65,7 +68,8 @@ extension BridgeCoordinator {
             destinationId: destination.id, revision: destination.revision, conversationId: conversation.id,
             providerConversationId: providerConversationId, provider: conversation.provider, title: conversation.title, profileAlias: connector?.profileAlias,
             connectorId: connectorId, reachability: live ? .connected : .disconnected,
-            tabId: tabId, windowId: windowId, url: url, routeCount: routeCount[conversation.id] ?? 1
+            tabId: tabId, windowId: windowId, url: url, routeCount: routeCount[conversation.id] ?? 1,
+            lastActiveAt: lastActive[destination.id]
         )
     }
 }

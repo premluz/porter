@@ -180,6 +180,8 @@ struct EditorItemTests {
         #expect(ProviderNames.host(for: "claude-code") == .vscode)
         #expect(ProviderNames.host(for: "claude") == .chrome)
         #expect(ProviderNames.host(for: "chatgpt") == .chrome)
+        #expect(ProviderNames.display("codex") == "ChatGPT Codex")
+        #expect(ProviderNames.host(for: "codex") == .vscode)
         #expect(HostApplication.vscode.bundleIdentifier == "com.microsoft.VSCode")
         #expect(HostApplication.vscode.displayName == "VS Code")
     }

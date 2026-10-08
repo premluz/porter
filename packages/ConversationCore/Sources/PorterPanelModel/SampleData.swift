@@ -25,14 +25,15 @@ public enum SampleData {
         ConnectorSummary(connectorId: offline, profileAlias: "Sample", reachability: .disconnected, routeCount: 0),
     ]
 
+    /// Seconds since each sample chat was last used, so sample mode shows the newest-first ordering.
     public static let entries: [SampleEntry] = [
-        entry("sample-1", "Release plan", personal, "Personal", tab: 1, .activated, .working, 20),
-        entry("sample-2", "Release plan", work, "Work", tab: 1, .activated, .needsUser, 45),
-        entry("sample-3", "Design review", personal, "Personal", tab: 2, .activated, .newResponse, 10),
-        entry("sample-3", "Design review", personal, "Personal", tab: 3, .targetGone, .newResponse, 10),
-        entry("sample-4", "Quarterly numbers", work, "Work", tab: 2, .timeout, .idle, 30),
-        entry("sample-5", "Unlabelled chat", personal, "Personal", tab: 4, .targetChanged, nil, 0),
-        entry("sample-6", "Last week's draft", personal, "Personal", tab: 5, .accountChanged, .working, 900),
+        entry("sample-1", "Release plan", personal, "Personal", tab: 1, .activated, .working, 20, usedAgo: 120),
+        entry("sample-2", "Release plan", work, "Work", tab: 1, .activated, .needsUser, 45, usedAgo: 900),
+        entry("sample-3", "Design review", personal, "Personal", tab: 2, .activated, .newResponse, 10, usedAgo: 8),
+        entry("sample-3", "Design review", personal, "Personal", tab: 3, .targetGone, .newResponse, 10, usedAgo: 4_000),
+        entry("sample-4", "Quarterly numbers", work, "Work", tab: 2, .timeout, .idle, 30, usedAgo: 3_600),
+        entry("sample-5", "Unlabelled chat", personal, "Personal", tab: 4, .targetChanged, nil, 0, usedAgo: nil),
+        entry("sample-6", "Last week's draft", personal, "Personal", tab: 5, .accountChanged, .working, 900, usedAgo: 604_800),
     ]
 
     /// Pins that exercise the closed-tab and offline-source states.
@@ -66,12 +67,13 @@ public enum SampleData {
 
     private static func entry(
         _ chat: String, _ title: String, _ connector: String, _ alias: String, tab: Int,
-        _ outcome: ActivationOutcome, _ display: DisplayStatus?, _ age: Int
+        _ outcome: ActivationOutcome, _ display: DisplayStatus?, _ age: Int, usedAgo: TimeInterval?
     ) -> SampleEntry {
         let row = DestinationRow(
             destinationId: UUID(), revision: 1, conversationId: UUID(), providerConversationId: chat, provider: "claude",
             title: title, profileAlias: alias, connectorId: connector, reachability: .connected, tabId: tab,
-            windowId: 1, url: "https://claude.ai/chat/\(chat)", routeCount: 1
+            windowId: 1, url: "https://claude.ai/chat/\(chat)", routeCount: 1,
+            lastActiveAt: usedAgo.map { Date().addingTimeInterval(-$0) }
         )
         return SampleEntry(row: row, outcome: outcome, observed: display.map { ($0, age) })
     }

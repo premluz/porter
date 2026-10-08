@@ -5,8 +5,9 @@ import { activate as activateTab, type ActivationApi } from "./activation.js";
 import { EditorClient, type ClientStatus } from "./client.js";
 import { connectorIdFor, installationIdFor } from "./identity.js";
 import { bridgeSocketPath, connectToRegistry } from "./socket.js";
+import { RecencyTracker } from "./recency.js";
 import { buildReports } from "./snapshot.js";
-import { findClaudeTabs, type GroupLike } from "./tabs.js";
+import { findConversationTabs, type GroupLike } from "./tabs.js";
 
 const SNAPSHOT_DEBOUNCE_MS = 250;
 const SETTLE_MS = 400;
@@ -26,15 +27,30 @@ function currentWorkspace(): WindowWorkspace | null {
   return { path: folder.uri.fsPath, name: vscode.workspace.name ?? basename(folder.uri.fsPath) };
 }
 
+/** Webview panels and custom editors are the two kinds of tab a conversation can live in. */
+function viewTypeOf(input: unknown): string | undefined {
+  if (input instanceof vscode.TabInputWebview || input instanceof vscode.TabInputCustom) return input.viewType;
+  return undefined;
+}
+
 function groupsNow(): GroupLike[] {
   return vscode.window.tabGroups.all.map((group) => ({
     viewColumn: group.viewColumn,
     tabs: group.tabs.map((tab) => ({
       label: tab.label,
       isActive: tab.isActive && group.isActive,
-      viewType: tab.input instanceof vscode.TabInputWebview ? tab.input.viewType : undefined,
+      viewType: viewTypeOf(tab.input),
     })),
   }));
+}
+
+function kindOf(input: unknown): string {
+  const kinds: Array<[unknown, string]> = [
+    [vscode.TabInputText, "text"], [vscode.TabInputTextDiff, "diff"], [vscode.TabInputCustom, "custom"],
+    [vscode.TabInputWebview, "webview"], [vscode.TabInputNotebook, "notebook"], [vscode.TabInputTerminal, "terminal"],
+  ];
+  const found = kinds.find(([type]) => typeof type === "function" && input instanceof type);
+  return found?.[1] ?? "other";
 }
 
 function pause(milliseconds: number): Promise<void> {
@@ -46,6 +62,7 @@ export function activate(context: vscode.ExtensionContext): void {
   const statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 0);
   let client: EditorClient | null = null;
   let timer: ReturnType<typeof setTimeout> | undefined;
+  const recency = new RecencyTracker();
 
   const show = (status: ClientStatus): void => {
     const text = { idle: "off", connecting: "connecting…", connected: "connected", unavailable: "not connected" }[status.state];
@@ -77,7 +94,7 @@ export function activate(context: vscode.ExtensionContext): void {
     client = new EditorClient({
       window: { installationId, connectorId: connectorIdFor(installationId), folderName: workspace.name },
       connect: () => connectToRegistry(bridgeSocketPath(process.env)),
-      reports: () => buildReports(workspace.path, findClaudeTabs(groupsNow())),
+      reports: () => buildReports(workspace.path, findConversationTabs(groupsNow()), recency, Date.now()),
       activate: (request) => activateTab(request, api),
       randomId: randomUUID,
       now: () => new Date(),
@@ -98,11 +115,28 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.window.tabGroups.onDidChangeTabs(scheduleSnapshot),
     vscode.window.tabGroups.onDidChangeTabGroups(scheduleSnapshot),
     vscode.workspace.onDidChangeWorkspaceFolders(begin),
+    // Coming back to a window uses its focused tab even though the tab did not change.
+    vscode.window.onDidChangeWindowState((state) => {
+      if (!state.focused) return;
+      recency.touchActive(Date.now());
+      scheduleSnapshot();
+    }),
     vscode.commands.registerCommand("porter.showStatus", () => output.show(true)),
     vscode.commands.registerCommand("porter.listTabs", () => {
-      const tabs = findClaudeTabs(groupsNow());
-      output.appendLine(`Claude Code tabs here: ${tabs.length}`);
-      for (const tab of tabs) output.appendLine(`  group ${tab.viewColumn}, position ${tab.index + 1}${tab.isActive ? " (active)" : ""}: ${tab.label}`);
+      const tabs = findConversationTabs(groupsNow());
+      output.appendLine(`Conversation tabs here: ${tabs.length}`);
+      for (const tab of tabs) output.appendLine(`  ${tab.provider}, group ${tab.viewColumn}, position ${tab.index + 1}${tab.isActive ? " (active)" : ""}: ${tab.label}`);
+      output.show(true);
+    }),
+    // Shows what kind of tab everything in this window is, so a conversation Porter does not list can
+    // be diagnosed from facts instead of guesses. Titles stay in this output panel.
+    vscode.commands.registerCommand("porter.describeTabs", () => {
+      output.appendLine("All tabs in this window (kind, view type, title):");
+      for (const group of vscode.window.tabGroups.all) {
+        group.tabs.forEach((tab, index) => {
+          output.appendLine(`  group ${group.viewColumn}, position ${index + 1}: ${kindOf(tab.input)} ${viewTypeOf(tab.input) ?? "-"} | ${tab.label}`);
+        });
+      }
       output.show(true);
     }),
     { dispose: () => client?.stop() },

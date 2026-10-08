@@ -13,6 +13,8 @@ export interface TabReport {
   providerConversationId: string;
   title: string;
   canonicalUrl: string;
+  /** When the tab last became the visible one in its window, from the browser. Orders the list only. */
+  lastActiveAt?: string;
 }
 
 export type ActivationOutcome =

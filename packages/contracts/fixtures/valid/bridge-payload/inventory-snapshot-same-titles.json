@@ -1,4 +1,21 @@
-{ "tabs": [
-  { "tabId": 42, "windowId": 7, "provider": "claude", "providerConversationId": "fixture-chat-a", "title": "Release plan", "canonicalUrl": "https://claude.ai/chat/fixture-chat-a" },
-  { "tabId": 43, "windowId": 7, "provider": "claude", "providerConversationId": "fixture-chat-a", "title": "Release plan", "canonicalUrl": "https://claude.ai/chat/fixture-chat-a" }
-] }
+{
+  "tabs": [
+    {
+      "tabId": 42,
+      "windowId": 7,
+      "provider": "claude",
+      "providerConversationId": "fixture-chat-a",
+      "title": "Release plan",
+      "canonicalUrl": "https://claude.ai/chat/fixture-chat-a",
+      "lastActiveAt": "2026-10-08T07:00:05Z"
+    },
+    {
+      "tabId": 43,
+      "windowId": 7,
+      "provider": "claude",
+      "providerConversationId": "fixture-chat-a",
+      "title": "Release plan",
+      "canonicalUrl": "https://claude.ai/chat/fixture-chat-a"
+    }
+  ]
+}

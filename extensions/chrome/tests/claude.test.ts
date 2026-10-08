@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { cleanTitle, matchConversation } from "../src/adapters/claude.js";
-import { buildReports, grantedPatterns, missingTabIds, reportFor, urlShape } from "../src/inventory.js";
+import { buildReports, grantedPatterns, missingTabIds, reportFor, urlShape, withFocusTime } from "../src/inventory.js";
 import { ADAPTERS, ADAPTER_VERSIONS, adapterForProvider, recognise } from "../src/adapters/registry.js";
 import { chatgptAdapter } from "../src/adapters/chatgpt.js";
 
@@ -129,5 +129,27 @@ describe("dropout diagnostics", () => {
     assert.deepEqual(missingTabIds(new Set([3, 1, 2]), [report(2)]), [1, 3]);
     assert.deepEqual(missingTabIds(new Set(), [report(2)]), []);
     assert.deepEqual(missingTabIds(new Set([2]), [report(2)]), []);
+  });
+});
+
+describe("recency", () => {
+  it("reports when a tab was last used, as an ISO time, and nothing when it is unknown", () => {
+    const tab = { id: 1, windowId: 1, url: "https://claude.ai/chat/abc", title: "T" };
+    assert.equal(reportFor({ ...tab, lastAccessed: Date.UTC(2026, 9, 8, 10, 0, 0) })?.lastActiveAt, "2026-10-08T10:00:00.000Z");
+    for (const missing of [undefined, 0, -5, Number.NaN, Number.POSITIVE_INFINITY, 8.64e15 + 1]) {
+      assert.equal(reportFor({ ...tab, lastAccessed: missing })?.lastActiveAt, undefined, String(missing));
+      assert.equal("lastActiveAt" in (reportFor({ ...tab, lastAccessed: missing }) ?? {}), false);
+    }
+  });
+});
+
+
+describe("window focus counts as use", () => {
+  it("takes the later of the tab's own time and its window's focus time, for the active tab only", () => {
+    assert.equal(withFocusTime({ active: true, lastAccessed: 1_000 }, 5_000).lastAccessed, 5_000);
+    assert.equal(withFocusTime({ active: true, lastAccessed: 9_000 }, 5_000).lastAccessed, 9_000);
+    assert.equal(withFocusTime({ active: true }, 5_000).lastAccessed, 5_000);
+    assert.equal(withFocusTime({ active: false, lastAccessed: 1_000 }, 5_000).lastAccessed, 1_000);
+    assert.equal(withFocusTime({ active: true, lastAccessed: 1_000 }, undefined).lastAccessed, 1_000);
   });
 });

@@ -24,6 +24,7 @@ extension BridgeCoordinator {
             case .rejected(let reason): result = result + violation(connection, .malformed, reason, close: false)
             }
         }
+        pruneRecency()
         if changed { result.events.append(.inventoryChanged(connectorId: binding.connectorId)) }
         return result
     }
@@ -44,7 +45,9 @@ extension BridgeCoordinator {
             bundleId: LocatorPolicy.vscodeBundleId, workspacePath: tab.workspacePath,
             viewColumn: tab.viewColumn, index: tab.index
         ))
-        if let previous, previous.locator == locator, previous.conversationId == conversationId { return .unchanged }
+        if let previous, previous.locator == locator, previous.conversationId == conversationId {
+            return setRecency(previous.id, tab.lastActiveAt) ? .changed : .unchanged
+        }
         let destination = Destination(
             id: existingId ?? UUID(), conversationId: conversationId, deviceId: deviceId, connectorId: binding.connectorId,
             identityEpoch: Self.unverifiedIdentityEpoch, locator: locator, capabilities: Self.browserCapabilities,
@@ -53,6 +56,7 @@ extension BridgeCoordinator {
         switch registry.upsert(destination) {
         case .inserted, .updated:
             editorDestinations[binding.connectorId, default: [:]][tab.providerConversationId] = destination.id
+            setRecency(destination.id, tab.lastActiveAt)
             return .changed
         case .ignoredOlderRevision:
             return .unchanged

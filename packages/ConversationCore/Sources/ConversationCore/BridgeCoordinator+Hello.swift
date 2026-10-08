@@ -46,6 +46,7 @@ extension BridgeCoordinator {
         for destinationId in (editorDestinations[connectorId] ?? [:]).values { registry.remove(destinationId) }
         editorDestinations[connectorId] = nil
         remembered = remembered.filter { $0.key.connectorId != connectorId }
+        pruneRecency()
     }
 
     mutating func recordHeartbeat(_ binding: Binding, now: Date) -> BridgeResult {
