@@ -20,6 +20,7 @@ public final class PanelController {
         self.model = model
         self.settings = settings
         self.defaults = defaults
+        presentation.edge = settings.edge
         host = NSHostingView(rootView: PanelRootView(model: model, presentation: presentation, expand: {}, close: {}))
         host.sizingOptions = []
         panel.contentView = host
@@ -48,7 +49,8 @@ public final class PanelController {
         guard let animation = machine.open() else { return }
         screen = screenUnderPointer()
         panel.allowsKey = true
-        settle(window: frame(expanded: true))
+        // Room around the pane for the bounce to overshoot into; trimmed back once it has settled.
+        settle(window: EdgeGeometry.inflated(frame(expanded: true), by: Tokens.Motion.overshootMargin))
         panel.makeKeyAndOrderFront(nil)
         model.paneVisibilityChanged(visible: true)
         animate(to: true, animation)
@@ -64,6 +66,7 @@ public final class PanelController {
         guard edge != settings.edge else { return }
         settings.edge = edge
         settings.save(to: defaults)
+        presentation.edge = edge
         settle(window: frame(expanded: machine.isExpandedOrOpening))
     }
 
@@ -86,7 +89,7 @@ public final class PanelController {
     func applyInstantly(expanded: Bool) {
         let animation = expanded ? machine.open() : machine.close()
         settle(window: frame(expanded: expanded))
-        presentation.isExpanded = expanded
+        presentation.snap(expanded: expanded)
         if let animation { machine.finished(animation) }
         finishIfCollapsed()
     }
@@ -103,18 +106,21 @@ public final class PanelController {
     }
 
     private func animate(to expanded: Bool, _ animation: PanelAnimation) {
-        let curve: Animation = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
-            ? .easeOut(duration: Tokens.Motion.reducedDuration)
-            : .spring(duration: Tokens.Motion.springDuration, bounce: Tokens.Motion.springBounce)
-        withAnimation(curve, completionCriteria: .logicallyComplete) {
-            presentation.isExpanded = expanded
-        } completion: { [weak self] in
-            Task { @MainActor in self?.complete(animation) }
+        let curve = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+            ? SpringCurve(duration: Tokens.Motion.reducedDuration, bounce: 0)
+            : SpringCurve(duration: Tokens.Motion.springDuration, bounce: Tokens.Motion.springBounce)
+        presentation.beginMove(expanded: expanded, curve: curve)
+        // A reversal starts a new move and a new generation, so this move's completion is then ignored.
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .seconds(curve.settlingTime))
+            self?.complete(animation)
         }
     }
 
     private func complete(_ animation: PanelAnimation) {
         guard machine.finished(animation) else { return }
+        presentation.endMove()
+        if machine.phase == .expanded { settle(window: frame(expanded: true)) }
         finishIfCollapsed()
     }
 

@@ -28,6 +28,10 @@ public enum EdgeGeometry {
         return frame(width: Tokens.Size.paneWidth, height: height, in: screen, edge: edge, anchor: anchor)
     }
 
+    public static func inflated(_ rect: CGRect, by margin: CGFloat) -> CGRect {
+        rect.insetBy(dx: -margin, dy: -margin)
+    }
+
     /// A screen-space rectangle expressed in a window's own top-left coordinates, which is how SwiftUI
     /// places things. AppKit measures from the bottom, so the vertical axis is flipped.
     public static func localRect(of rect: CGRect, in window: CGRect) -> CGRect {

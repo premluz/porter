@@ -39,12 +39,15 @@ public enum Tokens {
         public static let springBounce: Double = 0.3
         /// Reduce Motion: a brief fade with no overshoot.
         public static let reducedDuration: TimeInterval = 0.12
-        /// Content waits for the shape to have grown, then rises into place one row after another.
-        public static let contentDelay: TimeInterval = 0.1
-        public static let contentFade: TimeInterval = 0.22
-        public static let staggerStep: TimeInterval = 0.03
+        /// Fractions of the move: the capsule's dots are gone by `capsuleFadeEnd`; the pane's content starts
+        /// at `contentRevealStart` and each row follows the one before by `staggerStep`.
+        public static let capsuleFadeEnd = 0.3
+        public static let contentRevealStart = 0.3
+        public static let contentRevealSpan = 0.35
+        public static let staggerStep = 0.03
         public static let staggerLimit = 8
         public static let rowRise: CGFloat = 6
-        public static let hideFade: TimeInterval = 0.1
+        /// Extra window around the pane while it opens, so the overshoot of the bounce is not clipped.
+        public static let overshootMargin: CGFloat = 24
     }
 }

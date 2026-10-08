@@ -196,6 +196,14 @@ Evidence classes: `user_requirement`, `source_documentation`, `verified_test`. P
 - Tags: area/identity, area/security, area/macos, phase/r1.
 - Review trigger: the manual batch H, or Claude Code exposing a session ID per tab, which would remove the one-tab-per-window limit.
 
+## FACT-023 — Panel motion is measured from its own frames
+
+- Class: verified_test (on this Mac, three runs, 2026-10-08).
+- Statement: the panel's opening is an explicit spring rendered per frame; `Porter --probe-animation` records the laid-out size of the glass shape on every frame and checks that it grows through several sizes, passes the pane width a little on the bounce and settles at it. It showed the earlier implicit-animation version jumping in one step. SwiftUI's `Animatable` modifier returning its content unchanged is never evaluated, and `CGWindowListCreateImage` is unavailable in this SDK, so `onGeometryChange` is the working measurement.
+- Not established: how the glass itself looks mid-move, and the square outline's cause.
+- Tags: area/macos, area/ux, phase/r1.
+- Review trigger: any change to the panel's motion; rerun the probe.
+
 ## Adding a fact
 
 Include statement, evidence class, source/test reference, observed date, tags, and review trigger if volatile. A failed experiment can be a fact when its exact environment and outcome are recorded. Do not transform a plausible architectural assumption into a tested capability.

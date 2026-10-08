@@ -16,7 +16,9 @@ final class PanelWindow: NSPanel {
         level = .floating
         isOpaque = false
         backgroundColor = .clear
-        hasShadow = true
+        // The system shadow is computed from the window's pixels once, not as the shape inside it animates,
+        // so it would linger as a rectangle. The glass draws its own edge.
+        hasShadow = false
         hidesOnDeactivate = false
         isReleasedWhenClosed = false
         isMovableByWindowBackground = false

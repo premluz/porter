@@ -5,25 +5,22 @@ import SwiftUI
 /// All keyboard handling is on the search field, which keeps focus so typing always works.
 struct PaneView: View {
     @Bindable var model: AppModel
+    /// How far the opening move has got, which paces the staggered fade-in of the content.
+    let progress: Double
     let close: () -> Void
     @FocusState private var searchFocused: Bool
     @State private var isScrolling = false
-    /// Flips on the pane's first appearance, which is what starts the staggered fade-in.
-    @State private var revealed = false
 
     var body: some View {
         VStack(spacing: 0) {
-            searchField.reveal(revealed, order: 0)
+            searchField.reveal(progress: progress, order: 0)
             if let shown = model.feedback { FeedbackView(model: model, shown: shown) }
             content
-            footer.reveal(revealed, order: Tokens.Motion.staggerLimit)
+            footer.reveal(progress: progress, order: Tokens.Motion.staggerLimit)
         }
         .frame(width: Tokens.Size.paneWidth)
         .onChange(of: model.focusRequest) { searchFocused = true }
-        .onAppear {
-            searchFocused = true
-            revealed = true
-        }
+        .onAppear { searchFocused = true }
     }
 
     private var searchField: some View {
@@ -85,7 +82,7 @@ struct PaneView: View {
                     model.select(item)
                     Task { await submit() }
                 }
-                .reveal(revealed, order: firstOrder + index)
+                .reveal(progress: progress, order: firstOrder + index)
                 .id(item.id)
                 .contextMenu { menu(for: item) }
             }

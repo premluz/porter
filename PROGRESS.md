@@ -194,6 +194,18 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Not done on purpose: your Claude settings were not changed. Applying the hooks is a step for you (batch H).
 - Next action: Prem runs batch H.
 
+## LOG-20261008-015 — Opening animation rebuilt and measured; window outline
+
+- Date: 2026-10-08.
+- Author: assistant; Prem reported a square-looking border around the pane and that opening had become abrupt after the previous motion rework.
+- Tasks: TASK-014, TASK-023.
+- Tags: area/macos, area/ux, phase/r1.
+- Finding: the previous rework animated nothing visible. A new probe that reads the shape's laid-out size on each frame showed it jumping from the 40 pt capsule to the full pane in one step. Swapping two glass shapes and relying on SwiftUI's implicit morph was the wrong foundation, and I had not measured it before shipping it.
+- Changed: the motion is now explicit. A spring (`SpringCurve`) computed from the clock gives a progress value, a `TimelineView` redraws one persistent glass shape each frame at that progress, and the dots and the pane's content fade by fixed fractions of it. A move reversed halfway starts from the shape's current size. The window gets a margin while opening so the bounce is not clipped, then shrinks to the pane. The pane is now built once at launch and kept mounted but invisible: building it at the first frame of the move caused a ~75 ms stall (the jitter noticed before). Reduce Motion uses a short critically damped move with no bounce. The system window shadow is turned off: it was computed once for the window's pixels and could not follow the shape, which is the likely cause of the square outline.
+- Measured (`Porter --probe-animation`, three runs): the shape grows smoothly through 21–23 distinct sizes, frames every ~13–17 ms from the first, peaks at 375 pt (a 15 pt bounce) and settles at 360 pt in about 500 ms; the one run that closed itself early was an outside interruption. Unit tests cover the spring (endpoints, overshoot matching its formula, no overshoot without bounce, settling), reversal continuity and the content phases; Mac app 51 tests.
+- Not verified: the square outline is gone (the cause is inferred, not photographed); how the motion feels; behavior with many rows; Reduce Motion and Reduce Transparency visually.
+- Next action: Prem re-runs batch A2 and A3 and says whether the outline and the abruptness are fixed.
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.
