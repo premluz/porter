@@ -43,6 +43,7 @@ public struct BridgeResult: Sendable, Equatable {
 
 struct Binding: Sendable {
     let connectorId: String
+    let kind: ConnectorKind
     let installationId: UUID
     let epoch: String
     var outboundSequence = 0
@@ -92,6 +93,8 @@ public struct BridgeCoordinator: Sendable {
     var tabDestinations: [String: [Int: UUID]] = [:]
     var pending: [UUID: PendingActivation] = [:]
     var remembered: [RouteKey: RememberedRoute] = [:]
+    /// Editor tabs have no tab ID, so a connector's routes are keyed by their provider conversation ID.
+    var editorDestinations: [String: [String: UUID]] = [:]
 
     public init(
         deviceId: UUID, locatorPolicy: LocatorPolicy = LocatorPolicy(), activationTimeout: TimeInterval = 5
@@ -101,8 +104,8 @@ public struct BridgeCoordinator: Sendable {
         self.registry = DestinationRegistry(locatorPolicy: locatorPolicy)
     }
 
-    public static func connectorId(for installationId: UUID) -> String {
-        "chrome-\(installationId.uuidString.lowercased())"
+    public static func connectorId(for installationId: UUID, kind: ConnectorKind = .chrome) -> String {
+        "\(kind.idPrefix)-\(installationId.uuidString.lowercased())"
     }
 
     public mutating func handle(frame: Data, from connection: ConnectionID, now: Date) -> BridgeResult {
@@ -163,8 +166,10 @@ public struct BridgeCoordinator: Sendable {
         switch body {
         case .inventorySnapshot(let snapshot):
             applySnapshot(snapshot, binding: binding, connection: connection, now: now)
-        case .destinationUpsert(let upsert): applyUpsert(upsert.tab, binding: binding, connection: connection, now: now)
-        case .destinationRemove(let remove): applyRemove(remove.tabId, binding: binding)
+        case .destinationUpsert(let upsert):
+            applyIncremental(binding, connection) { $0.applyUpsert(upsert.tab, binding: binding, connection: connection, now: now) }
+        case .destinationRemove(let remove):
+            applyIncremental(binding, connection) { $0.applyRemove(remove.tabId, binding: binding) }
         case .heartbeat: recordHeartbeat(binding, now: now)
         case .activateResult(let result): completeActivation(result, from: connection)
         case .error(let error):

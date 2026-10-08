@@ -20,12 +20,20 @@ public final class RegistryService: Sendable {
     let focusApplication: @Sendable () -> String
     /// Called after the visible list or a connection changes; never with the coordinator locked.
     let onChange: @Sendable () -> Void
+    /// Brings an editor window forward before its request is sent; returns a short description.
+    let prepareActivation: @Sendable (ActivationPreparation) -> String
+    /// Gives a window time to become the front one after its folder is opened.
+    let windowSettleDelay: TimeInterval
 
     public init(
         deviceId: UUID, activationTimeout: TimeInterval = 5,
         log: @escaping @Sendable (String) -> Void, focusApplication: @escaping @Sendable () -> String,
-        onChange: @escaping @Sendable () -> Void = {}
+        onChange: @escaping @Sendable () -> Void = {},
+        prepareActivation: @escaping @Sendable (ActivationPreparation) -> String = { EditorWindowFocus.openWorkspace($0) },
+        windowSettleDelay: TimeInterval = 0.8
     ) {
+        self.prepareActivation = prepareActivation
+        self.windowSettleDelay = windowSettleDelay
         self.coordinator = Mutex(BridgeCoordinator(deviceId: deviceId, activationTimeout: activationTimeout))
         self.activationTimeout = activationTimeout
         self.log = log

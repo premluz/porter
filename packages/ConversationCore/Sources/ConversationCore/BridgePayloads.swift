@@ -31,16 +31,37 @@ public struct TabReport: Codable, Sendable, Equatable {
     }
 }
 
+public enum ConnectorKind: String, Codable, Sendable {
+    case chrome, vscode
+
+    /// The prefix that makes a connector ID readable and ties it to its kind.
+    var idPrefix: String { rawValue }
+
+    var connectorType: ConnectorType {
+        switch self {
+        case .chrome: .chromeExtension
+        case .vscode: .vscodeExtension
+        }
+    }
+}
+
 public struct HelloPayload: Codable, Sendable, Equatable {
     public let installationId: UUID
     public let profileAlias: String?
+    /// Absent means a browser extension, which keeps older connectors working unchanged.
+    public let connectorKind: ConnectorKind?
     public let adapterVersions: [String: String]
 
-    public init(installationId: UUID, profileAlias: String?, adapterVersions: [String: String]) {
+    public init(
+        installationId: UUID, profileAlias: String?, connectorKind: ConnectorKind? = nil, adapterVersions: [String: String]
+    ) {
         self.installationId = installationId
         self.profileAlias = profileAlias
+        self.connectorKind = connectorKind
         self.adapterVersions = adapterVersions
     }
+
+    public var kind: ConnectorKind { connectorKind ?? .chrome }
 }
 
 public struct HelloAckPayload: Codable, Sendable, Equatable {
@@ -53,10 +74,37 @@ public struct HelloAckPayload: Codable, Sendable, Equatable {
     }
 }
 
+/// A Claude Code tab in an editor window. There is no stable tab ID in an editor, so identity is the
+/// provider conversation ID the connector derives, and position is only where to find it now.
+public struct EditorTabReport: Codable, Sendable, Equatable {
+    public let provider: String
+    public let providerConversationId: String
+    public let title: String
+    public let workspacePath: String
+    public let viewColumn: Int
+    public let index: Int
+
+    public init(
+        provider: String, providerConversationId: String, title: String,
+        workspacePath: String, viewColumn: Int, index: Int
+    ) {
+        self.provider = provider
+        self.providerConversationId = providerConversationId
+        self.title = title
+        self.workspacePath = workspacePath
+        self.viewColumn = viewColumn
+        self.index = index
+    }
+}
+
 public struct InventorySnapshotPayload: Codable, Sendable, Equatable {
     public let tabs: [TabReport]
+    public let editorTabs: [EditorTabReport]?
 
-    public init(tabs: [TabReport]) { self.tabs = tabs }
+    public init(tabs: [TabReport], editorTabs: [EditorTabReport]? = nil) {
+        self.tabs = tabs
+        self.editorTabs = editorTabs
+    }
 }
 
 public struct DestinationUpsertPayload: Codable, Sendable, Equatable {
@@ -71,15 +119,25 @@ public struct DestinationRemovePayload: Codable, Sendable, Equatable {
     public init(tabId: Int) { self.tabId = tabId }
 }
 
+/// Where to find an editor tab, and the title it must still have for the connector to act.
+public struct EditorTarget: Codable, Sendable, Equatable {
+    public let workspacePath: String
+    public let viewColumn: Int
+    public let index: Int
+    public let expectedTitle: String
+}
+
 /// The registry's only navigation command. The connector re-verifies the target before acting.
+/// A browser target carries tabId and windowId; an editor target carries `editor`.
 public struct ActivateRequestPayload: Codable, Sendable, Equatable {
     public let requestId: UUID
     public let destinationId: UUID
     public let destinationRevision: Int
-    public let tabId: Int
-    public let windowId: Int
+    public let tabId: Int?
+    public let windowId: Int?
     public let expectedProvider: String
     public let expectedConversationId: String
+    public let editor: EditorTarget?
 }
 
 public enum BridgeErrorCode: String, Codable, Sendable {

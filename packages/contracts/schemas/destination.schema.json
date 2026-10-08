@@ -5,59 +5,197 @@
   "description": "One route to a conversation. The locator kind is the destination kind.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["id", "conversationId", "deviceId", "identityEpoch", "locator", "capabilities", "lastVerifiedAt", "revision"],
+  "required": [
+    "id",
+    "conversationId",
+    "deviceId",
+    "identityEpoch",
+    "locator",
+    "capabilities",
+    "lastVerifiedAt",
+    "revision"
+  ],
   "properties": {
-    "id": { "$ref": "common.schema.json#/$defs/uuid" },
-    "conversationId": { "$ref": "common.schema.json#/$defs/uuid" },
-    "deviceId": { "$ref": "common.schema.json#/$defs/uuid" },
-    "connectorId": { "$ref": "common.schema.json#/$defs/opaqueId" },
-    "identityEpoch": { "$ref": "common.schema.json#/$defs/opaqueId" },
+    "id": {
+      "$ref": "common.schema.json#/$defs/uuid"
+    },
+    "conversationId": {
+      "$ref": "common.schema.json#/$defs/uuid"
+    },
+    "deviceId": {
+      "$ref": "common.schema.json#/$defs/uuid"
+    },
+    "connectorId": {
+      "$ref": "common.schema.json#/$defs/opaqueId"
+    },
+    "identityEpoch": {
+      "$ref": "common.schema.json#/$defs/opaqueId"
+    },
     "locator": {
       "oneOf": [
-        { "$ref": "#/$defs/browserTab" },
-        { "$ref": "#/$defs/desktopLink" },
-        { "$ref": "#/$defs/mobileLink" }
+        {
+          "$ref": "#/$defs/browserTab"
+        },
+        {
+          "$ref": "#/$defs/desktopLink"
+        },
+        {
+          "$ref": "#/$defs/mobileLink"
+        },
+        {
+          "$ref": "#/$defs/editorTab"
+        }
       ]
     },
-    "capabilities": { "type": "array", "maxItems": 16, "items": { "$ref": "common.schema.json#/$defs/capability" } },
-    "lastVerifiedAt": { "$ref": "common.schema.json#/$defs/timestamp" },
-    "revision": { "$ref": "common.schema.json#/$defs/revision" }
+    "capabilities": {
+      "type": "array",
+      "maxItems": 16,
+      "items": {
+        "$ref": "common.schema.json#/$defs/capability"
+      }
+    },
+    "lastVerifiedAt": {
+      "$ref": "common.schema.json#/$defs/timestamp"
+    },
+    "revision": {
+      "$ref": "common.schema.json#/$defs/revision"
+    }
   },
-  "if": { "properties": { "locator": { "type": "object", "properties": { "kind": { "const": "browserTab" } } } } },
-  "then": { "required": ["connectorId"] },
+  "if": {
+    "properties": {
+      "locator": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "const": "browserTab"
+          }
+        }
+      }
+    }
+  },
+  "then": {
+    "required": [
+      "connectorId"
+    ]
+  },
   "$defs": {
     "browserTab": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["kind", "connectorId", "connectionEpoch", "tabId"],
+      "required": [
+        "kind",
+        "connectorId",
+        "connectionEpoch",
+        "tabId"
+      ],
       "properties": {
-        "kind": { "const": "browserTab" },
-        "connectorId": { "$ref": "common.schema.json#/$defs/opaqueId" },
-        "connectionEpoch": { "$ref": "common.schema.json#/$defs/opaqueId" },
-        "tabId": { "type": "integer", "minimum": 0 },
-        "windowIdHint": { "type": "integer", "minimum": 0 },
-        "canonicalUrl": { "$ref": "common.schema.json#/$defs/httpsUrl" }
+        "kind": {
+          "const": "browserTab"
+        },
+        "connectorId": {
+          "$ref": "common.schema.json#/$defs/opaqueId"
+        },
+        "connectionEpoch": {
+          "$ref": "common.schema.json#/$defs/opaqueId"
+        },
+        "tabId": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "windowIdHint": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "canonicalUrl": {
+          "$ref": "common.schema.json#/$defs/httpsUrl"
+        }
       }
     },
     "desktopLink": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["kind", "bundleId", "deepLink"],
+      "required": [
+        "kind",
+        "bundleId",
+        "deepLink"
+      ],
       "properties": {
-        "kind": { "const": "desktopLink" },
-        "bundleId": { "$ref": "common.schema.json#/$defs/bundleId" },
-        "deepLink": { "$ref": "common.schema.json#/$defs/deepLink" },
-        "accountScopeId": { "$ref": "common.schema.json#/$defs/uuid" }
+        "kind": {
+          "const": "desktopLink"
+        },
+        "bundleId": {
+          "$ref": "common.schema.json#/$defs/bundleId"
+        },
+        "deepLink": {
+          "$ref": "common.schema.json#/$defs/deepLink"
+        },
+        "accountScopeId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        }
       }
     },
     "mobileLink": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["kind", "url"],
+      "required": [
+        "kind",
+        "url"
+      ],
       "properties": {
-        "kind": { "const": "mobileLink" },
-        "url": { "anyOf": [{ "$ref": "common.schema.json#/$defs/httpsUrl" }, { "$ref": "common.schema.json#/$defs/deepLink" }] },
-        "accountRequirement": { "$ref": "common.schema.json#/$defs/label" }
+        "kind": {
+          "const": "mobileLink"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "$ref": "common.schema.json#/$defs/httpsUrl"
+            },
+            {
+              "$ref": "common.schema.json#/$defs/deepLink"
+            }
+          ]
+        },
+        "accountRequirement": {
+          "$ref": "common.schema.json#/$defs/label"
+        }
+      }
+    },
+    "editorTab": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "bundleId",
+        "workspacePath",
+        "viewColumn",
+        "index"
+      ],
+      "properties": {
+        "kind": {
+          "const": "editorTab"
+        },
+        "bundleId": {
+          "$ref": "common.schema.json#/$defs/bundleId"
+        },
+        "workspacePath": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 1024,
+          "pattern": "^/[^\\u0000]*$",
+          "not": {
+            "pattern": "(^|/)\\.\\.(/|$)"
+          }
+        },
+        "viewColumn": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "index": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 8
+        }
       }
     }
   }

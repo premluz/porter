@@ -33,7 +33,7 @@ public struct AccountScope: Codable, Sendable, Equatable, Identifiable {
 }
 
 public enum ConnectorType: String, Codable, Sendable {
-    case chromeExtension, safariExtension
+    case chromeExtension, safariExtension, vscodeExtension
 }
 
 /// Mirrors connector.schema.json. One per browser profile installation.

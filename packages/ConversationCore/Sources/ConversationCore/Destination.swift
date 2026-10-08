@@ -12,7 +12,7 @@ public struct Capability: Codable, Sendable, Equatable {
 }
 
 public enum DestinationKind: String, Codable, Sendable {
-    case browserTab, desktopLink, mobileLink
+    case browserTab, desktopLink, mobileLink, editorTab
 }
 
 /// Mirrors destination.schema.json. The locator's kind is the destination kind.
@@ -53,11 +53,28 @@ public struct MobileLinkLocator: Codable, Sendable, Equatable {
     public let accountRequirement: String?
 }
 
+/// A tab inside a desktop editor window. The window is found by its workspace folder, then the tab by
+/// position; neither is a stable ID, so the connector re-checks the title before acting.
+public struct EditorTabLocator: Codable, Sendable, Equatable {
+    public let bundleId: String
+    public let workspacePath: String
+    public let viewColumn: Int
+    public let index: Int
+
+    public init(bundleId: String, workspacePath: String, viewColumn: Int, index: Int) {
+        self.bundleId = bundleId
+        self.workspacePath = workspacePath
+        self.viewColumn = viewColumn
+        self.index = index
+    }
+}
+
 /// Encoded flat with a `kind` discriminator, matching the schema's oneOf branches.
 public enum Locator: Codable, Sendable, Equatable {
     case browserTab(BrowserTabLocator)
     case desktopLink(DesktopLinkLocator)
     case mobileLink(MobileLinkLocator)
+    case editorTab(EditorTabLocator)
 
     private enum CodingKeys: String, CodingKey { case kind }
 
@@ -66,6 +83,7 @@ public enum Locator: Codable, Sendable, Equatable {
         case .browserTab: .browserTab
         case .desktopLink: .desktopLink
         case .mobileLink: .mobileLink
+        case .editorTab: .editorTab
         }
     }
 
@@ -75,6 +93,7 @@ public enum Locator: Codable, Sendable, Equatable {
         case .browserTab: self = .browserTab(try BrowserTabLocator(from: decoder))
         case .desktopLink: self = .desktopLink(try DesktopLinkLocator(from: decoder))
         case .mobileLink: self = .mobileLink(try MobileLinkLocator(from: decoder))
+        case .editorTab: self = .editorTab(try EditorTabLocator(from: decoder))
         }
     }
 
@@ -83,6 +102,7 @@ public enum Locator: Codable, Sendable, Equatable {
         case .browserTab(let value): try value.encode(to: encoder)
         case .desktopLink(let value): try value.encode(to: encoder)
         case .mobileLink(let value): try value.encode(to: encoder)
+        case .editorTab(let value): try value.encode(to: encoder)
         }
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(kind, forKey: .kind)

@@ -43,7 +43,33 @@ enum BridgeValidation {
         }
     }
 
+    static func isWorkspacePath(_ text: String) -> Bool {
+        text.count >= 2 && text.count <= 1_024 && text.hasPrefix("/") && !text.contains("\0")
+            && !text.split(separator: "/", omittingEmptySubsequences: false).contains("..")
+    }
+
+    static func validate(_ tab: EditorTabReport) throws(EnvelopeRejection) {
+        guard isProvider(tab.provider), isIdentifier(tab.providerConversationId) else {
+            throw .malformed("provider or conversation id")
+        }
+        guard (1...BridgeLimits.maximumTitleLength).contains(tab.title.count) else { throw .malformed("title length") }
+        guard isWorkspacePath(tab.workspacePath) else { throw .malformed("workspace path") }
+        guard (1...8).contains(tab.viewColumn), (0...8).contains(tab.index) else { throw .malformed("editor position") }
+    }
+
     static func validate(_ snapshot: InventorySnapshotPayload) throws(EnvelopeRejection) {
+        let editorTabs = snapshot.editorTabs ?? []
+        guard editorTabs.count <= BridgeLimits.maximumTabsPerSnapshot else {
+            throw .malformed("snapshot has \(editorTabs.count) editor tabs")
+        }
+        guard Set(editorTabs.map(\.providerConversationId)).count == editorTabs.count else {
+            throw .malformed("duplicate editor tab id in snapshot")
+        }
+        for tab in editorTabs { try validate(tab) }
+        try validateBrowserTabs(snapshot)
+    }
+
+    private static func validateBrowserTabs(_ snapshot: InventorySnapshotPayload) throws(EnvelopeRejection) {
         guard snapshot.tabs.count <= BridgeLimits.maximumTabsPerSnapshot else {
             throw .malformed("snapshot has \(snapshot.tabs.count) tabs")
         }

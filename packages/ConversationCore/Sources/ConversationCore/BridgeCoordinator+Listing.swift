@@ -43,7 +43,10 @@ extension BridgeCoordinator {
     public func rows() -> [DestinationRow] {
         let routeCounts = Dictionary(grouping: registry.allDestinations(), by: \.conversationId).mapValues(\.count)
         return registry.allDestinations().compactMap { row(for: $0, routeCount: routeCounts) }
-            .sorted { ($0.profileAlias ?? "", $0.title, $0.tabId ?? 0) < ($1.profileAlias ?? "", $1.title, $1.tabId ?? 0) }
+            .sorted {
+                ($0.profileAlias ?? "", $0.title, $0.tabId ?? 0, $0.providerConversationId)
+                    < ($1.profileAlias ?? "", $1.title, $1.tabId ?? 0, $1.providerConversationId)
+            }
     }
 
     private func row(for destination: Destination, routeCount: [UUID: Int]) -> DestinationRow? {
@@ -88,7 +91,7 @@ extension BridgeCoordinator {
             ConnectorSummary(
                 connectorId: connector.id, profileAlias: connector.profileAlias,
                 reachability: connectionByInstallation[connector.installationId] == nil ? .disconnected : .connected,
-                routeCount: tabDestinations[connector.id]?.count ?? 0
+                routeCount: (tabDestinations[connector.id]?.count ?? 0) + (editorDestinations[connector.id]?.count ?? 0)
             )
         }.sorted { ($0.profileAlias ?? "", $0.connectorId) < ($1.profileAlias ?? "", $1.connectorId) }
     }

@@ -4,6 +4,18 @@ extension BridgeCoordinator {
     mutating func applySnapshot(
         _ snapshot: InventorySnapshotPayload, binding: Binding, connection: ConnectionID, now: Date
     ) -> BridgeResult {
+        let editorTabs = snapshot.editorTabs ?? []
+        switch binding.kind {
+        case .vscode:
+            guard snapshot.tabs.isEmpty else {
+                return violation(connection, .unauthorized, "an editor connector may not report browser tabs", close: true)
+            }
+            return applyEditorSnapshot(editorTabs, binding: binding, connection: connection, now: now)
+        case .chrome:
+            guard editorTabs.isEmpty else {
+                return violation(connection, .unauthorized, "a browser connector may not report editor tabs", close: true)
+            }
+        }
         if let refusal = refusal(for: snapshot.tabs, binding: binding, connection: connection) { return refusal }
         var result = BridgeResult()
         let reported = Set(snapshot.tabs.map(\.tabId))
@@ -43,14 +55,30 @@ extension BridgeCoordinator {
         tabDestinations[connectorId]?[tabId] = nil
     }
 
+    /// Editor connectors report whole snapshots only; an incremental message from one is refused.
+    mutating func applyIncremental(
+        _ binding: Binding, _ connection: ConnectionID, _ apply: (inout BridgeCoordinator) -> BridgeResult
+    ) -> BridgeResult {
+        guard binding.kind == .chrome else {
+            return violation(connection, .unauthorized, "an editor connector reports snapshots only", close: true)
+        }
+        return apply(&self)
+    }
+
     /// A connector may only report providers it declared in hello, so a compromised page
     /// adapter cannot mint destinations for another provider.
+    mutating func refusal(
+        forProviders providers: [String], binding: Binding, connection: ConnectionID
+    ) -> BridgeResult? {
+        let declared = connectors[binding.connectorId]?.adapterVersions ?? [:]
+        guard let undeclared = providers.first(where: { declared[$0] == nil }) else { return nil }
+        return violation(connection, .unauthorized, "provider \(undeclared) not declared in hello", close: false)
+    }
+
     private mutating func refusal(
         for tabs: [TabReport], binding: Binding, connection: ConnectionID
     ) -> BridgeResult? {
-        let declared = connectors[binding.connectorId]?.adapterVersions ?? [:]
-        guard let undeclared = tabs.first(where: { declared[$0.provider] == nil }) else { return nil }
-        return violation(connection, .unauthorized, "provider \(undeclared.provider) not declared in hello", close: false)
+        refusal(forProviders: tabs.map(\.provider), binding: binding, connection: connection)
     }
 
     private mutating func store(
@@ -89,17 +117,26 @@ extension BridgeCoordinator {
     }
 
     private mutating func conversationId(for tab: TabReport, binding: Binding, now: Date) -> UUID {
+        conversationId(
+            provider: tab.provider, providerConversationId: tab.providerConversationId, title: tab.title,
+            binding: binding, now: now
+        )
+    }
+
+    mutating func conversationId(
+        provider: String, providerConversationId: String, title: String, binding: Binding, now: Date
+    ) -> UUID {
         let key = IdentityKey(IdentityKey.Observed(
-            provider: tab.provider, account: nil, workspaceId: nil, providerConversationId: tab.providerConversationId,
+            provider: provider, account: nil, workspaceId: nil, providerConversationId: providerConversationId,
             connectorId: binding.connectorId, identityEpoch: Self.unverifiedIdentityEpoch, temporaryId: UUID()
         ))
         let id = conversationIdByKey[key] ?? UUID()
         conversationIdByKey[key] = id
         let existing = conversations[id]
-        if existing?.title != tab.title {
+        if existing?.title != title {
             conversations[id] = Conversation(
-                id: id, provider: tab.provider, providerConversationId: tab.providerConversationId,
-                accountScopeId: nil, workspaceScopeId: nil, title: tab.title,
+                id: id, provider: provider, providerConversationId: providerConversationId,
+                accountScopeId: nil, workspaceScopeId: nil, title: title,
                 createdAt: existing?.createdAt ?? now, lastObservedAt: now, revision: (existing?.revision ?? 0) + 1
             )
         }

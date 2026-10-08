@@ -3,6 +3,8 @@ import Foundation
 public enum ActivationStart: Sendable, Equatable {
     /// The request is on the wire; the outcome arrives later as a `.activation` event.
     case dispatched(requestId: UUID, outbound: [Outbound])
+    /// Same, but the host must first bring an editor window forward and give it a moment.
+    case dispatchedAfterPreparation(requestId: UUID, outbound: [Outbound], preparation: ActivationPreparation)
     /// Nothing was sent. The result says why, so no one waits on an acknowledgment that cannot come.
     case refused(ActivationResult)
 }
@@ -26,26 +28,52 @@ extension BridgeCoordinator {
         case let failed:
             return refuse(failed.failureOutcome ?? .failed)
         }
-        guard destination.supports(.activate), case .browserTab(let tab) = destination.locator else {
+        guard destination.supports(.activate), let connectorId = destination.connectorId else {
             return refuse(.unsupported)
         }
-        guard let connection = connectionByInstallation[connectors[tab.connectorId]?.installationId ?? UUID()] else {
+        guard let connection = connectionByInstallation[connectors[connectorId]?.installationId ?? UUID()] else {
             return refuse(.connectorOffline)
         }
         guard let conversation = conversations[destination.conversationId],
-              let providerConversationId = conversation.providerConversationId else {
-            return refuse(.failed)
+              let payload = Self.activationPayload(requestId, destination, conversation) else {
+            return refuse(.unsupported)
         }
-        let payload = ActivateRequestPayload(
-            requestId: requestId, destinationId: destinationId, destinationRevision: expectedRevision,
-            tabId: tab.tabId, windowId: tab.windowIdHint ?? 0, expectedProvider: conversation.provider,
-            expectedConversationId: providerConversationId
-        )
         pending[requestId] = PendingActivation(
             connection: connection, destinationId: destinationId, destinationRevision: expectedRevision,
             deadline: now.addingTimeInterval(activationTimeout)
         )
-        return .dispatched(requestId: requestId, outbound: send(.activateRequest, payload, to: connection).outbound)
+        let outbound = send(.activateRequest, payload, to: connection).outbound
+        if case .editorTab(let editor) = destination.locator {
+            let preparation = ActivationPreparation(bundleId: editor.bundleId, workspacePath: editor.workspacePath)
+            return .dispatchedAfterPreparation(requestId: requestId, outbound: outbound, preparation: preparation)
+        }
+        return .dispatched(requestId: requestId, outbound: outbound)
+    }
+
+    private static func activationPayload(
+        _ requestId: UUID, _ destination: Destination, _ conversation: Conversation
+    ) -> ActivateRequestPayload? {
+        guard let providerConversationId = conversation.providerConversationId else { return nil }
+        switch destination.locator {
+        case .browserTab(let tab):
+            return ActivateRequestPayload(
+                requestId: requestId, destinationId: destination.id, destinationRevision: destination.revision,
+                tabId: tab.tabId, windowId: tab.windowIdHint ?? 0, expectedProvider: conversation.provider,
+                expectedConversationId: providerConversationId, editor: nil
+            )
+        case .editorTab(let editor):
+            return ActivateRequestPayload(
+                requestId: requestId, destinationId: destination.id, destinationRevision: destination.revision,
+                tabId: nil, windowId: nil, expectedProvider: conversation.provider,
+                expectedConversationId: providerConversationId,
+                editor: EditorTarget(
+                    workspacePath: editor.workspacePath, viewColumn: editor.viewColumn, index: editor.index,
+                    expectedTitle: conversation.title
+                )
+            )
+        case .desktopLink, .mobileLink:
+            return nil
+        }
     }
 
     /// A late acknowledgment is not an answer: timeout means the focus request may have happened.

@@ -13,7 +13,8 @@ struct BridgeHarness {
         let connection: ConnectionID
         let installationId: UUID
         let epoch: String
-        var connectorId: String { BridgeCoordinator.connectorId(for: installationId) }
+        var kind: ConnectorKind = .chrome
+        var connectorId: String { BridgeCoordinator.connectorId(for: installationId, kind: kind) }
     }
 
     static func client(_ id: UInt64, epoch: String = "epoch-1") -> Client {
@@ -52,6 +53,27 @@ struct BridgeHarness {
         let aliasJSON = alias.map { #","profileAlias":"\#($0)""# } ?? ""
         let versions = providers.map { #""\#($0)":"0.1.0""# }.joined(separator: ",")
         return send(client, type: "hello", payload: #"{"installationId":"\#(client.installationId.uuidString)"\#(aliasJSON),"adapterVersions":{\#(versions)}}"#)
+    }
+
+    static func editor(_ id: UInt64, epoch: String = "epoch-1") -> Client {
+        Client(connection: ConnectionID(id), installationId: UUID(), epoch: epoch, kind: .vscode)
+    }
+
+    @discardableResult
+    mutating func helloEditor(_ client: Client, folder: String = "Porter", providers: [String] = ["claude-code"]) -> BridgeResult {
+        let versions = providers.map { #""\#($0)":"0.1.0""# }.joined(separator: ",")
+        return send(client, type: "hello", payload: #"{"installationId":"\#(client.installationId.uuidString)","profileAlias":"\#(folder)","connectorKind":"vscode","adapterVersions":{\#(versions)}}"#)
+    }
+
+    /// Each entry is (conversation id, title, workspace path, column, index).
+    @discardableResult
+    mutating func editorSnapshot(
+        _ client: Client, tabs: [(id: String, title: String, path: String, column: Int, index: Int)], provider: String = "claude-code"
+    ) -> BridgeResult {
+        let list = tabs.map {
+            #"{"provider":"\#(provider)","providerConversationId":"\#($0.id)","title":"\#($0.title)","workspacePath":"\#($0.path)","viewColumn":\#($0.column),"index":\#($0.index)}"#
+        }.joined(separator: ",")
+        return send(client, type: "inventory.snapshot", payload: #"{"tabs":[],"editorTabs":[\#(list)]}"#)
     }
 
     @discardableResult

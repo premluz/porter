@@ -10,7 +10,8 @@ extension BridgeCoordinator {
         guard header.sequence == 0 else {
             return violation(connection, .outOfOrder, "hello must open the sequence at 0", close: true)
         }
-        let connectorId = Self.connectorId(for: hello.installationId)
+        let kind = hello.kind
+        let connectorId = Self.connectorId(for: hello.installationId, kind: kind)
         guard header.connectorId == connectorId else {
             return violation(connection, .unauthorized, "connectorId does not match installationId", close: true)
         }
@@ -20,13 +21,13 @@ extension BridgeCoordinator {
         }
         retireDestinations(ofConnector: connectorId)
         bindings[connection] = Binding(
-            connectorId: connectorId, installationId: hello.installationId, epoch: header.connectionEpoch
+            connectorId: connectorId, kind: kind, installationId: hello.installationId, epoch: header.connectionEpoch
         )
         connectionByInstallation[hello.installationId] = connection
         sequencer.begin(connectorId: connectorId, epoch: header.connectionEpoch)
         _ = sequencer.admit(connectorId: connectorId, epoch: header.connectionEpoch, sequence: header.sequence)
         connectors[connectorId] = Connector(
-            id: connectorId, deviceId: deviceId, providerType: .chromeExtension, profileAlias: hello.profileAlias,
+            id: connectorId, deviceId: deviceId, providerType: kind.connectorType, profileAlias: hello.profileAlias,
             installationId: hello.installationId, connectionEpoch: header.connectionEpoch,
             protocolVersion: header.protocolVersion, adapterVersions: hello.adapterVersions,
             connectedAt: now, lastHeartbeatAt: now
@@ -42,6 +43,8 @@ extension BridgeCoordinator {
             registry.remove(destinationId)
         }
         tabDestinations[connectorId] = nil
+        for destinationId in (editorDestinations[connectorId] ?? [:]).values { registry.remove(destinationId) }
+        editorDestinations[connectorId] = nil
         remembered = remembered.filter { $0.key.connectorId != connectorId }
     }
 

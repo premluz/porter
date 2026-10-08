@@ -54,16 +54,28 @@ extension RegistryService {
         case .refused(let result):
             return ActivationReport(outcome: result.outcome, appActivation: nil)
         case .dispatched(let requestId, let outbound):
-            waiters.withLock { $0[requestId] = waiter }
-            defer { waiters.withLock { $0[requestId] = nil } }
-            apply(BridgeResult(outbound: outbound))
-            guard let result = waiter.wait(timeout: activationTimeout + Self.waitMargin) else {
-                return ActivationReport(outcome: .timeout, appActivation: nil)
-            }
-            return ActivationReport(
-                outcome: result.outcome, appActivation: result.outcome == .activated ? focusApplication() : nil
-            )
+            return sendAndAwait(requestId, outbound, waiter, afterPreparation: nil)
+        case .dispatchedAfterPreparation(let requestId, let outbound, let preparation):
+            let prepared = prepareActivation(preparation)
+            log("prepared \(preparation.bundleId): \(prepared)")
+            Thread.sleep(forTimeInterval: windowSettleDelay)
+            return sendAndAwait(requestId, outbound, waiter, afterPreparation: prepared)
         }
+    }
+
+    /// Sends the request and blocks until the connector answers or the coordinator times it out.
+    /// A browser activation then asks macOS to bring the browser forward; an editor one already did.
+    private func sendAndAwait(
+        _ requestId: UUID, _ outbound: [Outbound], _ waiter: ActivationWaiter, afterPreparation: String?
+    ) -> ActivationReport {
+        waiters.withLock { $0[requestId] = waiter }
+        defer { waiters.withLock { $0[requestId] = nil } }
+        apply(BridgeResult(outbound: outbound))
+        guard let result = waiter.wait(timeout: activationTimeout + Self.waitMargin) else {
+            return ActivationReport(outcome: .timeout, appActivation: nil)
+        }
+        guard result.outcome == .activated else { return ActivationReport(outcome: result.outcome, appActivation: nil) }
+        return ActivationReport(outcome: .activated, appActivation: afterPreparation ?? focusApplication())
     }
 
     func serveControl(_ connection: FramedConnection) {

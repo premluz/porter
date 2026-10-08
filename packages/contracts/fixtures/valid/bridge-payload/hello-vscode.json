@@ -1,0 +1,8 @@
+{
+  "installationId": "6f1c2a3e-4444-4a1a-8a1a-0000000000aa",
+  "profileAlias": "Porter",
+  "connectorKind": "vscode",
+  "adapterVersions": {
+    "claude-code": "0.1.0"
+  }
+}

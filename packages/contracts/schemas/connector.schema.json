@@ -5,21 +5,57 @@
   "description": "One installed browser connector in one browser profile. profileAlias is user-supplied; browsers do not expose profile names to extensions.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["id", "deviceId", "providerType", "installationId", "connectionEpoch", "protocolVersion", "adapterVersions", "connectedAt", "lastHeartbeatAt"],
+  "required": [
+    "id",
+    "deviceId",
+    "providerType",
+    "installationId",
+    "connectionEpoch",
+    "protocolVersion",
+    "adapterVersions",
+    "connectedAt",
+    "lastHeartbeatAt"
+  ],
   "properties": {
-    "id": { "$ref": "common.schema.json#/$defs/opaqueId" },
-    "deviceId": { "$ref": "common.schema.json#/$defs/uuid" },
-    "providerType": { "enum": ["chromeExtension", "safariExtension"] },
-    "profileAlias": { "$ref": "common.schema.json#/$defs/label" },
-    "installationId": { "$ref": "common.schema.json#/$defs/uuid" },
-    "connectionEpoch": { "$ref": "common.schema.json#/$defs/opaqueId" },
-    "protocolVersion": { "$ref": "common.schema.json#/$defs/protocolVersion" },
+    "id": {
+      "$ref": "common.schema.json#/$defs/opaqueId"
+    },
+    "deviceId": {
+      "$ref": "common.schema.json#/$defs/uuid"
+    },
+    "providerType": {
+      "enum": [
+        "chromeExtension",
+        "safariExtension",
+        "vscodeExtension"
+      ]
+    },
+    "profileAlias": {
+      "$ref": "common.schema.json#/$defs/label"
+    },
+    "installationId": {
+      "$ref": "common.schema.json#/$defs/uuid"
+    },
+    "connectionEpoch": {
+      "$ref": "common.schema.json#/$defs/opaqueId"
+    },
+    "protocolVersion": {
+      "$ref": "common.schema.json#/$defs/protocolVersion"
+    },
     "adapterVersions": {
       "type": "object",
-      "propertyNames": { "$ref": "common.schema.json#/$defs/provider" },
-      "additionalProperties": { "$ref": "common.schema.json#/$defs/version" }
+      "propertyNames": {
+        "$ref": "common.schema.json#/$defs/provider"
+      },
+      "additionalProperties": {
+        "$ref": "common.schema.json#/$defs/version"
+      }
     },
-    "connectedAt": { "$ref": "common.schema.json#/$defs/timestamp" },
-    "lastHeartbeatAt": { "$ref": "common.schema.json#/$defs/timestamp" }
+    "connectedAt": {
+      "$ref": "common.schema.json#/$defs/timestamp"
+    },
+    "lastHeartbeatAt": {
+      "$ref": "common.schema.json#/$defs/timestamp"
+    }
   }
 }
