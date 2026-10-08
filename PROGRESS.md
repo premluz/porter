@@ -141,6 +141,20 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Not verified: everything that needs a running VS Code. Whether the tab type name is right, whether position commands reach the tab, whether an outside link reaches the right window when several are open, and whether the OpenAI extension's chats can be seen the same way.
 - Next action: Prem runs the probe (manual batch F); the result decides the shape of the real companion.
 
+## LOG-20261008-011 — VS Code probe: tab detection and focus observed in one window
+
+- Date: 2026-10-08.
+- Author: assistant; observations by Prem in VS Code 1.140 (window "Porter").
+- Tasks: TASK-015.
+- Tags: area/macos, area/identity, phase/r1.
+- Verified (observed, one window, one Claude Code tab): the probe loads from the linked folder; "List Claude Code tabs" found the open Claude Code tab with its group, position and active state, so the webview type `claudeVSCodePanel` is right; "Test bringing a Claude Code tab forward", with a file tab in front, brought the Claude Code tab forward and the tab list confirmed it (reported by Prem as worked; the exact verdict line was not pasted). Tab titles can be truncated with an ellipsis ("Porter macOS edge panel …").
+- Verified (observed, `vscode://` link): a link sent from Terminal with a file tab in front reached the extension in the window, matched the Claude Code tab by its (truncated) title, and brought it forward twice (`worked`); the text cursor landed in the chat input. An earlier send with the tab already in front correctly reported `alreadyActive` and did nothing. The first send showed a VS Code confirmation popup for the extension link; Prem chose its "don't show again" option, so whether the prompt would recur without it is not known.
+- Not verified: more than one VS Code window (which window receives a link), a link sent while another app is in front, identical titles, tabs in other editor groups, whether Porter can use a title as the identifier, and the OpenAI extension.
+- Verified (observed, two windows): with a second VS Code window in front, a link for a tab in the first window brought nothing forward; links go to the focused window, which found no matching tab. A companion therefore cannot rely on the link alone and must first bring the right window forward.
+- Verified (observed): `open -a "Visual Studio Code" <folder>` brought the existing window for that folder forward without creating a new window (tried twice); doing that, waiting 1.5 seconds and then sending the link brought the first window forward and flipped it to its Claude Code tab. The route window-by-folder then tab works from another VS Code window. Not tried: another app in front, several windows on nested folders, multi-root workspaces, windows with no folder.
+- Decision: build the real companion on this route. Each window reports its Claude Code tabs to the registry over the local socket; Porter opens the window's folder, then sends an activation request over the same socket (no `vscode://` link and no confirmation popup). VS Code tabs have no stable ID, so identity is workspace plus title plus ordinal and a rename changes it (a documented limit).
+- Next action: contract and core changes for editor tabs, then the companion, then the panel.
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.
