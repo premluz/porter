@@ -133,8 +133,21 @@ public final class PanelController {
         settle(window: frame(expanded: false))
         panel.allowsKey = false
         panel.resignKey()
+        reattachContent()
         // After the resize and the key change have both been applied, so the glass is rebuilt last.
         Task { @MainActor [weak self] in self?.presentation.refreshSurface() }
+    }
+
+    /// The glass edge went missing only on a window that had been resized smaller after being key, and came
+    /// back on any later mouse event. Re-attaching the content and re-ordering the window makes the window
+    /// server register it again, which is what such an event does.
+    private func reattachContent() {
+        panel.contentView = nil
+        panel.contentView = host
+        host.layoutSubtreeIfNeeded()
+        host.needsDisplay = true
+        panel.displayIfNeeded()
+        panel.orderFrontRegardless()
     }
 
     private func contentChanged() {
