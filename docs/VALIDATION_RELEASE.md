@@ -106,6 +106,15 @@ Everything above is automated. This batch covers what automation cannot: appeara
 1. Expect a "Sample data" banner, Pinned and Open sections, status in words, a dashed marker for anything not live. Tap a row: details sheet with a note that the account on the phone may differ and no open button (sample links go nowhere).
 2. Settings, Accessibility, larger text at the maximum: expect no clipped rows. Rotate to landscape. Search for "release".
 
+**H. Agent working state (Claude Code hooks).** Shows Working, Needs you and Idle on a Claude Code tab. It changes your Claude settings, so it is a deliberate step.
+1. Build: `swift build -c release --package-path services/native-host` and rebuild the Mac app; restart the Mac app.
+2. Quick check without Claude: with the app running and a VS Code window open on `/path/to/folder` with exactly one Claude Code tab, run `echo '{"session_id":"t1","cwd":"/path/to/folder","hook_event_name":"UserPromptSubmit"}' | CLAUDE_CODE_ENTRYPOINT=claude-vscode /Users/przemek/Porter/services/native-host/.build/release/porterctl hook`. Open the pane: that tab should show a pulsing ring and "Working". Send the same with `"hook_event_name":"Stop"`: "Idle". With `"Notification"` plus `"notification_type":"permission_prompt"`: "Needs you". The command must print nothing and exit 0 each time (`echo $?`).
+3. See what would change in your settings: `services/native-host/scripts/claude-hooks.sh`. It changes nothing without `--apply`. Then `claude-hooks.sh --apply` (it backs up `~/.claude/settings.json` first and keeps your other settings and hooks). To undo: `claude-hooks.sh --remove`.
+4. Start a new Claude Code conversation (or reload the VS Code window) so it reads the hooks, then run `/hooks` in Claude Code to confirm Porter's hooks are listed.
+5. In a window with exactly one Claude Code tab, send a prompt. Expect "Working" while it runs, "Needs you" if it asks for permission, then "Idle" when it finishes. Then open a second Claude Code tab in the same window: status must go back to Unknown (it cannot tell which tab). Run `claude` in a terminal in that folder: it must not change the VS Code tab's status.
+6. If nothing ever changes in step 5 but step 2 worked, the extension's sessions are not firing user-level hooks; tell me.
+7. Test the install script itself any time with `services/native-host/scripts/test-claude-hooks.sh` (uses a temporary file only).
+
 **E0. Recency (live).** Open three Claude chats in Chrome and, in VS Code, two Claude Code tabs. Click through them in a known order, then open the pane. Expect the one you used last on top, and the order to follow as you switch (click away and reopen the pane). Quirks to report: a chat you only returned to by switching windows should also rise; tabs nobody has focused since the window opened sit below those that were; the list must not reshuffle while the pane is open.
 
 **E. Other provider and diagnostics**

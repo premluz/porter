@@ -180,6 +180,20 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Not verified: how the new ordering feels; the Codex tab types at runtime (the OpenAI extension's side-panel view is not an editor tab and will not appear); any ChatGPT web chat; window-focus recency in practice.
 - Next action: Prem runs manual batches E0, E1 and F9, and reports any `[porter] ... not recognised` lines and the diagnostic output for a Codex tab.
 
+## LOG-20261008-014 — Agent working state from Claude Code hooks
+
+- Date: 2026-10-08.
+- Author: assistant; Prem reported that every chat showed the same dotted "unknown" circle and asked for agent working state.
+- Tasks: TASK-013 (status), TASK-015, TASK-023.
+- Tags: area/identity, area/security, area/macos, phase/r1.
+- Why unknown until now: nothing Porter could observe says whether a chat is busy; that was by design (no guessing). Claude Code hooks are a documented, explicit signal (S15), so they are used for Claude Code only.
+- Changed: `AgentEvent` (whitelisted fields only) with strict validation, the event-to-state rules, and per-tab attribution in the core; a control-socket command for events; `porterctl hook` (prints nothing, always exits 0, quick, errors only on stderr) and `porterctl hook-config`; `claude-hooks.sh` to add or remove Porter's hooks in a Claude settings file (dry run by default, backup, keeps everything else) with a test script; the Mac app reads the registry's statuses and re-checks them when the pane opens.
+- Attribution rules (a wrong "Working" is worse than none): the session must be from the VS Code extension, inside the window's folder (deepest window wins), with exactly one Claude Code tab and one such session; otherwise Unknown.
+- Verified (automated): ConversationCore 92 (13 new, plus a mutation check on the entrypoint rule), native-host 23 (7 new, including the real `porterctl hook` binary with a fake window), Mac app 39; the install script's own test; privacy tests showing prompt text, tool input and transcript path never reach an event or an error message.
+- Not verified: any real Claude Code session; whether user-level hooks fire for the VS Code extension; how the status reads in use; browser chats and Codex (no signal; Q-023); several tabs per window (Q-024).
+- Not done on purpose: your Claude settings were not changed. Applying the hooks is a step for you (batch H).
+- Next action: Prem runs batch H.
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.

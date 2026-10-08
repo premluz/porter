@@ -5,8 +5,10 @@ import Foundation
 
 // porterctl list [--json]
 // porterctl activate <destinationId> <revision>
+// porterctl hook               (run by Claude Code hooks: reads the hook input on stdin, prints nothing)
+// porterctl hook-config        (prints the settings snippet that registers the hook)
 
-private let usage = "usage: porterctl list [--json] | porterctl activate <destinationId> <revision>"
+private let usage = "usage: porterctl list [--json] | activate <destinationId> <revision> | hook | hook-config"
 
 private func die(_ message: String) -> Never {
     FileHandle.standardError.write(Data("porterctl: \(message)\n".utf8))
@@ -61,6 +63,10 @@ case "activate":
     guard response.ok, let outcome = response.outcome else { die(response.error ?? "activate failed") }
     print("outcome: \(outcome.rawValue)  app: \(response.appActivation ?? "n/a")")
     exit(outcome == .activated ? 0 : 3)
+case "hook":
+    Hook.run()
+case "hook-config":
+    print(Hook.configuration(executable: Bundle.main.executablePath ?? CommandLine.arguments[0]))
 default:
     die(usage)
 }

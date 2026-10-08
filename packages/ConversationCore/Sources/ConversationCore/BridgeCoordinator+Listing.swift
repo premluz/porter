@@ -105,3 +105,8 @@ extension BridgeCoordinator {
     /// Exposed so tests can prove the memory of retired routes stays bounded.
     public var rememberedRouteCount: Int { remembered.count }
 }
+
+extension BridgeCoordinator {
+    /// Exposed so tests can prove the table of remembered agent sessions stays bounded.
+    public var agentSessionCount: Int { agentSessions.count }
+}

@@ -140,4 +140,24 @@ struct AppModelTests {
         #expect(labels.isSuperset(of: ["Working", "Needs you", "New response", "Unknown"]))
         #expect(labels.contains("Last seen working 15 min ago"))
     }
+
+    @Test("a status the registry vouches for shows on its row; a route without one stays Unknown; opening the pane looks again")
+    func statusReachesTheRow() async throws {
+        let first = Harness.row("a", title: "Busy")
+        let second = Harness.row("b", title: "Quiet")
+        let harness = try Harness(rows: [first, second])
+        await harness.model.refresh()
+        #expect(harness.model.items.allSatisfy { StatusPresentation.label(for: $0.status) == "Unknown" })
+
+        let received = Date(timeIntervalSince1970: 1_791_450_000)
+        let observation = StatusObservation(
+            id: UUID(), destinationId: first.destinationId, activity: .working, attention: .none, evidenceKind: .providerEvent,
+            observedAt: received, receivedAt: received, expiresAt: received.addingTimeInterval(1_800), sequence: 1,
+            connectionEpoch: "hook", adapterVersion: "0.1.0"
+        )
+        harness.source.statusMap = [first.destinationId: DestinationStatus(display: .working, freshness: .fresh, reachability: .connected, lastKnown: observation)]
+        harness.model.paneVisibilityChanged(visible: true)
+        let labels = Dictionary(uniqueKeysWithValues: harness.model.items.map { ($0.title, StatusPresentation.label(for: $0.status)) })
+        #expect(labels == ["Busy": "Working", "Quiet": "Unknown"])
+    }
 }

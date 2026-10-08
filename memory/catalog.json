@@ -247,8 +247,8 @@
         "DOC-QUESTIONS"
       ],
       "path": "memory/FACTS.md",
-      "revision": "sha256:1d6f4b73fdbc16fbb8588d73a9fb07ba3da976f9a21bc0533b17bd84972ef7ce",
-      "line_count": 193
+      "revision": "sha256:f8c55879a8b151658369eda4990115cb9b3b7f5efb56283676adb4565d95479c",
+      "line_count": 201
     },
     {
       "id": "DOC-HANDOFF",
@@ -358,8 +358,8 @@
         "DOC-TEMPLATES"
       ],
       "path": "PROGRESS.md",
-      "revision": "sha256:dd469e3a225dcfcc7e6ccc7e31341b2334809ffa7f9c20420e79d72b27797460",
-      "line_count": 185
+      "revision": "sha256:33a3a4d6fc29ff063d29cf3f8132ec233e428062db71f9dab2eebb833d697ce4",
+      "line_count": 199
     },
     {
       "id": "DOC-QUESTIONS",
@@ -382,8 +382,8 @@
         "ADR-003"
       ],
       "path": "memory/QUESTIONS.md",
-      "revision": "sha256:81a2ec01c85fc1eab492825cde3914ab85f1809c2b6da8633a8d7bd347e0c279",
-      "line_count": 59
+      "revision": "sha256:cc0123fe5a8360d755c202781acef9fb51482b7ddc01a3aeb66fbd77ba7a6842",
+      "line_count": 61
     },
     {
       "id": "DOC-README",
@@ -478,8 +478,8 @@
         "DOC-FACTS"
       ],
       "path": "docs/SOURCES.md",
-      "revision": "sha256:7e36fcc82d2977d8dabd0ea8b3e2774f1526acc4367ef227ff3db7bf9cb3d6a5",
-      "line_count": 109
+      "revision": "sha256:3aa7534658417ec21235773d6dcc21dba9fa26c554ae7dfa7ebf2fd2b14cb849",
+      "line_count": 115
     },
     {
       "id": "DOC-STATE",
@@ -523,7 +523,7 @@
         "DOC-VALIDATION"
       ],
       "path": "TASKS.md",
-      "revision": "sha256:b29a878b1f12bad40ec5a9738ea39e330001abeeef58eed2d9fcb551bc4b06d3",
+      "revision": "sha256:a2faab866f2f1526edd10508d5ae3b7008aeb819c5448fb7920a9b319a5cb511",
       "line_count": 52
     },
     {
@@ -593,8 +593,8 @@
         "DOC-SECURITY"
       ],
       "path": "docs/VALIDATION_RELEASE.md",
-      "revision": "sha256:71f76365966ee005ed8a7fa449170fd677b6b36d1bae756134d84b88a2081854",
-      "line_count": 189
+      "revision": "sha256:8bf986a97f04268de336fa9f225dc70b4c154670898e51a0f330fabfadbcbfb1",
+      "line_count": 198
     },
     {
       "id": "PLAN-001",

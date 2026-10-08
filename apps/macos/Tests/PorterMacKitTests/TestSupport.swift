@@ -26,6 +26,7 @@ final class ScriptedSource: DestinationSource, @unchecked Sendable {
     var rows: [DestinationRow]
     var connectors: [ConnectorSummary]
     var outcome: ActivationOutcome = .activated
+    var statusMap: [UUID: DestinationStatus] = [:]
     private(set) var activations: [(UUID, Int)] = []
 
     init(rows: [DestinationRow], connectors: [ConnectorSummary]) {
@@ -34,7 +35,7 @@ final class ScriptedSource: DestinationSource, @unchecked Sendable {
     }
 
     func listing() -> RegistryListing { RegistryListing(connectors: connectors, rows: rows) }
-    func statuses() -> [UUID: DestinationStatus] { [:] }
+    func statuses() -> [UUID: DestinationStatus] { statusMap }
     func setChangeHandler(_ handler: @escaping @Sendable () -> Void) {}
 
     func activate(destinationId: UUID, revision: Int) async -> ActivationReport {

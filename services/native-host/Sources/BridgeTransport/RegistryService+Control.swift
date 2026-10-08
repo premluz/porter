@@ -40,6 +40,11 @@ public struct ActivationReport: Sendable, Equatable {
 }
 
 extension RegistryService {
+    /// Statuses the registry can vouch for, by route. Anything it cannot attribute is simply absent.
+    public func statuses() -> [UUID: DestinationStatus] {
+        coordinator.withLock { $0.agentStatuses(now: Date()) }
+    }
+
     public func listing() -> RegistryListing {
         coordinator.withLock { RegistryListing(connectors: $0.connectorSummaries(), rows: $0.rows()) }
     }
@@ -99,12 +104,25 @@ extension RegistryService {
         switch request.command {
         case .list:
             return coordinator.withLock { .listing($0.connectorSummaries(), $0.rows()) }
+        case .agentEvent:
+            return accept(request.agent)
         case .activate:
             guard let destinationId = request.destinationId, let revision = request.revision else {
                 return .failure("activate needs destinationId and revision")
             }
             let report = activate(destinationId: destinationId, expectedRevision: revision)
             return .activation(report.outcome, appActivation: report.appActivation)
+        }
+    }
+
+    private func accept(_ agent: AgentEvent?) -> ControlResponse {
+        guard let agent else { return .failure("agentEvent needs an agent") }
+        do {
+            let valid = try agent.validated()
+            apply(coordinator.withLock { $0.recordAgentEvent(valid, now: Date()) })
+            return .accepted()
+        } catch {
+            return .failure("agent event refused: \(error)")
         }
     }
 }

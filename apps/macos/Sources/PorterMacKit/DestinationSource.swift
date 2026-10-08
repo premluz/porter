@@ -7,7 +7,7 @@ import Synchronization
 /// shows every state without a browser.
 public protocol DestinationSource: Sendable {
     func listing() -> RegistryListing
-    /// Only states backed by a verified signal. The live source has none yet, so everything is unknown.
+    /// Only states backed by a verified signal; a route with none is simply absent, which reads as Unknown.
     func statuses() -> [UUID: DestinationStatus]
     func activate(destinationId: UUID, revision: Int) async -> ActivationReport
     func setChangeHandler(_ handler: @escaping @Sendable () -> Void)
@@ -44,7 +44,8 @@ public final class LiveRegistrySource: DestinationSource {
 
     public func listing() -> RegistryListing { service.listing() }
 
-    public func statuses() -> [UUID: DestinationStatus] { [:] }
+    /// Only what the registry can attribute with certainty: Claude Code tabs it has hook events for.
+    public func statuses() -> [UUID: DestinationStatus] { service.statuses() }
 
     public func activate(destinationId: UUID, revision: Int) async -> ActivationReport {
         // The registry blocks until the browser answers, so keep it off the main thread.

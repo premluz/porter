@@ -23,6 +23,8 @@ public enum BridgeEvent: Sendable, Equatable {
     case connectorConnected(connectorId: String)
     case connectorDisconnected(connectorId: String)
     case inventoryChanged(connectorId: String)
+    /// An agent's working state changed; the panel should recompute statuses.
+    case statusChanged
     case activation(ActivationResult)
     case protocolViolation(connection: ConnectionID, code: BridgeErrorCode, detail: String)
 }
@@ -97,6 +99,9 @@ public struct BridgeCoordinator: Sendable {
     var editorDestinations: [String: [String: UUID]] = [:]
     /// When each route's tab was last the visible one, as its connector reports it. Ordering only.
     var lastActive: [UUID: Date] = [:]
+    /// Agent sessions by ID, from hook events. Only the few fields of AgentEvent are ever kept.
+    var agentSessions: [String: AgentSession] = [:]
+    var agentSequence = 0
 
     public init(
         deviceId: UUID, locatorPolicy: LocatorPolicy = LocatorPolicy(), activationTimeout: TimeInterval = 5

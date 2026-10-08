@@ -87,6 +87,8 @@ public final class AppModel {
     /// While the pane is open, items already on screen keep their positions.
     public func paneVisibilityChanged(visible: Bool) {
         frozenOrder = visible ? items.map(\.id) : nil
+        // A status can have gone stale since the last event, and nothing announces that, so look again.
+        if visible { rebuild() }
         if visible {
             focusRequest += 1
             if selection.selectedId == nil { selection.reset(to: items) }

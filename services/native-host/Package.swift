@@ -20,7 +20,7 @@ let package = Package(
         .executableTarget(name: "porterctl", dependencies: ["BridgeTransport", "ConversationCore"]),
         .testTarget(
             name: "BridgeTransportTests",
-            dependencies: ["BridgeTransport", "ConversationCore", "porter-native-host"]
+            dependencies: ["BridgeTransport", "ConversationCore", "porter-native-host", "porterctl"]
         ),
     ]
 )

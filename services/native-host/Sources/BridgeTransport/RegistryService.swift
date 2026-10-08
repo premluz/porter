@@ -117,6 +117,9 @@ public final class RegistryService: Sendable {
         case .inventoryChanged(let id):
             log("inventory changed: \(id)")
             onChange()
+        case .statusChanged:
+            log("agent status changed")
+            onChange()
         case .protocolViolation(let connection, let code, let detail): log("violation \(connection) \(code): \(detail)")
         case .activation(let result):
             log("activation \(result.requestId): \(result.outcome)")

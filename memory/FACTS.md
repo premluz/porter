@@ -188,6 +188,14 @@ Evidence classes: `user_requirement`, `source_documentation`, `verified_test`. P
 - Tags: area/macos, area/identity.
 - Review trigger: any Codex tab that Porter fails to list.
 
+## FACT-022 — Agent working state comes from Claude Code hooks, only where it can be attributed
+
+- Class: source_documentation ([S15](../docs/SOURCES.md)) plus automated tests; not yet observed in a live Claude Code session.
+- Statement: Porter shows Working, Needs you and Idle for a Claude Code editor tab only when its registry has hook events from a session that was started from the VS Code extension (`CLAUDE_CODE_ENTRYPOINT` is `claude-vscode`), whose working folder is inside that window's folder, and when that window has exactly one Claude Code tab and exactly one such session. Anything else stays Unknown, including terminal sessions, windows with two Claude Code tabs, and every Codex and browser chat. Mapping: a prompt, tool call or tool result means working; a permission prompt, question or input request means needs you; a finish, session start or idle prompt means idle; a session end removes the status. A state lasts 30 minutes, then reads as "last seen"; a disconnected window reads the same way. The hook command keeps only the event name, session ID, folder, notification type and entrypoint; the prompt, tool input and transcript path are never copied, logged or sent (tested, including in error messages).
+- Not established: that user-level hooks fire for the VS Code extension's sessions (the docs imply it), how long a real turn goes without a tool event, and how the status reads in daily use.
+- Tags: area/identity, area/security, area/macos, phase/r1.
+- Review trigger: the manual batch H, or Claude Code exposing a session ID per tab, which would remove the one-tab-per-window limit.
+
 ## Adding a fact
 
 Include statement, evidence class, source/test reference, observed date, tags, and review trigger if volatile. A failed experiment can be a fact when its exact environment and outcome are recorded. Do not transform a plausible architectural assumption into a tested capability.
