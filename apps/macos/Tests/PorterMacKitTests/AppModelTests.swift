@@ -160,4 +160,19 @@ struct AppModelTests {
         let labels = Dictionary(uniqueKeysWithValues: harness.model.items.map { ($0.title, StatusPresentation.label(for: $0.status)) })
         #expect(labels == ["Busy": "Working", "Quiet": "Unknown"])
     }
+
+    @Test("only the six most recent are reachable until the older group is opened, and a search shows every match")
+    func olderGroup() async throws {
+        let harness = try Harness(rows: (0..<8).map { Harness.row("c\($0)", title: "Chat \($0)", tab: $0 + 1) })
+        await harness.model.refresh()
+        #expect(harness.model.items.count == 6)
+        harness.model.toggleOlder()
+        #expect(harness.model.items.count == 8)
+        harness.model.toggleOlder()
+        #expect(harness.model.items.count == 6)
+        harness.model.query = "Chat"
+        #expect(harness.model.items.count == 8)
+        harness.model.query = ""
+        #expect(harness.model.items.count == 6)
+    }
 }

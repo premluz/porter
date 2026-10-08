@@ -75,7 +75,8 @@ public final class PanelController {
         let visible = (screen ?? NSScreen.main)?.visibleFrame ?? CGRect(x: 0, y: 0, width: 1440, height: 900)
         let items = model.items
         if expanded {
-            let sections = [model.snapshot.pinned, model.snapshot.open].filter { !$0.isEmpty }.count
+            let split = model.snapshot.recentSplit()
+            let sections = [model.snapshot.pinned, split.recent, split.older].filter { !$0.isEmpty }.count
             let rows = items.isEmpty ? 3 : items.count
             return EdgeGeometry.paneFrame(in: visible, edge: settings.edge, anchor: settings.anchor, rowCount: rows, sectionCount: sections)
         }

@@ -51,11 +51,13 @@ struct PaneView: View {
     }
 
     private var list: some View {
-        ScrollViewReader { proxy in
+        let split = model.snapshot.recentSplit()
+        return ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 0) {
                     section("Pinned", model.snapshot.pinned, firstOrder: 1)
-                    section("Open", model.snapshot.open, firstOrder: 1 + model.snapshot.pinned.count)
+                    section("Open", split.recent, firstOrder: 1 + model.snapshot.pinned.count)
+                    olderGroup(split.older, firstOrder: 1 + model.snapshot.pinned.count + split.recent.count)
                 }
                 .padding(.horizontal, Tokens.Space.s)
                 .background(Palette.contentBacking)
@@ -70,6 +72,30 @@ struct PaneView: View {
         }
     }
 
+    /// Everything beyond the most recent few, folded away until asked for. A search shows it open.
+    @ViewBuilder
+    private func olderGroup(_ items: [PanelItem], firstOrder: Int) -> some View {
+        if !items.isEmpty {
+            Button { model.toggleOlder() } label: {
+                HStack(spacing: Tokens.Space.xs) {
+                    Image(systemName: model.showsOlder ? "chevron.down" : "chevron.right")
+                    Text("Older (\(items.count))")
+                    Spacer()
+                }
+                .font(.caption).textCase(.uppercase).foregroundStyle(Palette.textSecondary)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .disabled(!model.query.trimmingCharacters(in: .whitespaces).isEmpty)
+            .frame(height: Tokens.Size.sectionHeaderHeight, alignment: .bottom)
+            .padding(.horizontal, Tokens.Space.m)
+            .accessibilityLabel("Older conversations, \(items.count)")
+            .accessibilityValue(model.showsOlder ? "expanded" : "collapsed")
+            .reveal(progress: progress, order: firstOrder)
+            if model.showsOlder { rows(items, firstOrder: firstOrder + 1) }
+        }
+    }
+
     @ViewBuilder
     private func section(_ title: String, _ items: [PanelItem], firstOrder: Int) -> some View {
         if !items.isEmpty {
@@ -77,15 +103,20 @@ struct PaneView: View {
                 .frame(height: Tokens.Size.sectionHeaderHeight, alignment: .bottom)
                 .padding(.horizontal, Tokens.Space.m)
                 .accessibilityAddTraits(.isHeader)
-            ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
-                ItemRowView(item: item, isSelected: item.id == model.selection.selectedId) {
-                    model.select(item)
-                    Task { await submit() }
-                }
-                .reveal(progress: progress, order: firstOrder + index)
-                .id(item.id)
-                .contextMenu { menu(for: item) }
+            rows(items, firstOrder: firstOrder)
+        }
+    }
+
+    @ViewBuilder
+    private func rows(_ items: [PanelItem], firstOrder: Int) -> some View {
+        ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
+            ItemRowView(item: item, isSelected: item.id == model.selection.selectedId) {
+                model.select(item)
+                Task { await submit() }
             }
+            .reveal(progress: progress, order: firstOrder + index)
+            .id(item.id)
+            .contextMenu { menu(for: item) }
         }
     }
 

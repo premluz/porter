@@ -35,6 +35,8 @@ public final class AppModel {
     /// Increments whenever the search field should take focus.
     public private(set) var focusRequest = 0
     public private(set) var showHidden = false
+    /// Whether the folded group of older conversations is open; a search always shows every match.
+    public private(set) var olderExpanded = false
     public var query = "" {
         didSet { if query != oldValue { queryChanged() } }
     }
@@ -63,7 +65,9 @@ public final class AppModel {
         snapshot = PanelBuilder.build(PanelInputs(rows: [], connectors: [], records: [], now: clock()))
     }
 
-    public var items: [PanelItem] { snapshot.navigable }
+    public var showsOlder: Bool { olderExpanded || !query.trimmingCharacters(in: .whitespaces).isEmpty }
+
+    public var items: [PanelItem] { snapshot.navigable(showingOlder: showsOlder) }
 
     public var selectedItem: PanelItem? { items.first { $0.id == selection.selectedId } }
 
@@ -129,6 +133,13 @@ public final class AppModel {
     public func toggleShowHidden() {
         showHidden.toggle()
         rebuild()
+    }
+
+    public func toggleOlder() {
+        let previous = items
+        olderExpanded.toggle()
+        selection.reconcile(with: items, previous: previous)
+        onContentChanged()
     }
 
     private func queryChanged() {

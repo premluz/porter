@@ -219,6 +219,17 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Not verified: that the border now stays (a cause inferred from the symptom, not reproduced or photographed); how the new fade feels.
 - Next action: Prem re-runs batch A2 and A3, checking the border after collapse and the fade timing.
 
+## LOG-20261008-017 — Pane shows the six most recent; older conversations fold into a group
+
+- Date: 2026-10-08.
+- Author: assistant; Prem asked for the last six used to show and the rest in an expandable group.
+- Tasks: TASK-014.
+- Tags: area/macos, area/ux, phase/r1.
+- Changed: the pane's "Open" section lists the six newest unpinned conversations; any beyond that sit under an "Older (N)" header that expands and collapses on click. Pinned items do not count toward the six. Arrow-key selection reaches folded rows only while the group is open, and a search shows every match with the group open. The split is `PanelSnapshot.recentSplit` (core, tested); the open/closed state is `AppModel.olderExpanded`. The iPhone list is unchanged and still shows every open conversation. The capsule's dots follow the reachable list, so they no longer include folded conversations.
+- Verified: core 49 tests (4 new), Mac app 53 (1 new), `--self-test` passes.
+- Not verified: how the group looks and feels; the pane keeps the height it opened with, so expanding a long group scrolls rather than growing it.
+- Next action: Prem tries it with more than six chats open.
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.
