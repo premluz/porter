@@ -19,6 +19,7 @@ let package = Package(
                 .product(name: "PorterStore", package: "ConversationCore"),
                 .product(name: "PorterPanelModel", package: "ConversationCore"),
                 .product(name: "BridgeTransport", package: "native-host"),
+                .product(name: "NativeSources", package: "native-host"),
             ]
         ),
         .executableTarget(name: "Porter", dependencies: ["PorterMacKit"]),

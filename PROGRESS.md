@@ -297,6 +297,18 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Not verified: no connector produces this kind yet.
 - Next action: slice 2, the connector itself (script generation from the recognizers' hosts, parsing, polling, activation by window and tab id, incognito excluded).
 
+## LOG-20261009-007 — Native Chrome connector: connector and app wiring (TASK-085)
+
+- Date: 2026-10-09.
+- Author: assistant.
+- Tasks: TASK-085.
+- Tags: area/browser, area/macos, phase/r1.
+- Changed: new `NativeSources` library in the native-host package: a script runner (child `osascript`, 5 s limit), the list and activate scripts for a Chromium browser (windows addressed by id; only provider hosts requested; incognito skipped), a parser, and `ChromeScriptingConnector`, a `HostConnector` that polls every 2 s, reports changes, orders by when a tab was last visible, and re-checks the target before bringing it forward (gone, changed, permission refused, timed out). It never asks a browser that is not running, because scripting would launch it. Recognizers now list their hosts. The Mac app attaches the connector at launch with a stable installation id; it can report `health` for the setup screen.
+- Verified: native-host 38 tests (11 new, including an end-to-end run through the registry with polling and activation, and a runner fake); a live check against this Mac's real Chrome returned its three conversation tabs in 0.29 s with incognito and non-chat pages excluded (counts only, no titles printed); Mac app 53; core 99. I did not start the app against your running instance.
+- Not verified: the app as a whole with this source (batch I), the permission prompt for Porter itself, and a profile-less route next to an extension route in the real panel.
+- Open: nothing tells the user when permission is refused; that belongs to the setup screen (TASK-084). Only Chrome is wired; other Chromium browsers are a value in `ChromiumBrowser` once their dictionaries are checked.
+- Next action: Prem runs batch I. Then TASK-086 (desktop apps) or TASK-087 (Safari), or the setup screen.
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.

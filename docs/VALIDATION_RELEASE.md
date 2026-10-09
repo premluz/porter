@@ -108,6 +108,16 @@ Everything above is automated. This batch covers what automation cannot: appeara
 1. Expect a "Sample data" banner, Pinned and Open sections, status in words, a dashed marker for anything not live. Tap a row: details sheet with a note that the account on the phone may differ and no open button (sample links go nowhere).
 2. Settings, Accessibility, larger text at the maximum: expect no clipped rows. Rotate to landscape. Search for "release".
 
+**I. Chrome without the extension** (FACT-024; the app reads Chrome itself). Chrome tabs on claude.ai and chatgpt.com appear with no extension and no profile name.
+1. Build: `swift build -c release --package-path apps/macos` and restart the Mac app. To see the no-extension result clearly, switch the Porter extension off in `chrome://extensions` (or compare with it on).
+2. Open two Claude chats, one of them in a second profile's window. Open the panel: both should be listed within a couple of seconds, with the profile shown as unknown.
+3. The first time, macOS asks whether Porter (or the terminal you started it from) may control Chrome. Allow it. If you refuse, nothing is listed and nothing explains why yet (the setup screen, TASK-084, will); tell me what you see.
+4. Click each chat: Chrome must come forward on exactly that tab, in the right window. Rename a chat or navigate away and click the old row: expect a clear "changed" or "gone" message, not the wrong tab.
+5. Open a chat in an incognito window: it must not appear. Open a non-chat page on claude.ai (settings, the home page): it must not appear.
+6. With the extension on as well: each chat should appear once, through the extension. A chat open only in a profile without the extension still appears through scripting.
+7. Quit Chrome: the chats should show as unavailable, and Chrome must not be relaunched by Porter.
+8. Automated check against the real Chrome, printing counts only: `PORTER_LIVE_CHROME=1 swift test --package-path services/native-host --filter LiveChromeTests`.
+
 **H. Agent working state (Claude Code hooks).** Shows Working, Needs you and Idle on a Claude Code tab. It changes your Claude settings, so it is a deliberate step.
 1. Build: `swift build -c release --package-path services/native-host` and rebuild the Mac app; restart the Mac app.
 2. Quick check without Claude: with the app running and a VS Code window open on `/path/to/folder` with exactly one Claude Code tab, run `echo '{"session_id":"t1","cwd":"/path/to/folder","hook_event_name":"UserPromptSubmit"}' | CLAUDE_CODE_ENTRYPOINT=claude-vscode /Users/przemek/Porter/services/native-host/.build/release/porterctl hook`. Open the pane: that tab should show a pulsing ring and "Working". Send the same with `"hook_event_name":"Stop"`: "Idle". With `"Notification"` plus `"notification_type":"permission_prompt"`: "Needs you". The command must print nothing and exit 0 each time (`echo $?`).

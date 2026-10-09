@@ -75,6 +75,7 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
             model.reportProblem(message)
             notes.append(message)
         }
+        source.attachNativeSources()
         return Setup(model: model, source: source)
     }
 

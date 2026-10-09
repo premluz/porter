@@ -14,6 +14,8 @@ public protocol ProviderRecognizer: Sendable {
     var adapterVersion: String { get }
     /// False until a real page of this provider has been checked against these rules.
     var verified: Bool { get }
+    /// Web hosts this provider's conversations live on, so a source can ask a browser only for those tabs.
+    var hosts: [String] { get }
     func match(url rawUrl: String?) -> ConversationMatch?
     func cleanTitle(_ raw: String?) -> String
 }
@@ -26,6 +28,8 @@ public struct PathProviderRecognizer: ProviderRecognizer {
     public let verified: Bool
     let host: String
     let pathPrefix: String
+
+    public var hosts: [String] { [host] }
 
     private static let untitled = "Untitled conversation"
     private static let identifierCharacters = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-")
