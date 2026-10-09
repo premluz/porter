@@ -6,21 +6,34 @@ import SwiftUI
 final class TrackingHostingView<Content: View>: NSHostingView<Content> {
     /// The pointer's position, or nil when it left the view.
     var onPointer: ((CGPoint?) -> Void)?
+    /// The cursor to show at a point; the arrow when nil. Set on every move, because an inactive window's cursor is
+    /// otherwise reset by the system as soon as the pointer moves.
+    var cursorAt: ((CGPoint) -> NSCursor)?
 
     override func updateTrackingAreas() {
         super.updateTrackingAreas()
         for area in trackingAreas where area.owner === self { removeTrackingArea(area) }
         addTrackingArea(NSTrackingArea(
-            rect: .zero, options: [.mouseEnteredAndExited, .mouseMoved, .activeAlways, .inVisibleRect], owner: self, userInfo: nil
+            rect: .zero, options: [.mouseEnteredAndExited, .mouseMoved, .cursorUpdate, .activeAlways, .inVisibleRect], owner: self, userInfo: nil
         ))
     }
 
     override func mouseEntered(with event: NSEvent) { report(event) }
     override func mouseMoved(with event: NSEvent) { report(event) }
     override func mouseExited(with event: NSEvent) { onPointer?(nil) }
+    override func cursorUpdate(with event: NSEvent) { setCursor(for: event) }
+
+    private func topLeft(_ event: NSEvent) -> CGPoint {
+        let point = convert(event.locationInWindow, from: nil)
+        return isFlipped ? point : CGPoint(x: point.x, y: bounds.height - point.y)
+    }
+
+    private func setCursor(for event: NSEvent) {
+        (cursorAt?(topLeft(event)) ?? NSCursor.arrow).set()
+    }
 
     private func report(_ event: NSEvent) {
-        let point = convert(event.locationInWindow, from: nil)
-        onPointer?(isFlipped ? point : CGPoint(x: point.x, y: bounds.height - point.y))
+        setCursor(for: event)
+        onPointer?(topLeft(event))
     }
 }

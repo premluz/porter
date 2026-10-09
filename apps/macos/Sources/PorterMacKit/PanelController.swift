@@ -28,6 +28,7 @@ public final class PanelController {
         panel.onCancel = { [weak self] in self?.close() }
         panel.acceptsMouseMovedEvents = true
         host.onPointer = { [weak self] point in self?.pointerMoved(to: point) }
+        host.cursorAt = { [weak self] point in self?.cursor(at: point) ?? .arrow }
         host.rootView = PanelRootView(
             model: model, presentation: presentation, expand: { [weak self] in self?.open() }, close: { [weak self] in self?.close() }
         )
@@ -48,11 +49,23 @@ public final class PanelController {
         if machine.isExpandedOrOpening { close() } else { open() }
     }
 
-    /// Collapsed, resting the pointer on a dot shows what it is; anything else takes the label away.
+    /// What is under the pointer in the collapsed capsule: a dot, the open button, or nothing.
+    private func clickable(at point: CGPoint) -> String? {
+        guard machine.phase == .collapsed else { return nil }
+        return CapsuleHover.item(at: point, frames: presentation.dotFrames)
+    }
+
+    /// A dot and the open button take a click, so they show the pointing hand.
+    private func cursor(at point: CGPoint) -> NSCursor {
+        clickable(at: point) == nil ? .arrow : .pointingHand
+    }
+
+    /// Collapsed, the dot under the pointer is lit and its label shown at once; the label glides to the next dot and
+    /// leaves only when the pointer leaves the dots altogether.
     private func pointerMoved(to point: CGPoint?) {
-        guard machine.phase == .collapsed, let point,
-              let id = CapsuleHover.item(at: point, frames: presentation.dotFrames),
-              let item = model.items.first(where: { $0.id == id }), let frame = presentation.dotFrames[id] else {
+        let hit = point.flatMap(clickable(at:))
+        if presentation.hoveredDot != hit { presentation.hoveredDot = hit }
+        guard let hit, let item = model.items.first(where: { $0.id == hit }), let frame = presentation.dotFrames[hit] else {
             tooltips.hide()
             return
         }
@@ -65,6 +78,7 @@ public final class PanelController {
 
     public func open() {
         tooltips.hide()
+        presentation.hoveredDot = nil
         guard let animation = machine.open() else { return }
         screen = screenUnderPointer()
         panel.allowsKey = true

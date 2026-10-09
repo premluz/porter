@@ -31,7 +31,10 @@ struct PanelRootView: View {
         let _ = presentation.recorder?(rect)
         ZStack(alignment: anchor) {
             if progress < 0.999 {
-                CapsuleView(model: model, expand: expand) { id, frame in presentation.dotFrames[id] = frame }
+                CapsuleView(
+                    model: model, expand: expand, reportDot: { id, frame in presentation.dotFrames[id] = frame },
+                    hovered: presentation.hoveredDot
+                )
                     .opacity(PanelPhases.capsuleOpacity(progress: progress))
                     .allowsHitTesting(progress < 0.1)
             }

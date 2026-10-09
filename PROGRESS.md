@@ -457,6 +457,13 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Verified: Mac app 76 tests (3 new: hit test, screen rectangle, label placement on both edges and clamping) and the self-test (the label lays out). Not verified: the hover itself and the edge, since this needs a pointer and eyes (batch O).
 - Next action: Prem looks at batch O.
 
+## LOG-20261009-023 — Instant, gliding hover label; hand cursor and lit dot
+
+- Date: 2026-10-09.
+- Author: assistant; Prem asked for the label to appear with no delay when sweeping the dots, a subtle fast liquid in and out, going out only when the last dot or the capsule is left (not between dots), and a hover state with the hand cursor on the dots because they open that chat.
+- Changed: no delay. The first label grows out of the capsule's side (slightly smaller, 0.14 s) and, moving to the next dot, the same window glides there (0.09 s, with the new content) instead of leaving and returning; it fades out (0.12 s) only when the pointer leaves the dots. Reduce Motion: a 0.06 s fade, no grow or glide. The dot under the pointer lights and swells (the panel's own pointer tracking drives it, since SwiftUI hover is not delivered to an inactive window); the cursor is the pointing hand over dots and over the open button, set on every pointer move because an inactive window's cursor is otherwise reset.
+- Verified: Mac app 77 tests (hit test now covers the open button) and the self-test. Not verified: any of the motion, the glide, the cursor in an inactive window (the least certain part), since they need a pointer and eyes (batch O).
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.

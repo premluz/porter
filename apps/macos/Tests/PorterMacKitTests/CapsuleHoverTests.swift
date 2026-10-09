@@ -20,6 +20,14 @@ struct CapsuleHoverTests {
         #expect(CapsuleHover.item(at: CGPoint(x: 20, y: 70), frames: [:]) == nil)
     }
 
+    @Test("the open button is hit like a dot, so it shows the pointing hand too, and dots below it are still reachable")
+    func openButton() {
+        var all = frames
+        all[PanelPresentation.openButtonId] = CGRect(x: 6, y: 12, width: 28, height: 28)
+        #expect(CapsuleHover.item(at: CGPoint(x: 20, y: 26), frames: all) == PanelPresentation.openButtonId)
+        #expect(CapsuleHover.item(at: CGPoint(x: 20, y: 70), frames: all) == "a")
+    }
+
     @Test("a dot's frame in the window becomes a rectangle on screen, with the y axis turned over")
     func screenRect() {
         let window = CGRect(x: 1_400, y: 300, width: 40, height: 244)

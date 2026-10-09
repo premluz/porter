@@ -30,6 +30,7 @@ public enum Tokens {
         public static let setupWidth: CGFloat = 520
         public static let providerLogo: CGFloat = 14
         public static let edgeLine: CGFloat = 1
+        public static let dotHoverScale: CGFloat = 1.18
         public static let tooltipMaximumWidth: CGFloat = 280
         public static let pillMaximumWidth: CGFloat = 120
         public static let setupIcon: CGFloat = 24
@@ -56,8 +57,13 @@ public enum Tokens {
         public static let contentCloseFraction = 0.4
         public static let staggerLimit = 8
         public static let rowRise: CGFloat = 6
-        /// How long the pointer rests on a dot before its label appears.
-        public static let tooltipDelay: Duration = .milliseconds(350)
+        /// The capsule's label: in and out are quick, gliding to the next dot quicker, and it starts a little smaller.
+        public static let tooltipIn: TimeInterval = 0.14
+        public static let tooltipOut: TimeInterval = 0.12
+        public static let tooltipGlide: TimeInterval = 0.09
+        public static let tooltipFade: TimeInterval = 0.06
+        public static let dotHover: TimeInterval = 0.1
+        public static let tooltipEntryScale: CGFloat = 0.9
         /// Extra window around the pane while it opens, so the overshoot of the bounce is not clipped.
         public static let overshootMargin: CGFloat = 24
     }
