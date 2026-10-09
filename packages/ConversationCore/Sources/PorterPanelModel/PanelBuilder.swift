@@ -33,7 +33,7 @@ public struct PanelInputs: Sendable {
 public enum PanelBuilder {
     public static func build(_ inputs: PanelInputs) -> PanelSnapshot {
         var unreadable: [String] = []
-        let groups = group(inputs.rows, unreadable: &unreadable)
+        let groups = group(preferringEnhancedRoutes(inputs.rows, connectors: inputs.connectors), unreadable: &unreadable)
         let recordsByKey = Dictionary(uniqueKeysWithValues: inputs.records.map { ($0.key, $0) })
         let reachable = Set(inputs.connectors.filter { $0.reachability == .connected }.map(\.connectorId))
         var items = openItems(groups, records: recordsByKey, inputs: inputs)

@@ -286,6 +286,17 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Not verified: the companion running inside Cursor or Windsurf, and a running window picking up a command-line install.
 - Next action: TASK-084, the setup assistant. It needs a design decision from Prem on the first-launch checklist.
 
+## LOG-20261009-006 — Native Chrome connector, slice 1: contracts, core, extension-wins rule (TASK-085)
+
+- Date: 2026-10-09.
+- Author: assistant.
+- Tasks: TASK-085.
+- Tags: area/browser, area/macos, phase/r1.
+- Changed: new connector kind `chromeScripting` in the connector and hello schemas (two fixtures) and in the core. It behaves like a browser connector (tabs, incremental updates, no editor tabs) and has no profile. Connector summaries now carry the connector type. The panel builder drops a scripted route when an extension route exists for the same provider and conversation, so a chat is not listed twice, and keeps scripted-only routes. Cost, written in the code: a chat open in a profile with the extension and in another without it shows only the extension's route.
+- Verified: contracts validate (69 fixtures); core 99 tests (7 new, one mutation-checked by disabling the rule); native-host 27; Mac app 53.
+- Not verified: no connector produces this kind yet.
+- Next action: slice 2, the connector itself (script generation from the recognizers' hosts, parsing, polling, activation by window and tab id, incognito excluded).
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.

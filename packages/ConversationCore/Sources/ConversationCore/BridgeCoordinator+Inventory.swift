@@ -11,7 +11,7 @@ extension BridgeCoordinator {
                 return violation(connection, .unauthorized, "an editor connector may not report browser tabs", close: true)
             }
             return applyEditorSnapshot(editorTabs, binding: binding, connection: connection, now: now)
-        case .chrome:
+        case .chrome, .chromeScripting:
             guard editorTabs.isEmpty else {
                 return violation(connection, .unauthorized, "a browser connector may not report editor tabs", close: true)
             }
@@ -60,7 +60,7 @@ extension BridgeCoordinator {
     mutating func applyIncremental(
         _ binding: Binding, _ connection: ConnectionID, _ apply: (inout BridgeCoordinator) -> BridgeResult
     ) -> BridgeResult {
-        guard binding.kind == .chrome else {
+        guard binding.kind != .vscode else {
             return violation(connection, .unauthorized, "an editor connector reports snapshots only", close: true)
         }
         return apply(&self)

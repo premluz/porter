@@ -27,7 +27,8 @@
       "enum": [
         "chromeExtension",
         "safariExtension",
-        "vscodeExtension"
+        "vscodeExtension",
+        "chromeScripting"
       ]
     },
     "profileAlias": {

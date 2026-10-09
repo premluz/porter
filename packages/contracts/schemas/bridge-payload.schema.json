@@ -97,7 +97,8 @@
         "connectorKind": {
           "enum": [
             "chrome",
-            "vscode"
+            "vscode",
+            "chromeScripting"
           ]
         }
       }

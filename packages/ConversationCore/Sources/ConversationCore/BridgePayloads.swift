@@ -35,7 +35,8 @@ public struct TabReport: Codable, Sendable, Equatable {
 }
 
 public enum ConnectorKind: String, Codable, Sendable {
-    case chrome, vscode
+    /// `chrome` is the browser extension; `chromeScripting` is Porter reading Chrome itself, with no extension.
+    case chrome, vscode, chromeScripting
 
     /// The prefix that makes a connector ID readable and ties it to its kind.
     var idPrefix: String { rawValue }
@@ -44,6 +45,7 @@ public enum ConnectorKind: String, Codable, Sendable {
         switch self {
         case .chrome: .chromeExtension
         case .vscode: .vscodeExtension
+        case .chromeScripting: .chromeScripting
         }
     }
 }

@@ -79,9 +79,15 @@ public struct ConnectorSummary: Codable, Sendable, Equatable {
     public let profileAlias: String?
     public let reachability: Reachability
     public let routeCount: Int
+    /// How the connector sees its host; the panel prefers an extension's richer report over a scripted one.
+    public let providerType: ConnectorType
 
-    public init(connectorId: String, profileAlias: String?, reachability: Reachability, routeCount: Int) {
+    public init(
+        connectorId: String, profileAlias: String?, reachability: Reachability, routeCount: Int,
+        providerType: ConnectorType = .chromeExtension
+    ) {
         self.connectorId = connectorId
+        self.providerType = providerType
         self.profileAlias = profileAlias
         self.reachability = reachability
         self.routeCount = routeCount
@@ -95,7 +101,8 @@ extension BridgeCoordinator {
             ConnectorSummary(
                 connectorId: connector.id, profileAlias: connector.profileAlias,
                 reachability: connectionByInstallation[connector.installationId] == nil ? .disconnected : .connected,
-                routeCount: (tabDestinations[connector.id]?.count ?? 0) + (editorDestinations[connector.id]?.count ?? 0)
+                routeCount: (tabDestinations[connector.id]?.count ?? 0) + (editorDestinations[connector.id]?.count ?? 0),
+                providerType: connector.providerType
             )
         }.sorted { ($0.profileAlias ?? "", $0.connectorId) < ($1.profileAlias ?? "", $1.connectorId) }
     }
