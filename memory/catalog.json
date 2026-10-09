@@ -383,8 +383,8 @@
         "DOC-TEMPLATES"
       ],
       "path": "PROGRESS.md",
-      "revision": "sha256:de7560c4c007c05e11756d8206bc8da680cfe2394aec24e630227c819c1b2fb0",
-      "line_count": 390
+      "revision": "sha256:55cc7fac262f2d0b6f93448435d88c4fe5bec4f738d400de9293f8db64bb1e59",
+      "line_count": 400
     },
     {
       "id": "DOC-QUESTIONS",
@@ -618,7 +618,7 @@
         "DOC-SECURITY"
       ],
       "path": "docs/VALIDATION_RELEASE.md",
-      "revision": "sha256:b38b0d72f080b44fe3f4b28b1cbd075e12047f7886818b4703691ed5765650ab",
+      "revision": "sha256:c25631be9cddb541de0778f2613c0d05d06d8b3d910e54371413af1aaeaf9371",
       "line_count": 236
     },
     {

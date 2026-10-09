@@ -41,7 +41,7 @@ describe("snapshots", () => {
     assert.equal(reports[0]?.providerConversationId, conversationIdFor("/p", "claude-code", "Notes", 0));
     assert.equal(reports[2]?.providerConversationId, conversationIdFor("/p", "claude-code", "Notes", 1));
     assert.ok(reports.every((r) => r.provider === "claude-code" && r.workspacePath === "/p"));
-    assert.equal(ADAPTER_VERSION, "0.1.0");
+    assert.equal(ADAPTER_VERSION, "0.2.0");
   });
 
   it("keeps same-titled Claude Code and Codex tabs apart, and declares both providers", () => {

@@ -2,7 +2,8 @@ import { conversationIdFor } from "./identity.js";
 import { PROVIDER_RULES, type EditorTab } from "./tabs.js";
 import type { RecencyTracker } from "./recency.js";
 
-export const ADAPTER_VERSION = "0.1.0";
+/** 0.2.0: reports when each tab was last the focused one. The app asks windows still on 0.1.0 to reload. */
+export const ADAPTER_VERSION = "0.2.0";
 /** Every provider this companion can recognise, declared to the registry in hello. */
 export const ADAPTER_VERSIONS: Record<string, string> = Object.fromEntries(
   PROVIDER_RULES.map((rule) => [rule.provider, ADAPTER_VERSION]),

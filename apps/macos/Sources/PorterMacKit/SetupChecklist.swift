@@ -150,10 +150,28 @@ public enum SetupChecklist {
         return row("chromeExtension", "Chrome extension", "\(connected.count) profile\(connected.count == 1 ? "" : "s") connected.", .ready)
     }
 
+    /// The oldest companion this app is happy with. 0.2.0 added last-used times; a window still running 0.1.0 lists its
+    /// chats with no time, which buries them below everything that has one.
+    static let minimumCompanionVersion = [0, 2, 0]
+
+    static func isOutdated(_ summary: ConnectorSummary) -> Bool {
+        guard let declared = summary.adapterVersions["claude-code"] ?? summary.adapterVersions.values.first else { return true }
+        let parts = declared.split(separator: ".").compactMap { Int($0) }
+        return parts.lexicographicallyPrecedes(minimumCompanionVersion)
+    }
+
     private static func editorsRow(_ inputs: SetupInputs) -> SetupRow? {
         let windows = inputs.connectors.filter { $0.providerType == .vscodeExtension && $0.reachability == .connected }
         if !windows.isEmpty {
-            return row("editors", "VS Code companion", "\(windows.count) window\(windows.count == 1 ? "" : "s") connected.", .ready)
+            let outdated = windows.filter(isOutdated).count
+            let count = "\(windows.count) window\(windows.count == 1 ? "" : "s") connected."
+            guard outdated > 0 else { return row("editors", "VS Code companion", count, .ready) }
+            let which = outdated == windows.count ? "All of them need" : "\(outdated) of them need"
+            return row(
+                "editors", "VS Code companion",
+                "\(count) \(which) a reload to pick up the latest companion: in each window run Developer: Reload Window (⇧⌘P), or quit and reopen VS Code.",
+                .needsAction
+            )
         }
         guard !inputs.installedEditors.isEmpty else { return nil }
         let names = inputs.installedEditors.joined(separator: ", ")

@@ -12,7 +12,10 @@ struct SetupChecklistTests {
     }
 
     private func connector(_ type: ConnectorType, up: Bool = true) -> ConnectorSummary {
-        ConnectorSummary(connectorId: "\(type)-\(UUID())", profileAlias: nil, reachability: up ? .connected : .disconnected, routeCount: 0, providerType: type)
+        ConnectorSummary(
+            connectorId: "\(type)-\(UUID())", profileAlias: nil, reachability: up ? .connected : .disconnected, routeCount: 0,
+            providerType: type, adapterVersions: ["claude-code": "0.2.0"]
+        )
     }
 
     @Test("a refused Automation permission offers the settings pane, an unopened browser offers to open it")
@@ -100,5 +103,29 @@ struct SetupModelTests {
         #expect(SetupEnvironment.claudeCodeHookInstalled(settingsPath: without) == false)
         #expect(SetupEnvironment.claudeCodeHookInstalled(settingsPath: directory + "/missing.json") == false)
         #expect(SetupEnvironment.claudeCodeHookInstalled(settingsPath: directory) == nil)
+    }
+}
+
+@Suite("Windows running an out-of-date companion are named, not left to look broken")
+struct CompanionVersionTests {
+    private func window(_ version: String?, up: Bool = true) -> ConnectorSummary {
+        ConnectorSummary(
+            connectorId: "vscode-\(UUID())", profileAlias: "Folder", reachability: up ? .connected : .disconnected, routeCount: 1,
+            providerType: .vscodeExtension, adapterVersions: version.map { ["claude-code": $0, "codex": $0] } ?? [:]
+        )
+    }
+
+    private func row(_ windows: [ConnectorSummary]) -> SetupRow? {
+        SetupChecklist.sections(for: SetupInputs(chrome: .ready, connectors: windows)).flatMap(\.rows).first { $0.id == "editors" }
+    }
+
+    @Test("an old or unknown version needs a reload; the current one is ready; a closed window does not count")
+    func versions() {
+        #expect(row([window("0.2.0"), window("0.3.1")])?.state == .ready)
+        let mixed = row([window("0.2.0"), window("0.1.0"), window("0.1.0", up: false)])
+        #expect(mixed?.state == .needsAction && mixed?.detail.contains("1 of them need a reload") == true)
+        #expect(row([window("0.1.0"), window("0.1.0")])?.detail.contains("All of them need a reload") == true)
+        #expect(row([window(nil)])?.state == .needsAction)
+        #expect(row([window("0.10.0")])?.state == .ready)
     }
 }

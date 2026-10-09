@@ -385,6 +385,16 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Changed: a "Restart Porter" button in the setup window (bundled app only). It starts a new copy a second after this one quits, through `sh -c 'sleep 1; open <bundle>'`, so the two never hold the registry's sockets at once.
 - Verified: Mac app 71 tests (the button calls the relaunch hook); the shell form launches an app when the path is passed as an argument. Not verified: the full quit-and-reopen on the real app.
 
+## LOG-20261009-015 — Chats in VS Code windows listed without a time (diagnosis and a guard)
+
+- Date: 2026-10-09.
+- Author: assistant; Prem showed Porter's panel listing other VS Code chats but not "Porter macOS edge panel …", the editor tab the conversation is in.
+- Finding: that tab is listed (the registry has it) but it has no last-used time, like all ten VS Code routes. Chats with no time sort after those with one, and the panel shows six, so it sat 11th inside the folded "Older" group. No VS Code window's extension host has started since the companion gained last-used times (10-08 16:56; the newest host started 10-08 11:53, found by looking for newer host logs), so every open window still runs the version without them. A window loads the companion only when it opens or reloads.
+- Changed: the companion declares version 0.2.0 (last-used times). `ConnectorSummary` now carries the versions a connector declared. The setup window marks the VS Code companion row "needs your permission/action" and says how many windows need a reload, with the command, when any connected window declares less than 0.2.0 or nothing.
+- Verified: VS Code extension 42 tests, core 106, Mac app 72 (one new). The guard fires on old and unknown versions, accepts 0.10.0 as newer than 0.2.0, and ignores a closed window.
+- Not verified: that a reloaded window then lists its chats with times and moves them to the top; that needs Prem to reload the windows. Still open: a chat in the Claude Code side panel is not an editor tab and cannot be seen (Q-022).
+- Next action: Prem reloads the VS Code windows (or quits and reopens VS Code) and reports whether this chat moves to Today.
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.
