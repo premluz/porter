@@ -63,6 +63,7 @@ swift test --package-path packages/ConversationCore     # core, PorterStore, Por
 swift test --package-path services/native-host
 swift test --package-path apps/macos
 cd extensions/vscode && npm ci && npm test      # 42 tests; also validates what it sends against the schemas
+extensions/vscode/scripts/package-vsix.sh /tmp/porter.vsix --verify   # packs the companion and checks it installs into throwaway folders
 cd apps/macos && swift build -c release && .build/release/Porter --self-test   # headless, shows no window
 cd apps/ios && xcodebuild -project Porter.xcodeproj -scheme Porter -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
 cd packages/contracts && node scripts/validate-messages.mjs <captured-messages.json>

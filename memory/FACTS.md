@@ -223,6 +223,15 @@ Evidence classes: `user_requirement`, `source_documentation`, `verified_test`. P
 - Tags: area/macos, area/browser, phase/r1.
 - Review trigger: an update of either app; the real Porter app's first run; any change to how titles are exposed.
 
+## FACT-026 — The VS Code companion installs from a command line, in VS Code, Cursor and Windsurf
+
+- Class: verified_test (on this Mac, 2026-10-09; VS Code 1.140.0, Cursor 3.22.7, Windsurf 1.110.1; throwaway extension and user-data folders, so no real editor setup was touched).
+- Statement: a `.vsix` built without a packaging tool (a zip with `[Content_Types].xml`, `extension.vsixmanifest` and an `extension/` folder; `extensions/vscode/scripts/package-vsix.sh`) was accepted by each editor's bundled command (`--install-extension`), listed by `--list-extensions`, and removed by `--uninstall-extension`. An install took under half a second and needed no editor window.
+- Assessment of an Accessibility fallback for editors: not tried and not recommended for VS Code. Its window would expose the user's code to the tree, the companion already reports folder, provider and tab, and nothing would be gained for Claude Code or Codex tabs.
+- Not established: that the companion then works inside Cursor or Windsurf (their agent extensions may name their tab types differently); how an already-running window picks up a command-line install (a reload is likely); installing into an editor's real extensions folder; JetBrains and Xcode (installed or not, not looked at).
+- Tags: area/macos, area/release, phase/r1.
+- Review trigger: an editor major update; adding a second editor family to the setup assistant.
+
 ## Adding a fact
 
 Include statement, evidence class, source/test reference, observed date, tags, and review trigger if volatile. A failed experiment can be a fact when its exact environment and outcome are recorded. Do not transform a plausible architectural assumption into a tested capability.

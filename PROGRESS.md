@@ -275,6 +275,17 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Not verified: the apps' behavior when hidden or on another desktop, duplicate titles, and the real Porter app's permission prompt.
 - Next action: TASK-083 (VS Code companion install from the bundle; Accessibility fallback assessment), then TASK-084.
 
+## LOG-20261009-005 — VS Code companion packaging spike (TASK-083)
+
+- Date: 2026-10-09.
+- Author: assistant.
+- Tasks: TASK-083.
+- Tags: area/macos, area/release, phase/r1.
+- Result: see FACT-026. The companion packs into a `.vsix` with a small script (no new dependency), and each editor's own command installs, lists and removes it. Only throwaway folders were used, so your real editors and extensions were not touched.
+- Changed: added `extensions/vscode/scripts/package-vsix.sh` (with `--verify`) and listed it in the validation doc. Tested with a wrong command path, which fails with a message.
+- Not verified: the companion running inside Cursor or Windsurf, and a running window picking up a command-line install.
+- Next action: TASK-084, the setup assistant. It needs a design decision from Prem on the first-launch checklist.
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.
