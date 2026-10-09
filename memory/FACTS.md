@@ -195,6 +195,7 @@ Evidence classes: `user_requirement`, `source_documentation`, `verified_test`. P
 - Not established: that user-level hooks fire for the VS Code extension's sessions (the docs imply it), how long a real turn goes without a tool event, and how the status reads in daily use.
 - Tags: area/identity, area/security, area/macos, phase/r1.
 - Review trigger: the manual batch H, or Claude Code exposing a session ID per tab, which would remove the one-tab-per-window limit.
+- Update (LOG-20261009-020): with several tabs in one window a session is now bound, at its first submitted prompt, to the tab that came to the front last in that window (the person typed there); the binding is kept for the session's life, and a tie, no times from the connector (a companion older than 0.2.0), or a start event alone bind nothing. Tested on synthetic windows only.
 
 ## FACT-023 — Panel motion is measured from its own frames
 

@@ -431,6 +431,15 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Changed: a row's second line is now `(logo) [Project] status`. Only the order changed (`ItemRowView`); the validation text for batch M was updated to match.
 - Verified: Mac app 73 tests and the self-test (a row lays out). Not verified: how it looks.
 
+## LOG-20261009-020 — Status for several Claude Code tabs in one window (Q-024)
+
+- Date: 2026-10-09.
+- Author: assistant; Prem showed the Bastion window working ("Thinking...") while Porter's row for that chat showed no status.
+- Cause: that window has two Claude Code tabs, and Porter showed a window's status only when it had exactly one tab and one session, because a hook event names its session and folder but not its tab. (The Porter window, with one tab, does show Idle in Prem's screenshot, so hooks themselves work.) A session that started before the hooks were turned on sends nothing at all.
+- Changed: a session is bound to a tab at its first submitted prompt: of the window's Claude Code tabs, the one that came to the front last (the companion's last-used times; 0.2.0 or later). The binding lasts for the session; ties, missing times, or a session start alone bind nothing; a binding to a tab that has gone is dropped. Whatever is not bound is paired only if exactly one tab and one session remain. The old one-tab rule is unchanged.
+- Verified: core 116 tests (7 new: bind to the front tab, survive switching tabs, two sessions in two tabs, no times, tie, session start alone, gone tab, one-tab fallback); one mutation (binding off) fails four of them. Not verified: on real windows.
+- Needs from Prem: reload the VS Code windows (companion 0.2.0 times), and a Claude Code session whose prompt is sent after Porter runs; the Bastion chat that is working now started earlier, so it shows Unknown until its next prompt.
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.

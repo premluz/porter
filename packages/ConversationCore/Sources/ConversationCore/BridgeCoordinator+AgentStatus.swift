@@ -7,6 +7,8 @@ struct AgentSession: Sendable, Equatable {
     let attention: Attention
     let receivedAt: Date
     let sequence: Int
+    /// The tab this session was seen to belong to: the tab in front when its prompt was submitted.
+    var boundRoute: UUID? = nil
 }
 
 extension BridgeCoordinator {
@@ -27,15 +29,34 @@ extension BridgeCoordinator {
         case .clear:
             return agentSessions.removeValue(forKey: event.sessionId) == nil ? BridgeResult() : BridgeResult(events: [.statusChanged])
         case .set(let activity, let attention):
-            let next = AgentSession(
+            var next = AgentSession(
                 cwd: event.cwd, entrypoint: event.entrypoint, activity: activity, attention: attention,
                 receivedAt: now, sequence: agentSequence
             )
+            next.boundRoute = boundRoute(for: event, previous: agentSessions[event.sessionId])
             let previous = agentSessions.updateValue(next, forKey: event.sessionId)
             pruneAgentSessions()
-            guard previous?.activity != activity || previous?.attention != attention else { return BridgeResult() }
+            guard previous?.activity != activity || previous?.attention != attention || previous?.boundRoute != next.boundRoute else {
+                return BridgeResult()
+            }
             return BridgeResult(events: [.statusChanged])
         }
+    }
+
+    /// A session keeps the tab it was first seen in. It is chosen when a prompt is submitted, because the person
+    /// typed in a tab that was in front: of this window's Claude Code tabs, the one that came to the front last.
+    /// Anything unclear (no times from the connector, two tabs in front at once) binds nothing.
+    private func boundRoute(for event: AgentEvent, previous: AgentSession?) -> UUID? {
+        if let kept = previous?.boundRoute, registry.destination(kept) != nil { return kept }
+        guard event.event == "UserPromptSubmit", event.entrypoint == AgentEvent.vscodeEntrypoint else { return nil }
+        let routes = claudeCodeRoutes()
+        guard let workspace = Self.longestMatch(of: event.cwd, in: Set(routes.map(\.workspacePath))) else { return nil }
+        let stamped = routes.filter { $0.workspacePath == workspace }.compactMap { route in
+            lastActive[route.destinationId].map { (route.destinationId, $0) }
+        }
+        guard let newest = stamped.map(\.1).max() else { return nil }
+        let candidates = stamped.filter { $0.1 == newest }
+        return candidates.count == 1 ? candidates[0].0 : nil
     }
 
     private mutating func pruneAgentSessions() {
@@ -57,16 +78,35 @@ extension BridgeCoordinator {
         }
         var projection = StatusProjection(policy: FreshnessPolicy(maximumLifetime: Self.agentStatusLifetime))
         var reachability: [UUID: Reachability] = [:]
-        let routesByWorkspace = Dictionary(grouping: routes, by: \.workspacePath)
-        for (workspace, tabs) in routesByWorkspace {
-            guard tabs.count == 1, let route = tabs.first, let sessions = sessionsByWorkspace[workspace], sessions.count == 1,
-                  let session = sessions.first else { continue }
-            projection.record(observation(for: route.destinationId, from: session))
-            reachability[route.destinationId] = route.reachability
+        for (workspace, tabs) in Dictionary(grouping: routes, by: \.workspacePath) {
+            for (route, session) in Self.pairings(tabs: tabs, sessions: sessionsByWorkspace[workspace] ?? []) {
+                projection.record(observation(for: route.destinationId, from: session))
+                reachability[route.destinationId] = route.reachability
+            }
         }
         return Dictionary(uniqueKeysWithValues: reachability.map { id, reach in
             (id, projection.status(for: id, reachability: reach, now: now))
         })
+    }
+
+    /// A session bound to a tab is that tab's (the latest one, if a tab was reused). What is left over is paired only
+    /// when exactly one tab and one session remain, so a leftover is never guessed at.
+    private static func pairings(tabs: [ClaudeCodeRoute], sessions: [AgentSession]) -> [(ClaudeCodeRoute, AgentSession)] {
+        var pairs: [(ClaudeCodeRoute, AgentSession)] = []
+        var freeTabs = tabs
+        var unbound: [AgentSession] = []
+        let bound = Dictionary(grouping: sessions.filter { $0.boundRoute != nil }, by: { $0.boundRoute ?? UUID() })
+        for session in sessions where session.boundRoute == nil { unbound.append(session) }
+        for (routeId, owners) in bound {
+            guard let route = tabs.first(where: { $0.destinationId == routeId }), let latest = owners.max(by: { $0.sequence < $1.sequence }) else {
+                unbound += owners
+                continue
+            }
+            pairs.append((route, latest))
+            freeTabs.removeAll { $0.destinationId == routeId }
+        }
+        if freeTabs.count == 1, unbound.count == 1, let tab = freeTabs.first, let session = unbound.first { pairs.append((tab, session)) }
+        return pairs
     }
 
     private struct ClaudeCodeRoute {

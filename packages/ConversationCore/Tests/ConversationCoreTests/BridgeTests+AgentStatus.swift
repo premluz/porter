@@ -177,3 +177,96 @@ struct AgentStatusTests {
         #expect(harness.coordinator.agentSessionCount <= BridgeCoordinator.maximumAgentSessions)
     }
 }
+
+@Suite("Telling two Claude Code tabs in one window apart by which was in front")
+struct AgentBindingTests {
+    private let folder = "/Users/example/Bastion"
+    private let early = "2026-10-08T07:00:00.000Z"
+    private let late = "2026-10-08T07:30:00.000Z"
+
+    /// Tabs are (conversation id, title, index, when it last came to the front or nil).
+    private func window(_ tabs: [(String, String, Int, String?)]) -> (BridgeHarness, BridgeHarness.Client) {
+        var harness = BridgeHarness()
+        let client = BridgeHarness.editor(1)
+        harness.helloEditor(client, folder: "Bastion", providers: ["claude-code"])
+        snapshot(&harness, client, tabs)
+        return (harness, client)
+    }
+
+    private func snapshot(_ harness: inout BridgeHarness, _ client: BridgeHarness.Client, _ tabs: [(String, String, Int, String?)]) {
+        let list = tabs.map { tab in
+            let time = tab.3.map { ",\"lastActiveAt\":\"\($0)\"" } ?? ""
+            return #"{"provider":"claude-code","providerConversationId":"\#(tab.0)","title":"\#(tab.1)","workspacePath":"\#(folder)","viewColumn":1,"index":\#(tab.2)\#(time)}"#
+        }.joined(separator: ",")
+        harness.send(client, type: "inventory.snapshot", payload: #"{"tabs":[],"editorTabs":[\#(list)]}"#)
+    }
+
+    private func event(_ name: String, session: String) -> AgentEvent {
+        AgentEvent(event: name, sessionId: session, cwd: folder, entrypoint: AgentEvent.vscodeEntrypoint)
+    }
+
+    private func statuses(_ harness: BridgeHarness) -> [String: DisplayStatus] {
+        let names = Dictionary(uniqueKeysWithValues: harness.coordinator.rows().map { ($0.destinationId, $0.title) })
+        return Dictionary(uniqueKeysWithValues: harness.coordinator.agentStatuses(now: harness.now).compactMap { id, status in
+            names[id].map { ($0, status.display) }
+        })
+    }
+
+    @Test("a prompt binds its session to the tab that came to the front last, and only that tab shows the status")
+    func bindsToTheFrontTab() {
+        var (harness, _) = window([("aaaa1111", "Merlin folder", 0, early), ("bbbb2222", "Header hover", 1, late)])
+        _ = harness.coordinator.recordAgentEvent(event("UserPromptSubmit", session: "s1"), now: harness.now)
+        #expect(statuses(harness) == ["Header hover": .working])
+    }
+
+    @Test("the binding stays after the person looks at another tab, so a later Stop is still shown on the right one")
+    func bindingSurvivesSwitching() {
+        var (harness, client) = window([("aaaa1111", "Merlin folder", 0, early), ("bbbb2222", "Header hover", 1, late)])
+        _ = harness.coordinator.recordAgentEvent(event("UserPromptSubmit", session: "s1"), now: harness.now)
+        snapshot(&harness, client, [("aaaa1111", "Merlin folder", 0, "2026-10-08T07:45:00.000Z"), ("bbbb2222", "Header hover", 1, late)])
+        _ = harness.coordinator.recordAgentEvent(event("Stop", session: "s1"), now: harness.now)
+        #expect(statuses(harness) == ["Header hover": .idle])
+    }
+
+    @Test("two sessions in two tabs each find their own tab")
+    func twoSessions() {
+        var (harness, client) = window([("aaaa1111", "Merlin folder", 0, late), ("bbbb2222", "Header hover", 1, early)])
+        _ = harness.coordinator.recordAgentEvent(event("UserPromptSubmit", session: "s1"), now: harness.now)
+        snapshot(&harness, client, [("aaaa1111", "Merlin folder", 0, late), ("bbbb2222", "Header hover", 1, "2026-10-08T07:50:00.000Z")])
+        _ = harness.coordinator.recordAgentEvent(event("UserPromptSubmit", session: "s2"), now: harness.now)
+        _ = harness.coordinator.recordAgentEvent(event("Stop", session: "s1"), now: harness.now)
+        #expect(statuses(harness) == ["Merlin folder": .idle, "Header hover": .working])
+    }
+
+    @Test("with no times from the connector, or two tabs in front at once, nothing is guessed")
+    func staysUnknownWhenUnclear() {
+        var (untimed, _) = window([("aaaa1111", "One", 0, nil), ("bbbb2222", "Two", 1, nil)])
+        _ = untimed.coordinator.recordAgentEvent(event("UserPromptSubmit", session: "s1"), now: untimed.now)
+        #expect(statuses(untimed).isEmpty)
+        var (tied, _) = window([("aaaa1111", "One", 0, late), ("bbbb2222", "Two", 1, late)])
+        _ = tied.coordinator.recordAgentEvent(event("UserPromptSubmit", session: "s1"), now: tied.now)
+        #expect(statuses(tied).isEmpty)
+    }
+
+    @Test("only a submitted prompt binds: a session start, which can fire for every restored tab, does not")
+    func onlyPromptsBind() {
+        var (harness, _) = window([("aaaa1111", "One", 0, early), ("bbbb2222", "Two", 1, late)])
+        _ = harness.coordinator.recordAgentEvent(event("SessionStart", session: "s1"), now: harness.now)
+        #expect(statuses(harness).isEmpty)
+    }
+
+    @Test("the one-tab, one-session rule still works with no times at all")
+    func oneTabFallback() {
+        var (harness, _) = window([("aaaa1111", "Only", 0, nil)])
+        _ = harness.coordinator.recordAgentEvent(event("UserPromptSubmit", session: "s1"), now: harness.now)
+        #expect(statuses(harness) == ["Only": .working])
+    }
+
+    @Test("a session bound to a tab that is gone is not shown on another tab")
+    func boundTabGone() {
+        var (harness, client) = window([("aaaa1111", "One", 0, early), ("bbbb2222", "Two", 1, late)])
+        _ = harness.coordinator.recordAgentEvent(event("UserPromptSubmit", session: "s1"), now: harness.now)
+        snapshot(&harness, client, [("aaaa1111", "One", 0, early), ("cccc3333", "Three", 1, late)])
+        #expect(statuses(harness).isEmpty)
+    }
+}
