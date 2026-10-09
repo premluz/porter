@@ -99,6 +99,10 @@ Use a repository interface backed by SQLite; choose the Swift library during sca
 
 Previews and summaries, when implemented, live in separate bounded caches with explicit retention and deletion. They are not prerequisites for R1 schemas.
 
+## Source adapters (ADR-006)
+
+Two axes keep new models, browsers and editors from touching the registry or the panel. A **host connector** (`HostConnector`) observes and activates conversations in one application and reports them in the bridge protocol's terms. A **provider recognizer** (`ProviderRecognizer`, `ProviderRecognizers.all`) turns a URL and title into provider and conversation identity; the Swift rules mirror the extension's TypeScript adapters and share test cases. The Chrome extension and VS Code companion are host connectors in other processes, reached over the bridge socket; a connector inside the app joins with `RegistryService.attach`, which connects it through a socket pair so the registry applies the same hello, sequence, epoch and revision rules. A host reports only what it can tell; anything else (a profile, a last-used time) is left out and shows as unknown.
+
 ## Failure behavior
 
 | Failure | Behavior |

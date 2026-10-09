@@ -75,7 +75,7 @@ public final class RegistryService: Sendable {
         }
     }
 
-    private func serveBridge(_ connection: FramedConnection) {
+    func serveBridge(_ connection: FramedConnection) {
         let id = ConnectionID(nextConnection.wrappingAdd(1, ordering: .relaxed).oldValue)
         connections.withLock { $0[id] = connection }
         defer {

@@ -241,6 +241,17 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Not verified: every native route. Chrome scripting, Accessibility for the ChatGPT and Claude apps, and external extension install are untested here; the spikes decide.
 - Next action: TASK-080, then the spikes.
 
+## LOG-20261009-002 — Adapter boundary for in-app sources (TASK-080)
+
+- Date: 2026-10-09.
+- Author: assistant.
+- Tasks: TASK-080.
+- Tags: area/macos, area/browser, phase/r1.
+- Changed: core gained `ProviderRecognizer` (Claude and ChatGPT rules in Swift, parity cases copied from the extension's tests) and `HostConnector` (snapshot, activate, change stream). `RegistryService.attach` runs a `HostConnector` inside the app and joins it to the registry through a socket pair speaking the normal wire protocol, so every existing registry rule applies without a second code path. `ActivationResult` got a public initializer; `serveBridge` is no longer private. Existing connectors and behavior are untouched.
+- Verified: core 96 tests (4 new recognizer tests), native-host 27 (4 new: inventory lifecycle, activation round trip, failed activation passed on, duplicate installation refused), Mac app 53, all passing.
+- Not verified: no real host exists yet; the spikes (TASK-081 to TASK-083) provide the first. `ConnectorKind` still has only chrome and vscode; native kinds and any contract change come with the spike that needs them.
+- Next action: TASK-081, the Chrome and Safari scripting spike.
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.

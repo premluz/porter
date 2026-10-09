@@ -184,8 +184,8 @@
         "DOC-SECURITY"
       ],
       "path": "docs/ARCHITECTURE.md",
-      "revision": "sha256:66a9c9c39e47df2d07036422a4940ec0c2cad40a7185566d95905ccd348fabcb",
-      "line_count": 117
+      "revision": "sha256:cf46836d9a1f97de3b9b53600ed9b2f5410d7a535f954e46f73414e9601d53a4",
+      "line_count": 121
     },
     {
       "id": "DOC-CLAUDE",
@@ -383,8 +383,8 @@
         "DOC-TEMPLATES"
       ],
       "path": "PROGRESS.md",
-      "revision": "sha256:b98265e3e51cfabdfff1fbe6193453aa70ec64426ef56bbbaceee213a8ef8497",
-      "line_count": 246
+      "revision": "sha256:8cf6344329b9e7a9c9d193e8d2f05a6beb446be6ca7b7463a2c983e9befae110",
+      "line_count": 257
     },
     {
       "id": "DOC-QUESTIONS",
@@ -548,7 +548,7 @@
         "DOC-VALIDATION"
       ],
       "path": "TASKS.md",
-      "revision": "sha256:c27e2daf66e5a93afd72f01edaf759b69b2bd33aefa52553c3a629a516bb509d",
+      "revision": "sha256:cd98f55b8448fafa4746504f7ec4551af76bce6b5750da87b2c9bca9a9c60228",
       "line_count": 57
     },
     {

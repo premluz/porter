@@ -93,4 +93,11 @@ public struct ActivationResult: Codable, Sendable, Equatable {
     public let destinationId: UUID
     public let destinationRevision: Int
     public let outcome: ActivationOutcome
+
+    public init(requestId: UUID, destinationId: UUID, destinationRevision: Int, outcome: ActivationOutcome) {
+        self.requestId = requestId
+        self.destinationId = destinationId
+        self.destinationRevision = destinationRevision
+        self.outcome = outcome
+    }
 }
