@@ -232,6 +232,16 @@ Evidence classes: `user_requirement`, `source_documentation`, `verified_test`. P
 - Tags: area/macos, area/release, phase/r1.
 - Review trigger: an editor major update; adding a second editor family to the setup assistant.
 
+## FACT-027 — Chrome installs an extension from a file the app provides, after one approval
+
+- Class: verified_test (on this Mac, 2026-10-09; Chrome 154.0.8037.98 in a throwaway headless profile with its own user-data folder; one profile only).
+- Statement: with `External Extensions/<id>.json` containing `{"external_crx": "<absolute path to a .crx>", "external_version": "0.1.0"}` in the profile's user-data folder, Chrome installed the packed Porter extension on first start with no Developer mode and no "Load unpacked". The extension appeared in the profile's secure preferences with location 2 (external) and `disable_reasons` 256, which is Chrome's "added by an external source, waiting for the user to enable it". The `.crx` must be signed with the key whose id the file is named after; Chrome's `--pack-extension` made one from a copy of the extension without the manifest `key`.
+- Consequences: this is the route for "install the extension from the app", at the cost of one approval per profile. It needs the extension's private signing key to stay with the maintainer (never in the repository), and the extension id to follow from that key. The current manifest's `key` is public only, and no private key for it is kept, so a bundled `.crx` has a different id from the unpacked development extension.
+- Chain check (`apps/macos/scripts/check-extension-install.sh`): the `.crx` that `build-app.sh` packs with a generated key, and the id derived from the manifest key inside the bundle, install together in a throwaway profile as location 2, disabled with reason 256, so the id, the key and the package agree.
+- Not established: the approval prompt as a person sees it (the run was headless); whether a Chrome that is already running notices a new file without a restart; behavior with several profiles; Safari and other Chromium browsers.
+- Tags: area/browser, area/release, phase/r1.
+- Review trigger: a Chrome major update; the first run on a real profile.
+
 ## Adding a fact
 
 Include statement, evidence class, source/test reference, observed date, tags, and review trigger if volatile. A failed experiment can be a fact when its exact environment and outcome are recorded. Do not transform a plausible architectural assumption into a tested capability.

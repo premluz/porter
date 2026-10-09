@@ -66,3 +66,34 @@ struct ChromeRegistrationTests {
         #expect(!FileManager.default.fileExists(atPath: directory + "/C"))
     }
 }
+
+@Suite("Asking Chrome to install the extension from a file")
+struct ChromeExternalExtensionTests {
+    private let manifest = URL(fileURLWithPath: #filePath)
+        .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        .deletingLastPathComponent().deletingLastPathComponent().appending(path: "extensions/chrome/manifest.json").path
+
+    @Test("the file is named after the extension id and names the package and its version, and nothing else is written")
+    func writesEntry() throws {
+        let directory = NSTemporaryDirectory() + "porter-ext-\(UUID().uuidString)"
+        try FileManager.default.createDirectory(atPath: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(atPath: directory) }
+        let crx = directory + "/porter.crx"
+        try Data("crx".utf8).write(to: URL(fileURLWithPath: crx))
+        let path = try ChromeNativeHostRegistration.registerExternalExtension(crx: crx, extensionManifest: manifest, chromeDirectory: directory + "/Chrome")
+        #expect(path == directory + "/Chrome/External Extensions/eilmjgagnblkgijjdedkmdnjogggdeij.json")
+        let entry = try #require(JSONSerialization.jsonObject(with: Data(contentsOf: URL(fileURLWithPath: path))) as? [String: String])
+        #expect(entry == ["external_crx": crx, "external_version": "0.1.0"])
+        #expect(try FileManager.default.contentsOfDirectory(atPath: directory + "/Chrome") == ["External Extensions"])
+    }
+
+    @Test("a package that is missing or given by a relative path is refused before anything is written")
+    func refusesBadPackage() throws {
+        let directory = NSTemporaryDirectory() + "porter-ext-\(UUID().uuidString)"
+        defer { try? FileManager.default.removeItem(atPath: directory) }
+        #expect(throws: RegistrationError.notExecutable(path: "/no/such.crx")) {
+            try ChromeNativeHostRegistration.registerExternalExtension(crx: "/no/such.crx", extensionManifest: manifest, chromeDirectory: directory)
+        }
+        #expect(!FileManager.default.fileExists(atPath: directory))
+    }
+}

@@ -66,11 +66,19 @@ struct SetupInstallerTests {
     @Test("preparing the Chrome extension registers the relay and returns the folder to load")
     func chromeExtension() throws {
         let directory = NSTemporaryDirectory() + "porter-setup-\(UUID().uuidString)"
+        try FileManager.default.createDirectory(atPath: directory, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(atPath: directory) }
         let prepared = SetupInstaller(assets: assets, runner: FakeCommands(), chromeDirectory: directory + "/Chrome", supportDirectory: directory + "/Support")
             .prepareChromeExtension()
         #expect(prepared.folder == assets.chromeExtensionFolder && prepared.message.contains("Load unpacked"))
         #expect(FileManager.default.fileExists(atPath: directory + "/Chrome/NativeMessagingHosts/com.porter.bridge.json"))
+        var packed = assets
+        packed.chromeExtensionCrx = directory + "/porter.crx"
+        try Data("crx".utf8).write(to: URL(fileURLWithPath: directory + "/porter.crx"))
+        let viaChrome = SetupInstaller(assets: packed, runner: FakeCommands(), chromeDirectory: directory + "/Chrome2", supportDirectory: directory + "/Support2")
+            .prepareChromeExtension()
+        #expect(viaChrome.folder == nil && viaChrome.message.contains("next time it starts"))
+        #expect(FileManager.default.fileExists(atPath: directory + "/Chrome2/External Extensions/eilmjgagnblkgijjdedkmdnjogggdeij.json"))
         let unbundled = SetupInstaller(assets: BundledAssets(), runner: FakeCommands()).prepareChromeExtension()
         #expect(unbundled.folder == nil && unbundled.message.contains("not bundled"))
     }
@@ -126,5 +134,48 @@ struct SetupActionTests {
         model.perform(.installEditorCompanion)
         await settle(model)
         #expect(runner.calls.count == 1)
+    }
+}
+
+private final class FakeLoginItem: LoginItemControlling {
+    struct Refused: Error {}
+    private let current = Mutex<(state: LoginItemState, fails: Bool)>((.off, false))
+    init(fails: Bool = false) { current.withLock { $0.fails = fails } }
+    var state: LoginItemState { current.withLock { $0.state } }
+    func setEnabled(_ enabled: Bool) throws {
+        try current.withLock { value in
+            if value.fails { throw Refused() }
+            value.state = enabled ? .on : .off
+        }
+    }
+}
+
+@MainActor
+@Suite("Opening Porter at login")
+struct LaunchAtLoginTests {
+    private func rows(_ state: LoginItemState) -> SetupRow? {
+        SetupChecklist.sections(for: SetupInputs(chrome: .ready, launchAtLogin: state)).flatMap(\.rows).first { $0.id == "launchAtLogin" }
+    }
+
+    @Test("each state has its own line and action, and an unbundled run has none")
+    func states() {
+        #expect(rows(.notAvailable) == nil)
+        #expect(rows(.off)?.action == .setLaunchAtLogin(true) && rows(.off)?.state == .optional)
+        #expect(rows(.on)?.action == .setLaunchAtLogin(false) && rows(.on)?.state == .ready)
+        #expect(rows(.needsApproval)?.action == .openLoginItemsSettings && rows(.needsApproval)?.state == .needsAction)
+    }
+
+    @Test("turning it on and off goes through the login item, and a refusal is reported, not swallowed")
+    func toggling() {
+        let item = FakeLoginItem()
+        let model = SetupModel(performer: RecordingPerformer(), loginItem: item) { SetupInputs(chrome: .ready, launchAtLogin: item.state) }
+        model.perform(.setLaunchAtLogin(true))
+        #expect(item.state == .on && model.message == "Porter will open when you log in.")
+        model.perform(.setLaunchAtLogin(false))
+        #expect(item.state == .off)
+        let refusing = FakeLoginItem(fails: true)
+        let failing = SetupModel(performer: RecordingPerformer(), loginItem: refusing) { SetupInputs(chrome: .ready, launchAtLogin: refusing.state) }
+        failing.perform(.setLaunchAtLogin(true))
+        #expect(refusing.state == .off && failing.message?.hasPrefix("Could not change the login setting") == true)
     }
 }

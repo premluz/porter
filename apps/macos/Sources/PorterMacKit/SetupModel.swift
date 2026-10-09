@@ -21,8 +21,10 @@ public final class SetupModel {
     /// Asks before a step that changes another app's settings; returns whether to go ahead.
     private let confirm: @MainActor (_ title: String, _ detail: String) -> Bool
     private let reveal: @MainActor (_ folder: String) -> Void
+    private let loginItem: any LoginItemControlling
 
     static let automationSettings = "x-apple.systempreferences:com.apple.preference.security?Privacy_Automation"
+    static let loginItemsSettings = "x-apple.systempreferences:com.apple.LoginItems-Settings.extension"
     static let accessibilitySettings = "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"
 
     public init(
@@ -30,6 +32,7 @@ public final class SetupModel {
         editors: @escaping @MainActor () -> [SetupEnvironment.Editor] = { SetupEnvironment.installedEditors() },
         confirm: @escaping @MainActor (String, String) -> Bool = { _, _ in false },
         reveal: @escaping @MainActor (String) -> Void = { _ in },
+        loginItem: any LoginItemControlling = LiveLoginItem(),
         readInputs: @escaping @MainActor () -> SetupInputs
     ) {
         self.performer = performer
@@ -37,6 +40,7 @@ public final class SetupModel {
         self.editors = editors
         self.confirm = confirm
         self.reveal = reveal
+        self.loginItem = loginItem
         self.readInputs = readInputs
         refresh()
     }
@@ -64,6 +68,16 @@ public final class SetupModel {
         case .enableClaudeCodeStatus:
             guard confirm("Turn on Claude Code status?", "Porter will add its hooks to Claude Code's settings (~/.claude/settings.json). A backup is made first and your other settings are kept.") else { return }
             run { [self] in await installer.enableClaudeCodeStatus() }
+        case .setLaunchAtLogin(let enabled):
+            do {
+                try loginItem.setEnabled(enabled)
+                message = enabled ? "Porter will open when you log in." : "Porter will no longer open at login."
+            } catch {
+                message = "Could not change the login setting: \(error.localizedDescription)"
+            }
+            refresh()
+        case .openLoginItemsSettings:
+            open(Self.loginItemsSettings)
         case .setUpChromeExtension:
             let prepared = installer.prepareChromeExtension()
             message = prepared.message

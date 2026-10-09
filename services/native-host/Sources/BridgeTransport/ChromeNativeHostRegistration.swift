@@ -85,4 +85,27 @@ public enum ChromeNativeHostRegistration {
         }
         return Result(extensionId: id, hostManifestPath: manifestPath, allowedOriginsPath: originsPath)
     }
+
+    /// Tells Chrome to install the extension from a file the app carries. Chrome then adds it, disabled, to each profile
+    /// and asks the user to enable it; the file must be signed with the key the id comes from, and the path must be
+    /// absolute. Only this extension's own file is written.
+    @discardableResult
+    public static func registerExternalExtension(
+        crx: String, extensionManifest: String, chromeDirectory: String = defaultChromeDirectory
+    ) throws(RegistrationError) -> String {
+        guard FileManager.default.isReadableFile(atPath: crx), crx.hasPrefix("/") else { throw .notExecutable(path: crx) }
+        let id = try extensionId(manifestAt: extensionManifest)
+        let directory = chromeDirectory + "/External Extensions"
+        let path = directory + "/\(id).json"
+        do {
+            let manifest = try JSONSerialization.jsonObject(with: Data(contentsOf: URL(fileURLWithPath: extensionManifest))) as? [String: Any]
+            let entry: [String: Any] = ["external_crx": crx, "external_version": manifest?["version"] as? String ?? "0.0.0"]
+            try FileManager.default.createDirectory(atPath: directory, withIntermediateDirectories: true)
+            let data = try JSONSerialization.data(withJSONObject: entry, options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes])
+            try data.write(to: URL(fileURLWithPath: path), options: .atomic)
+        } catch {
+            throw .writeFailed(path: path, reason: String(describing: error))
+        }
+        return path
+    }
 }

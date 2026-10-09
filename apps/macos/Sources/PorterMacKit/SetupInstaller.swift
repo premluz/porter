@@ -52,8 +52,14 @@ public struct BundledAssets: Sendable, Equatable {
     public var porterctl: String?
     public var nativeHost: String?
     public var chromeExtensionFolder: String?
+    /// The extension packed and signed, for Chrome to install by itself after one approval.
+    public var chromeExtensionCrx: String?
 
-    public init(vsix: String? = nil, hookScript: String? = nil, porterctl: String? = nil, nativeHost: String? = nil, chromeExtensionFolder: String? = nil) {
+    public init(
+        vsix: String? = nil, hookScript: String? = nil, porterctl: String? = nil, nativeHost: String? = nil,
+        chromeExtensionFolder: String? = nil, chromeExtensionCrx: String? = nil
+    ) {
+        self.chromeExtensionCrx = chromeExtensionCrx
         self.vsix = vsix
         self.hookScript = hookScript
         self.porterctl = porterctl
@@ -70,7 +76,8 @@ public struct BundledAssets: Sendable, Equatable {
             hookScript: existing(resources.map { $0 + "/claude-hooks.sh" }),
             porterctl: existing(helpers + "/porterctl"),
             nativeHost: existing(helpers + "/porter-native-host"),
-            chromeExtensionFolder: existing(resources.map { $0 + "/ChromeExtension" })
+            chromeExtensionFolder: existing(resources.map { $0 + "/ChromeExtension" }),
+            chromeExtensionCrx: existing(resources.map { $0 + "/porter-extension.crx" })
         )
     }
 }
@@ -117,7 +124,8 @@ public struct SetupInstaller: Sendable {
             : "Could not change Claude Code's settings; nothing was changed. \(result.output.prefix(200))"
     }
 
-    /// Registers the relay with Chrome and returns the folder to load, for the user to add in Chrome (it cannot be done for them).
+    /// Registers the relay with Chrome and has Chrome install the extension itself when the app carries a signed copy;
+    /// otherwise returns the folder to load by hand. Chrome asks the user to enable it in each profile either way.
     public func prepareChromeExtension() -> (message: String, folder: String?) {
         guard let host = assets.nativeHost, let folder = assets.chromeExtensionFolder else {
             return ("The extension is not bundled with this build.", nil)
@@ -127,6 +135,12 @@ public struct SetupInstaller: Sendable {
                 hostBinary: host, extensionManifest: folder + "/manifest.json",
                 chromeDirectory: chromeDirectory, supportDirectory: supportDirectory
             )
+            if let crx = assets.chromeExtensionCrx {
+                try ChromeNativeHostRegistration.registerExternalExtension(
+                    crx: crx, extensionManifest: folder + "/manifest.json", chromeDirectory: chromeDirectory
+                )
+                return ("Chrome will offer to add the Porter extension the next time it starts (quit and reopen it, then approve it in each profile you want).", nil)
+            }
             return ("Registered with Chrome. In each profile: open chrome://extensions, turn on Developer mode, choose Load unpacked, and pick the folder that just opened (extension \(result.extensionId)).", folder)
         } catch {
             return ("Could not register the extension with Chrome: \(error).", nil)

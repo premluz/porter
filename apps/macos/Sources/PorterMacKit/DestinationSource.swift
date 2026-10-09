@@ -95,7 +95,8 @@ public final class LiveRegistrySource: DestinationSource {
             connectors: service.listing().connectors, installedEditors: SetupEnvironment.installedEditors().map(\.name),
             claudeCodeHook: SetupEnvironment.claudeCodeHookInstalled(),
             canInstallCompanion: assets.vsix != nil, canEnableClaudeCodeStatus: assets.hookScript != nil && assets.porterctl != nil,
-            canSetUpChromeExtension: assets.nativeHost != nil && assets.chromeExtensionFolder != nil
+            canSetUpChromeExtension: assets.nativeHost != nil && assets.chromeExtensionFolder != nil,
+            launchAtLogin: LiveLoginItem().state
         )
     }
 

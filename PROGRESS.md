@@ -353,6 +353,18 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Not verified: any of the buttons on a real Mac (batch L), the companion in Cursor and Windsurf, loading the unpacked extension, and a clean-account install. Signing is ad hoc: each rebuild looks new to macOS and permissions are asked again. Not built: Developer ID signing and notarization (needs the Apple Developer account), a disk image, launch at login, updates.
 - Next action: Prem runs batches I, J, K and L. Then signing and the disk image once there is an account, launch at login, and the extension-install route test on a throwaway profile.
 
+## LOG-20261009-012 — Disk image, open at login, and Chrome installing the extension itself (TASK-027)
+
+- Date: 2026-10-09.
+- Author: assistant.
+- Tasks: TASK-027, TASK-084.
+- Tags: area/macos, area/browser, area/release, phase/r1.
+- Changed: `build-dmg.sh` makes `Porter.dmg` (app plus an Applications shortcut), verifies the image and its signature, and mounts and detaches it; Developer ID signing and notarization steps are in it but have not run. The setup window gained "Open at login" (the system's login-item service; offered only for a bundled app; a refusal is shown, not swallowed). Chrome extension: an experiment in a throwaway profile showed Chrome installs a `.crx` named in `External Extensions/<id>.json` after one approval (FACT-027), so the app now packs a signed `.crx` at build time with a key generated once outside the repository (`~/.porter-signing/chrome-extension.pem`), puts the matching public key in the bundled manifest, writes that file when the user presses Set up, and registers the relay for the bundled id. The unpacked folder remains the fallback when no Chrome was available to pack. `check-extension-install.sh` repeats the experiment on the built bundle.
+- Verified: native-host 60 tests, Mac app 70; the disk image builds, verifies, mounts with the app and the shortcut, and leaves nothing mounted; the packed extension installs as an external extension in a throwaway profile with the id derived from the bundled manifest.
+- Flag for Prem: the signing key was created on this Mac, outside the repository, mode 600. It decides the bundled extension's id; back it up and never commit it. Releases signed with a different key will have a different extension id.
+- Not verified: Chrome's approval prompt as a person sees it, a Chrome that is already running noticing the file without a restart, several profiles, open at login on a real login, and any Developer ID or notarization step.
+- Next action: Prem runs batches I to L. With an Apple Developer account: signing, notarization, and a clean-account install test.
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.

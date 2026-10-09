@@ -18,12 +18,15 @@ public struct SetupInputs: Sendable, Equatable {
     public var canInstallCompanion: Bool
     public var canEnableClaudeCodeStatus: Bool
     public var canSetUpChromeExtension: Bool
+    public var launchAtLogin: LoginItemState
 
     public init(
         chrome: SourceHealth? = nil, claudeApp: SourceHealth? = nil, chatgptApp: SourceHealth? = nil,
         connectors: [ConnectorSummary] = [], installedEditors: [String] = [], claudeCodeHook: Bool? = nil,
-        canInstallCompanion: Bool = false, canEnableClaudeCodeStatus: Bool = false, canSetUpChromeExtension: Bool = false
+        canInstallCompanion: Bool = false, canEnableClaudeCodeStatus: Bool = false, canSetUpChromeExtension: Bool = false,
+        launchAtLogin: LoginItemState = .notAvailable
     ) {
+        self.launchAtLogin = launchAtLogin
         self.canInstallCompanion = canInstallCompanion
         self.canEnableClaudeCodeStatus = canEnableClaudeCodeStatus
         self.canSetUpChromeExtension = canSetUpChromeExtension
@@ -55,6 +58,8 @@ public enum SetupAction: Sendable, Equatable {
     case installEditorCompanion
     case enableClaudeCodeStatus
     case setUpChromeExtension
+    case setLaunchAtLogin(Bool)
+    case openLoginItemsSettings
 }
 
 public struct SetupRow: Sendable, Equatable, Identifiable {
@@ -76,7 +81,7 @@ public enum SetupChecklist {
     public static func sections(for inputs: SetupInputs) -> [SetupSection] {
         let reads = [chromeRow(inputs.chrome), appRow(.claudeApp, id: "claudeApp", inputs.claudeApp), appRow(.chatgptApp, id: "chatgptApp", inputs.chatgptApp)]
             .compactMap { $0 }
-        let extras = [extensionRow(inputs), editorsRow(inputs), hookRow(inputs)].compactMap { $0 }
+        let extras = [extensionRow(inputs), editorsRow(inputs), hookRow(inputs), loginRow(inputs)].compactMap { $0 }
         return [
             SetupSection(id: "sources", title: "Reads on its own", rows: reads),
             SetupSection(id: "extras", title: "Optional, adds detail", rows: extras),
@@ -159,6 +164,19 @@ public enum SetupChecklist {
             "editors", "VS Code companion", detail, .optional,
             action: inputs.canInstallCompanion ? .installEditorCompanion : nil, actionTitle: inputs.canInstallCompanion ? "Install in \(names)" : nil
         )
+    }
+
+    private static func loginRow(_ inputs: SetupInputs) -> SetupRow? {
+        switch inputs.launchAtLogin {
+        case .notAvailable:
+            return nil
+        case .on:
+            return row("launchAtLogin", "Open at login", "Porter starts when you log in.", .ready, action: .setLaunchAtLogin(false), actionTitle: "Turn off")
+        case .off:
+            return row("launchAtLogin", "Open at login", "Porter starts only when you open it.", .optional, action: .setLaunchAtLogin(true), actionTitle: "Turn on")
+        case .needsApproval:
+            return row("launchAtLogin", "Open at login", "macOS needs you to switch Porter on under System Settings → General → Login Items.", .needsAction, action: .openLoginItemsSettings, actionTitle: "Open Login Items")
+        }
     }
 
     private static func hookRow(_ inputs: SetupInputs) -> SetupRow? {
