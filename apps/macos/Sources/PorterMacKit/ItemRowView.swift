@@ -1,3 +1,4 @@
+import ConversationCore
 import PorterPanelModel
 import SwiftUI
 
@@ -28,8 +29,9 @@ struct ItemRowView: View {
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
     }
 
-    /// The assistant's logo, the project (a pill) and the status. A browser chat has no project, so its profile follows
-    /// the status as plain text, and it is always shown there so identical titles are never ambiguous to the eye.
+    /// The assistant's logo, the project (a pill), where the chat lives (Browser, VS Code or App) and the status. A
+    /// browser chat has no project, so its profile follows the status as plain text, and it is always shown there so
+    /// identical titles are never ambiguous to the eye.
     private var detailLine: some View {
         HStack(spacing: Tokens.Space.s) {
             ProviderLogoView(provider: item.provider)
@@ -39,9 +41,11 @@ struct ItemRowView: View {
     }
 
     private var statusText: String {
-        let status = StatusPresentation.label(for: item.status)
-        guard item.projectName == nil, let alias = item.profileAlias else { return status }
-        return "\(status) · \(alias)"
+        var parts: [String] = []
+        if let source = item.source { parts.append(source.label) }
+        parts.append(StatusPresentation.label(for: item.status))
+        if item.projectName == nil, let alias = item.profileAlias { parts.append(alias) }
+        return parts.joined(separator: " · ")
     }
 
     @ViewBuilder

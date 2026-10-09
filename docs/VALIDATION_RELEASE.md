@@ -115,10 +115,10 @@ Everything above is automated. This batch covers what automation cannot: appeara
 4. Rename a thread in Codex, then click its old row before the list refreshes: expect "changed", not another thread. Archive or delete one: it should disappear within seconds.
 5. Compare with the `~/.codex` truth without printing it: `PORTER_LIVE_CODEX=1 swift test --package-path services/native-host --filter LiveCodexTests` prints how many threads and projects it found.
 
-**M. Row detail line** (project pill, assistant logo, status). Each row's second line reads like `(logo) [Amble] Idle`.
+**M. Row detail line** (assistant logo, project pill, source, status). Each row's second line reads like `(logo) [Amble] VS Code · Idle`; the source is Browser, VS Code or App, and a Codex thread made in the Codex app says App.
 1. Rebuild and open the app. A Claude Code or Codex chat in a VS Code window shows the Claude or ChatGPT logo, then the window's folder as a rounded pill, then the status. A browser chat has no pill: the logo, the status, then the Chrome profile (`Unknown · Prem`) so identical titles stay distinguishable. Desktop-app chats show the logo and the status.
 2. The logo is the icon of the Claude app or the ChatGPT app installed on this Mac; without that app a plain sparkle stands in. Hover it for the product name (Claude Code versus Claude, Codex versus ChatGPT are told apart there, and in VoiceOver).
-3. Long folder names are cut at a width; check one. Check the selected row and Dark mode. Tell me what looks off.
+3. Opening a chat from Porter must not lift it to the top: click an old chat, then look at the list; it stays where it was (the order follows the last time you used a chat, not the click). Chats with an agent's own signal (Claude Code with status on, Codex threads) are ordered by their last interaction; browser chats and Claude Code tabs without a signal by when they last came to the front. Long folder names are cut at a width; check one. Check the selected row and Dark mode. Tell me what looks off.
 
 **L. One app that sets up the rest** (the bundled app; the setup window's install buttons).
 1. `apps/macos/scripts/build-app.sh` builds `Porter.app` with its helpers, the VS Code companion (`porter-vscode.vsix`), the Chrome extension folder and the Claude Code hook installer inside it. Check: `codesign --verify --deep --strict apps/macos/.build/app/Porter.app` is silent, and `apps/macos/.build/app/Porter.app/Contents/MacOS/Porter --self-test` passes.

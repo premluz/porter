@@ -59,6 +59,8 @@ public struct PanelItem: Sendable, Equatable, Identifiable {
     public private(set) var lastActiveAt: Date? = nil
     /// Where the source app lists it, 0 first; orders items that have no time, within one app.
     public private(set) var listRank: Int? = nil
+    /// Browser, VS Code or app: where this conversation lives.
+    public private(set) var source: RouteSource? = nil
 
     public var routes: [PanelRoute] {
         if case .open(let routes) = availability { return routes }

@@ -86,7 +86,7 @@ struct ChromeScriptingTests {
         #expect(source.health == .permissionDenied)
     }
 
-    @Test("recency: the front window's visible tab is now, other windows keep when they were seen, hidden tabs have none")
+    @Test("recency: only the tab in front of Chrome is stamped, when it arrives; others have no time")
     func recency() async throws {
         let runner = FakeRunner()
         runner.setList(
@@ -96,8 +96,32 @@ struct ChromeScriptingTests {
         )
         let tabs = try await connector(runner).snapshot().tabs
         #expect(tabs.first { $0.tabId == 10 }?.lastActiveAt == start)
-        #expect(tabs.first { $0.tabId == 20 }?.lastActiveAt == start)
+        #expect(tabs.first { $0.tabId == 20 }?.lastActiveAt == nil)
         #expect(tabs.first { $0.tabId == 21 }?.lastActiveAt == nil)
+    }
+
+    @Test("staying on a tab does not lift it again; moving to another tab or window stamps the one that arrives")
+    func stampsArrivalsOnly() async throws {
+        let clock = Mutex(start)
+        let runner = FakeRunner()
+        let source = ChromeScriptingConnector(
+            installationId: UUID(), runner: runner, pollInterval: .milliseconds(20), now: { clock.withLock { $0 } }, isRunning: { true }
+        )
+        let one = record(window: 1, windowId: 1, active: 1, position: 1, tab: 10, url: "https://claude.ai/chat/a", title: "A")
+        let two = record(window: 2, windowId: 2, active: 1, position: 1, tab: 20, url: "https://claude.ai/chat/b", title: "B")
+        runner.setList(one + two)
+        _ = try await source.snapshot()
+        clock.withLock { $0 = start.addingTimeInterval(600) }
+        let stayed = try await source.snapshot().tabs
+        #expect(stayed.first { $0.tabId == 10 }?.lastActiveAt == start)
+        // The person switches to the other window: it becomes the front one.
+        runner.setList(
+            record(window: 1, windowId: 2, active: 1, position: 1, tab: 20, url: "https://claude.ai/chat/b", title: "B")
+                + record(window: 2, windowId: 1, active: 1, position: 1, tab: 10, url: "https://claude.ai/chat/a", title: "A")
+        )
+        let moved = try await source.snapshot().tabs
+        #expect(moved.first { $0.tabId == 20 }?.lastActiveAt == start.addingTimeInterval(600))
+        #expect(moved.first { $0.tabId == 10 }?.lastActiveAt == start)
     }
 
     @Test("the list script asks only for provider hosts and skips incognito windows; both scripts use window ids")

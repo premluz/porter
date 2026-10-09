@@ -101,6 +101,11 @@ public struct BridgeCoordinator: Sendable {
     var appDestinations: [String: [String: UUID]] = [:]
     /// Where an app lists each route, for ordering routes that have no time. Never compared across connectors.
     var listRank: [UUID: Int] = [:]
+    /// The few seconds around a click in Porter, per route. Bringing a chat forward makes its connector report it as
+    /// just used, which would lift every chat to the top the moment it is opened; times inside this span are ignored.
+    var ownActivations: [UUID: ClosedRange<Date>] = [:]
+    static let ownActivationBefore: TimeInterval = 5
+    static let ownActivationAfter: TimeInterval = 30
     /// When each route's tab was last the visible one, as its connector reports it. Ordering only.
     var lastActive: [UUID: Date] = [:]
     /// Agent sessions by ID, from hook events. Only the few fields of AgentEvent are ever kept.

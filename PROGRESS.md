@@ -440,6 +440,14 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Verified: core 116 tests (7 new: bind to the front tab, survive switching tabs, two sessions in two tabs, no times, tie, session start alone, gone tab, one-tab fallback); one mutation (binding off) fails four of them. Not verified: on real windows.
 - Needs from Prem: reload the VS Code windows (companion 0.2.0 times), and a Claude Code session whose prompt is sent after Porter runs; the Bastion chat that is working now started earlier, so it shows Unknown until its next prompt.
 
+## LOG-20261009-021 — Source label; opening a chat no longer lifts it; interaction beats viewing
+
+- Date: 2026-10-09.
+- Author: assistant; Prem asked for the source of each chat (Browser, VS Code or App) after the project label, that clicking a chat in Porter not move it to the top, and that the order follow the last interaction, with the last message's time if it can be had.
+- Changed: (1) Rows carry a source (browser tab, editor, or app; a Codex thread made in VS Code says VS Code, one made in the app says App) and the detail line reads `(logo) [Project] Source · Status`, with the profile after it for browser chats. (2) Porter remembers the few seconds around each activation it makes, per chat, and ignores last-used times a connector reports inside that span, so the arrival Porter caused is not counted as use, even when the connector keeps repeating the stamp. (3) Chrome scripting now stamps a tab when it comes to the front of Chrome, not on every look, and a tab sitting in a background window has no time. (4) An agent's own signal (a prompt sent, a reply finished: Claude Code hook events) is the last interaction and now outranks a time a tab was merely in front; Codex threads already use Codex's update time. Where no signal exists the viewing time is still the fallback, because a browser gives no time for a message.
+- Verified: core 119 tests (3 new, plus the recency rule changed in one test), native-host 73, Mac app 73. Slip: while adding the click tests I overwrote an existing test file (`BridgeTests+Recency.swift`) with a new one; I noticed from the diff, restored it from the repository, and moved my tests into `BridgeTests+OwnActivation.swift`; no test was lost.
+- Not verified: the order on real data. Last message time exists only for Codex (its own update time) and for Claude Code sessions that send hook events; Chrome and the desktop apps give none, so those use viewing time or the app's own order.
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.

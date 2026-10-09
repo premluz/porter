@@ -38,6 +38,7 @@ extension BridgeCoordinator {
               let payload = Self.activationPayload(requestId, destination, conversation) else {
             return refuse(.unsupported)
         }
+        ownActivations[destinationId] = now.addingTimeInterval(-Self.ownActivationBefore)...now.addingTimeInterval(Self.ownActivationAfter)
         pending[requestId] = PendingActivation(
             connection: connection, destinationId: destinationId, destinationRevision: expectedRevision,
             deadline: now.addingTimeInterval(activationTimeout)

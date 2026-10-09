@@ -68,17 +68,18 @@ public enum PanelBuilder {
                 key: key, title: first.title, provider: first.provider, profileAlias: first.profileAlias,
                 canonicalUrl: first.url, pinned: record?.pinned ?? false, hidden: record?.hidden ?? false,
                 availability: .open(routes), status: bestStatus(sorted, inputs: inputs), sharesTitle: false,
-                lastActiveAt: lastUsed(sorted, inputs: inputs), listRank: sorted.compactMap(\.listRank).min()
+                lastActiveAt: lastUsed(sorted, inputs: inputs), listRank: sorted.compactMap(\.listRank).min(),
+                source: first.source
             )
         }
     }
 
-    /// When it was last used: the latest of what its connector reported and the last status signal received for it.
-    /// A coding agent that has just worked in a tab has been used, even by a connector that reports no times.
+    /// When it was last used. A coding agent's own signal (a prompt sent, a reply finished) is the last interaction, and
+    /// wins over the time a connector saw the tab in front, which only says someone looked at it. Where no signal
+    /// exists, what the connector reports is the best there is.
     private static func lastUsed(_ rows: [DestinationRow], inputs: PanelInputs) -> Date? {
-        let reported = rows.compactMap(\.lastActiveAt)
         let signalled = rows.compactMap { inputs.statuses[$0.destinationId]?.lastKnown?.receivedAt }
-        return (reported + signalled).max()
+        return signalled.max() ?? rows.compactMap(\.lastActiveAt).max()
     }
 
     private static func closedPins(
@@ -113,7 +114,7 @@ public enum PanelBuilder {
                 key: item.key, title: item.title, provider: item.provider, profileAlias: item.profileAlias,
                 canonicalUrl: item.canonicalUrl, pinned: item.pinned, hidden: item.hidden,
                 availability: item.availability, status: item.status, sharesTitle: (counts[item.title.lowercased()] ?? 0) > 1,
-                lastActiveAt: item.lastActiveAt, listRank: item.listRank
+                lastActiveAt: item.lastActiveAt, listRank: item.listRank, source: item.source
             )
         }
     }

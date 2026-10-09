@@ -20,8 +20,10 @@ public final class ChromeScriptingConnector: HostConnector {
 
     private struct State {
         var health = SourceHealth.unknown
-        /// The last time each tab was seen as its window's visible one, for ordering only.
+        /// When each tab last came to the front of Chrome, for ordering only. Stamped when it arrives, never while it stays.
         var lastVisible: [Int: Date] = [:]
+        /// The conversation tab that was in front of Chrome at the last look, if the front tab is one.
+        var frontTab: Int?
         var fingerprint: [String] = []
     }
 
@@ -118,13 +120,15 @@ public final class ChromeScriptingConnector: HostConnector {
         let moment = now()
         let recognized = state.withLock { state -> [(tab: ScriptedTab, report: TabReport)] in
             state.health = .ready
-            let recognized = ChromiumTabParser.reports(tabs) { tab in
-                if tab.isActive { state.lastVisible[tab.tabId] = tab.isInFrontWindow ? moment : (state.lastVisible[tab.tabId] ?? moment) }
-                return state.lastVisible[tab.tabId]
-            }
+            let recognized = ChromiumTabParser.reports(tabs) { state.lastVisible[$0.tabId] }
+            // A tab is stamped when it comes to the front of Chrome, so looking at it for an hour does not keep
+            // lifting it, and a tab merely sitting visible in a background window is not claimed as used.
+            let front = recognized.first { $0.tab.isActive && $0.tab.isInFrontWindow }?.report.tabId
+            if let front, front != state.frontTab { state.lastVisible[front] = moment }
+            state.frontTab = front
             let present = Set(recognized.map(\.report.tabId))
             state.lastVisible = state.lastVisible.filter { present.contains($0.key) }
-            return recognized
+            return ChromiumTabParser.reports(tabs) { state.lastVisible[$0.tabId] }
         }
         let reports = recognized.map(\.report)
         let fingerprint = recognized.map { pair in

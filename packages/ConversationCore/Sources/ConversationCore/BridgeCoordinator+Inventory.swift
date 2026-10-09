@@ -156,7 +156,7 @@ extension BridgeCoordinator {
 
     @discardableResult
     mutating func setRecency(_ destinationId: UUID, _ date: Date?) -> Bool {
-        guard let date, lastActive[destinationId] != date else { return false }
+        guard let date, lastActive[destinationId] != date, ownActivations[destinationId]?.contains(date) != true else { return false }
         lastActive[destinationId] = date
         return true
     }
@@ -165,6 +165,7 @@ extension BridgeCoordinator {
     mutating func pruneRecency() {
         lastActive = lastActive.filter { registry.destination($0.key) != nil }
         listRank = listRank.filter { registry.destination($0.key) != nil }
+        ownActivations = ownActivations.filter { registry.destination($0.key) != nil }
     }
 
     static let browserCapabilities = [

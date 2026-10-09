@@ -1,5 +1,18 @@
 import Foundation
 
+/// Where a conversation lives, in the words the panel uses.
+public enum RouteSource: String, Codable, Sendable {
+    case browser, editor, app
+
+    public var label: String {
+        switch self {
+        case .browser: "Browser"
+        case .editor: "VS Code"
+        case .app: "App"
+        }
+    }
+}
+
 /// One selectable route, with enough context to tell identical titles apart.
 public struct DestinationRow: Codable, Sendable, Equatable {
     public let destinationId: UUID
@@ -21,12 +34,15 @@ public struct DestinationRow: Codable, Sendable, Equatable {
     public let lastActiveAt: Date?
     /// Where the source app lists this route, 0 first, for ordering routes with no time.
     public let listRank: Int?
+    public let source: RouteSource?
 
     public init(
         destinationId: UUID, revision: Int, conversationId: UUID, providerConversationId: String, provider: String,
         title: String, profileAlias: String?, connectorId: String, reachability: Reachability,
-        tabId: Int?, windowId: Int?, url: String?, routeCount: Int, lastActiveAt: Date? = nil, listRank: Int? = nil
+        tabId: Int?, windowId: Int?, url: String?, routeCount: Int, lastActiveAt: Date? = nil, listRank: Int? = nil,
+        source: RouteSource? = nil
     ) {
+        self.source = source
         self.listRank = listRank
         self.destinationId = destinationId
         self.revision = revision
@@ -77,8 +93,20 @@ extension BridgeCoordinator {
             providerConversationId: providerConversationId, provider: conversation.provider, title: conversation.title, profileAlias: connector?.profileAlias ?? projectName,
             connectorId: connectorId, reachability: live ? .connected : .disconnected,
             tabId: tabId, windowId: windowId, url: url, routeCount: routeCount[conversation.id] ?? 1,
-            lastActiveAt: lastActive[destination.id], listRank: listRank[destination.id]
+            lastActiveAt: lastActive[destination.id], listRank: listRank[destination.id],
+            source: Self.source(of: destination.locator)
         )
+    }
+}
+
+extension BridgeCoordinator {
+    static func source(of locator: Locator) -> RouteSource? {
+        switch locator {
+        case .browserTab: .browser
+        case .editorTab: .editor
+        case .appEntry(let entry): entry.bundleId == LocatorPolicy.vscodeBundleId ? .editor : .app
+        case .desktopLink, .mobileLink: nil
+        }
     }
 }
 

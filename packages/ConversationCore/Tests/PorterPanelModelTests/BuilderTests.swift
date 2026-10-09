@@ -141,8 +141,8 @@ struct StatusRecencyTests {
         #expect(snapshot.open.first?.lastActiveAt == Fixture.now.addingTimeInterval(-120))
     }
 
-    @Test("a reported time later than the signal wins, and a signal later than the reported time wins")
-    func latestWins() {
+    @Test("a status signal is the last interaction and outranks a later time the tab was merely in front")
+    func signalOutranksViewing() {
         func row(_ secondsAgo: TimeInterval) -> DestinationRow {
             DestinationRow(
                 destinationId: UUID(), revision: 1, conversationId: UUID(), providerConversationId: "a", provider: "claude",
@@ -150,9 +150,9 @@ struct StatusRecencyTests {
                 windowId: 1, url: nil, routeCount: 1, lastActiveAt: Fixture.now.addingTimeInterval(-secondsAgo)
             )
         }
-        let reportedLater = row(10)
-        #expect(Fixture.build(rows: [reportedLater], statuses: [reportedLater.destinationId: status(for: reportedLater, secondsAgo: 500)]).open.first?.lastActiveAt == Fixture.now.addingTimeInterval(-10))
-        let signalLater = row(900)
-        #expect(Fixture.build(rows: [signalLater], statuses: [signalLater.destinationId: status(for: signalLater, secondsAgo: 30)]).open.first?.lastActiveAt == Fixture.now.addingTimeInterval(-30))
+        let viewedLater = row(10)
+        #expect(Fixture.build(rows: [viewedLater], statuses: [viewedLater.destinationId: status(for: viewedLater, secondsAgo: 500)]).open.first?.lastActiveAt == Fixture.now.addingTimeInterval(-500))
+        let noSignal = row(900)
+        #expect(Fixture.build(rows: [noSignal]).open.first?.lastActiveAt == Fixture.now.addingTimeInterval(-900))
     }
 }

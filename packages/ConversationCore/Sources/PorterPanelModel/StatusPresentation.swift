@@ -19,6 +19,7 @@ public enum StatusPresentation {
 
     public static func accessibilityLabel(for item: PanelItem) -> String {
         var parts = [item.title, ProviderNames.display(item.provider)]
+        if let source = item.source { parts.append("in \(source.label)") }
         if let alias = item.profileAlias { parts.append("profile \(alias)") }
         parts.append(label(for: item.status))
         switch item.availability {
