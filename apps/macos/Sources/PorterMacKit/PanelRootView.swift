@@ -14,15 +14,12 @@ struct PanelRootView: View {
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     var body: some View {
-        // The panel never activates the app, and its glass edge was missing after a collapse until the panel
-        // was pressed, which suggests an inactive-window look. This asks SwiftUI to always draw it as active.
         TimelineView(.animation(paused: !presentation.isMoving)) { context in
             frame(
                 progress: presentation.motion.progress(at: context.date),
                 content: presentation.motion.contentProgress(at: context.date)
             )
         }
-        .environment(\.controlActiveState, .key)
     }
 
     @ViewBuilder
@@ -34,7 +31,7 @@ struct PanelRootView: View {
         let _ = presentation.recorder?(rect)
         ZStack(alignment: anchor) {
             if progress < 0.999 {
-                CapsuleView(model: model, expand: expand)
+                CapsuleView(model: model, expand: expand) { id, frame in presentation.dotFrames[id] = frame }
                     .opacity(PanelPhases.capsuleOpacity(progress: progress))
                     .allowsHitTesting(progress < 0.1)
             }
@@ -46,11 +43,11 @@ struct PanelRootView: View {
                 .accessibilityHidden(progress < 0.5)
         }
         .frame(width: rect.width, height: rect.height, alignment: anchor)
-        // A new generation rebuilds the glass, which is how its edge is redrawn after the window has resized.
-        .background { surface(shape).id(presentation.surfaceGeneration) }
+        .background { surface(shape) }
         .clipShape(shape)
         .offset(x: rect.minX, y: rect.minY)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .coordinateSpace(name: PanelPresentation.coordinateSpace)
     }
 
     @ViewBuilder
@@ -58,7 +55,10 @@ struct PanelRootView: View {
         if reduceTransparency {
             shape.fill(Palette.surfaceOpaque).overlay(shape.strokeBorder(Palette.borderSubtle))
         } else {
+            // The system draws the glass's edge only while its window is active, and this one never is, so the edge is
+            // drawn here, which keeps it there whether or not the panel has been pressed or another window has focus.
             shape.fill(.clear).glassEffect(.regular, in: shape)
+                .overlay(shape.strokeBorder(Palette.glassEdge, lineWidth: Tokens.Size.edgeLine))
         }
     }
 }

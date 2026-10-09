@@ -448,6 +448,15 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Verified: core 119 tests (3 new, plus the recency rule changed in one test), native-host 73, Mac app 73. Slip: while adding the click tests I overwrote an existing test file (`BridgeTests+Recency.swift`) with a new one; I noticed from the diff, restored it from the repository, and moved my tests into `BridgeTests+OwnActivation.swift`; no test was lost.
 - Not verified: the order on real data. Last message time exists only for Codex (its own update time) and for Claude Code sessions that send hook events; Chrome and the desktop apps give none, so those use viewing time or the app's own order.
 
+## LOG-20261009-022 — Labels on hover in the collapsed capsule; the edge drawn by Porter (FACT-029)
+
+- Date: 2026-10-09.
+- Author: assistant; Prem asked for tooltips on hover in the collapsed state, and reported again that the capsule's border is missing after collapsing, appears when pressed, and goes when another window takes focus ("it should be all the time").
+- Cause of the border (from Prem's description): the glass draws its edge only while its window is active; the non-activating panel is never active in the ordinary way. The three earlier workarounds (rebuild the glass, re-attach the view, force the SwiftUI active state) did not address that and are removed.
+- Changed: the edge is a 1 pt stroke Porter draws along the shape (`Palette.glassEdge`), independent of window state. Hovering a dot for 0.35 s shows a glass label beside the capsule with the chat's title and the row's detail line (`ItemDetailLine`, now shared); a tracking area on the panel's view (always active, so it works when Porter is not the active app) reports the pointer, each dot reports its frame, `CapsuleHover` picks the dot and places the label on the screen side, kept on screen. The old system tooltips on the dots are gone, since they do not appear for an inactive app.
+- Verified: Mac app 76 tests (3 new: hit test, screen rectangle, label placement on both edges and clamping) and the self-test (the label lays out). Not verified: the hover itself and the edge, since this needs a pointer and eyes (batch O).
+- Next action: Prem looks at batch O.
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.

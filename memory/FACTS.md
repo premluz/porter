@@ -252,6 +252,15 @@ Evidence classes: `user_requirement`, `source_documentation`, `verified_test`. P
 - Tags: area/macos, area/identity, phase/r1.
 - Review trigger: a Codex update; the first real click on each kind of thread.
 
+## FACT-029 — The glass edge shows only while the panel's window is active
+
+- Class: reported by Prem on the running app (2026-10-09), not photographed or measured here.
+- Statement: the Liquid Glass surface draws its edge only while its window is the active one. After the panel collapsed, the edge was missing until the panel was pressed, and it went again when another window took focus. Redrawing the glass, re-attaching the view and setting the SwiftUI active state (LOG-20261009-014 and earlier) did not change this. The panel is a non-activating window and is never active in the ordinary way, which is why it only appeared on a press.
+- Response: the edge is drawn by Porter itself, a 1 pt stroke along the same rounded shape, so it no longer depends on the window state; the earlier workarounds were removed.
+- Not established: how the stroke looks next to the system's own edge when the window is active (it may add to it), in light mode and with Reduce Transparency (which already drew its own border).
+- Tags: area/macos, area/ux, phase/r1.
+- Review trigger: a macOS update; Prem's look at it.
+
 ## Adding a fact
 
 Include statement, evidence class, source/test reference, observed date, tags, and review trigger if volatile. A failed experiment can be a fact when its exact environment and outcome are recorded. Do not transform a plausible architectural assumption into a tested capability.

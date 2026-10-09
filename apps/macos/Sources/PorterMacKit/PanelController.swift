@@ -12,7 +12,8 @@ public final class PanelController {
     let model: AppModel
     let presentation = PanelPresentation()
     private let defaults: UserDefaults
-    private let host: NSHostingView<PanelRootView>
+    private let host: TrackingHostingView<PanelRootView>
+    private let tooltips = TooltipController()
     private var screen: NSScreen?
     private var resignObserver: (any NSObjectProtocol)?
 
@@ -21,10 +22,12 @@ public final class PanelController {
         self.settings = settings
         self.defaults = defaults
         presentation.edge = settings.edge
-        host = NSHostingView(rootView: PanelRootView(model: model, presentation: presentation, expand: {}, close: {}))
+        host = TrackingHostingView(rootView: PanelRootView(model: model, presentation: presentation, expand: {}, close: {}))
         host.sizingOptions = []
         panel.contentView = host
         panel.onCancel = { [weak self] in self?.close() }
+        panel.acceptsMouseMovedEvents = true
+        host.onPointer = { [weak self] point in self?.pointerMoved(to: point) }
         host.rootView = PanelRootView(
             model: model, presentation: presentation, expand: { [weak self] in self?.open() }, close: { [weak self] in self?.close() }
         )
@@ -45,7 +48,23 @@ public final class PanelController {
         if machine.isExpandedOrOpening { close() } else { open() }
     }
 
+    /// Collapsed, resting the pointer on a dot shows what it is; anything else takes the label away.
+    private func pointerMoved(to point: CGPoint?) {
+        guard machine.phase == .collapsed, let point,
+              let id = CapsuleHover.item(at: point, frames: presentation.dotFrames),
+              let item = model.items.first(where: { $0.id == id }), let frame = presentation.dotFrames[id] else {
+            tooltips.hide()
+            return
+        }
+        let visible = (screen ?? NSScreen.main)?.visibleFrame ?? panel.frame
+        tooltips.show(
+            item, anchor: CapsuleHover.screenRect(of: frame, inWindow: panel.frame), window: panel.frame,
+            edge: settings.edge, visible: visible
+        )
+    }
+
     public func open() {
+        tooltips.hide()
         guard let animation = machine.open() else { return }
         screen = screenUnderPointer()
         panel.allowsKey = true
@@ -121,10 +140,7 @@ public final class PanelController {
     private func complete(_ animation: PanelAnimation) {
         guard machine.finished(animation) else { return }
         presentation.endMove()
-        if machine.phase == .expanded {
-            settle(window: frame(expanded: true))
-            Task { @MainActor [weak self] in self?.presentation.refreshSurface() }
-        }
+        if machine.phase == .expanded { settle(window: frame(expanded: true)) }
         finishIfCollapsed()
     }
 
@@ -134,21 +150,6 @@ public final class PanelController {
         settle(window: frame(expanded: false))
         panel.allowsKey = false
         panel.resignKey()
-        reattachContent()
-        // After the resize and the key change have both been applied, so the glass is rebuilt last.
-        Task { @MainActor [weak self] in self?.presentation.refreshSurface() }
-    }
-
-    /// The glass edge went missing only on a window that had been resized smaller after being key, and came
-    /// back on any later mouse event. Re-attaching the content and re-ordering the window makes the window
-    /// server register it again, which is what such an event does.
-    private func reattachContent() {
-        panel.contentView = nil
-        panel.contentView = host
-        host.layoutSubtreeIfNeeded()
-        host.needsDisplay = true
-        panel.displayIfNeeded()
-        panel.orderFrontRegardless()
     }
 
     private func contentChanged() {

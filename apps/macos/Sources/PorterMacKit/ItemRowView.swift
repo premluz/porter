@@ -13,7 +13,7 @@ struct ItemRowView: View {
                 StatusDotView(status: item.status)
                 VStack(alignment: .leading, spacing: Tokens.Space.xs) {
                     Text(item.title).font(.body).lineLimit(1)
-                    detailLine
+                    ItemDetailLine(item: item)
                 }
                 Spacer(minLength: Tokens.Space.s)
                 trailingMarks
@@ -29,10 +29,27 @@ struct ItemRowView: View {
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
     }
 
-    /// The assistant's logo, the project (a pill), where the chat lives (Browser, VS Code or App) and the status. A
-    /// browser chat has no project, so its profile follows the status as plain text, and it is always shown there so
-    /// identical titles are never ambiguous to the eye.
-    private var detailLine: some View {
+    @ViewBuilder
+    private var trailingMarks: some View {
+        if item.isAmbiguous {
+            Label("\(item.routes.count) tabs", systemImage: "rectangle.on.rectangle")
+                .labelStyle(.titleAndIcon).font(.caption).foregroundStyle(Palette.statusAttention)
+        } else if item.availability == .unavailable(.closed) {
+            Image(systemName: "xmark.rectangle").foregroundStyle(Palette.textSecondary)
+        } else if item.availability == .unavailable(.sourceOffline) {
+            Image(systemName: "bolt.horizontal.circle").foregroundStyle(Palette.textSecondary)
+        }
+        if item.pinned { Image(systemName: "pin.fill").font(.caption).foregroundStyle(Palette.textSecondary) }
+    }
+}
+
+/// The assistant's logo, the project (a pill), where the chat lives (Browser, VS Code or App) and the status. A
+/// browser chat has no project, so its profile follows the status as plain text, and it is always shown there so
+/// identical titles are never ambiguous to the eye.
+struct ItemDetailLine: View {
+    let item: PanelItem
+
+    var body: some View {
         HStack(spacing: Tokens.Space.s) {
             ProviderLogoView(provider: item.provider)
             if let project = item.projectName { PillView(text: project) }
@@ -46,18 +63,5 @@ struct ItemRowView: View {
         parts.append(StatusPresentation.label(for: item.status))
         if item.projectName == nil, let alias = item.profileAlias { parts.append(alias) }
         return parts.joined(separator: " · ")
-    }
-
-    @ViewBuilder
-    private var trailingMarks: some View {
-        if item.isAmbiguous {
-            Label("\(item.routes.count) tabs", systemImage: "rectangle.on.rectangle")
-                .labelStyle(.titleAndIcon).font(.caption).foregroundStyle(Palette.statusAttention)
-        } else if item.availability == .unavailable(.closed) {
-            Image(systemName: "xmark.rectangle").foregroundStyle(Palette.textSecondary)
-        } else if item.availability == .unavailable(.sourceOffline) {
-            Image(systemName: "bolt.horizontal.circle").foregroundStyle(Palette.textSecondary)
-        }
-        if item.pinned { Image(systemName: "pin.fill").font(.caption).foregroundStyle(Palette.textSecondary) }
     }
 }

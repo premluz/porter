@@ -61,6 +61,8 @@ public enum SelfTest {
         if let item = controller.model.items.first {
             let size = NSHostingView(rootView: ItemRowView(item: item, isSelected: false, activate: {})).fittingSize
             check("a pane row lays out at least row height (\(size))", size.height >= Tokens.Size.rowHeight - 1 && size.width > 0)
+            let label = NSHostingView(rootView: TooltipView(item: item)).fittingSize
+            check("a capsule label lays out within its maximum width (\(label))", label.width > 0 && label.width <= Tokens.Size.tooltipMaximumWidth && label.height > 0)
         }
     }
 

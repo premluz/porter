@@ -29,6 +29,8 @@ public enum Tokens {
         public static let minimumPaneHeight: CGFloat = 160
         public static let setupWidth: CGFloat = 520
         public static let providerLogo: CGFloat = 14
+        public static let edgeLine: CGFloat = 1
+        public static let tooltipMaximumWidth: CGFloat = 280
         public static let pillMaximumWidth: CGFloat = 120
         public static let setupIcon: CGFloat = 24
     }
@@ -54,6 +56,8 @@ public enum Tokens {
         public static let contentCloseFraction = 0.4
         public static let staggerLimit = 8
         public static let rowRise: CGFloat = 6
+        /// How long the pointer rests on a dot before its label appears.
+        public static let tooltipDelay: Duration = .milliseconds(350)
         /// Extra window around the pane while it opens, so the overshoot of the bounce is not clipped.
         public static let overshootMargin: CGFloat = 24
     }

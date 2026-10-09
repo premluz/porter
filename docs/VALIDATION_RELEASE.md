@@ -108,6 +108,11 @@ Everything above is automated. This batch covers what automation cannot: appeara
 1. Expect a "Sample data" banner, Pinned and Open sections, status in words, a dashed marker for anything not live. Tap a row: details sheet with a note that the account on the phone may differ and no open button (sample links go nowhere).
 2. Settings, Accessibility, larger text at the maximum: expect no clipped rows. Rotate to landscape. Search for "release".
 
+**O. Collapsed capsule: label on hover, and the edge** (FACT-029).
+1. Rebuild and open the app. With the panel collapsed, rest the pointer on a dot for about a third of a second: a small glass label appears beside the capsule (on the side facing the screen), level with the dot, with the chat's title and the same line a row has: logo, project pill, source, status. Move to the next dot: the label follows. Leave the capsule: it goes. It must never take the pointer or focus, and it must not appear while the pane is open.
+2. The capsule must show a thin edge all the time: right after collapsing, with no click, and when another app's window has focus. Compare with and without the system's own edge (press the capsule): tell me if the two look doubled.
+3. Hover works without Porter being the active app; the label also needs the dot to be under the pointer, so tell me if one dot never shows a label.
+
 **N. Codex threads** (from Codex's own thread list; VS Code chats and Codex-app chats together).
 1. Rebuild and open the app. Setup shows a **Codex threads** row (only if `~/.codex` exists). Within a few seconds recent Codex threads (last 7 days, no helper threads) are listed under their project: `[Atlas] (logo) …`. Codex tabs from VS Code windows are no longer listed separately (the thread list covers them; no companion reload is needed for that).
 2. Click a Codex thread that was made in VS Code: its project's window should come forward and the thread should open in the Codex panel. With several windows open, check it is the right one; tell me if it opens in the wrong window or nothing happens.
