@@ -272,8 +272,8 @@
         "DOC-QUESTIONS"
       ],
       "path": "memory/FACTS.md",
-      "revision": "sha256:1fffdabcdb04bdc0b4a0a1964610d9857395566d58c3459b692a806cba8fe402",
-      "line_count": 209
+      "revision": "sha256:5524bde2c3cfce57819d5e1d0b42434a29a2d15fd939c0d075f252cd5e60da8c",
+      "line_count": 217
     },
     {
       "id": "DOC-HANDOFF",
@@ -383,8 +383,8 @@
         "DOC-TEMPLATES"
       ],
       "path": "PROGRESS.md",
-      "revision": "sha256:8cf6344329b9e7a9c9d193e8d2f05a6beb446be6ca7b7463a2c983e9befae110",
-      "line_count": 257
+      "revision": "sha256:5475de30f60c6c79f9e67e2a0d18b755fc990a4d35c9d1925944cba6b496cdb1",
+      "line_count": 266
     },
     {
       "id": "DOC-QUESTIONS",

@@ -204,6 +204,14 @@ Evidence classes: `user_requirement`, `source_documentation`, `verified_test`. P
 - Tags: area/macos, area/ux, phase/r1.
 - Review trigger: any change to the panel's motion; rerun the probe.
 
+## FACT-024 — Chrome can be read and driven without an extension, for one profile (interim)
+
+- Class: verified_test (on this Mac, 2026-10-09, Chrome with one window open; Apple Events from a terminal).
+- Statement: Chrome's scripting interface lists windows and tabs with a per-tab `id`, `title` and `URL`, a per-window `id`, `mode` (normal or incognito) and `active tab index`, in about 0.2 to 0.35 s per query. Setting `active tab index` and the window's `index` to 1, then `activate`, brought a specific tab (found by its `id`) to the front; a second tab was selected the same way. No Chrome setting or extension was needed, and no prompt appeared because Automation access for Chrome had already been granted to the calling terminal. Safari's interface was reachable too but had no window open, so Safari tab behavior is not tested.
+- Not established: whether windows of a second Chrome profile are listed (only one window was open, so the two-profile case is untested); how to tell which profile a window belongs to (no such property in the dictionary); last-used times (none exist, so they can only be recorded while Porter runs); whether the permission prompt names Porter once it runs as its own app; Safari tabs; behavior with Chrome minimized, on another Space or in full screen.
+- Tags: area/browser, area/macos, phase/r1.
+- Review trigger: the two-profile test (TASK-081) and any Chrome major update.
+
 ## Adding a fact
 
 Include statement, evidence class, source/test reference, observed date, tags, and review trigger if volatile. A failed experiment can be a fact when its exact environment and outcome are recorded. Do not transform a plausible architectural assumption into a tested capability.

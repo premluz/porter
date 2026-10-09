@@ -252,6 +252,15 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Not verified: no real host exists yet; the spikes (TASK-081 to TASK-083) provide the first. `ConnectorKind` still has only chrome and vscode; native kinds and any contract change come with the spike that needs them.
 - Next action: TASK-081, the Chrome and Safari scripting spike.
 
+## LOG-20261009-003 — Chrome scripting spike, first half (TASK-081)
+
+- Date: 2026-10-09.
+- Author: assistant; Prem approved the spike (tab listing filtered to claude.ai and chatgpt.com, other tabs counted only).
+- Tasks: TASK-081.
+- Tags: area/browser, area/macos, phase/r1.
+- Result: see FACT-024. Chrome tabs can be listed with stable per-tab ids and activated by id with no extension, in a fast call. No profile property exists in the interface, and the second-profile case was not testable because only one Chrome window was open.
+- Next action: Prem opens a window of the second profile with a Claude tab; rerun the listing to see whether that window appears, then Safari with one tab open.
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.
