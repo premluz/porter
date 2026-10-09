@@ -71,6 +71,12 @@ public struct PanelItem: Sendable, Equatable, Identifiable {
             ? DesktopLinks.claudeChat(providerConversationId: key.providerConversationId) : nil
     }
 
+    /// The project it belongs to, when that can be recognised: a coding agent in an editor window is named by the
+    /// window's folder. Browser chats have a profile, not a project, and so have none.
+    public var projectName: String? {
+        ProviderNames.host(for: provider) == .vscode ? profileAlias : nil
+    }
+
     public var isAmbiguous: Bool { routes.count > 1 }
 
     public var isOpenable: Bool { !routes.isEmpty }

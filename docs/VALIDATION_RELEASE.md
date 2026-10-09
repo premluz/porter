@@ -108,6 +108,11 @@ Everything above is automated. This batch covers what automation cannot: appeara
 1. Expect a "Sample data" banner, Pinned and Open sections, status in words, a dashed marker for anything not live. Tap a row: details sheet with a note that the account on the phone may differ and no open button (sample links go nowhere).
 2. Settings, Accessibility, larger text at the maximum: expect no clipped rows. Rotate to landscape. Search for "release".
 
+**M. Row detail line** (project pill, assistant logo, status). Each row's second line reads like `[Amble] (logo) Idle`.
+1. Rebuild and open the app. A Claude Code or Codex chat in a VS Code window shows the window's folder as a rounded pill, then the Claude or ChatGPT logo, then the status. A browser chat has no pill: the logo, the status, then the Chrome profile (`Unknown · Prem`) so identical titles stay distinguishable. Desktop-app chats show the logo and the status.
+2. The logo is the icon of the Claude app or the ChatGPT app installed on this Mac; without that app a plain sparkle stands in. Hover it for the product name (Claude Code versus Claude, Codex versus ChatGPT are told apart there, and in VoiceOver).
+3. Long folder names are cut at a width; check one. Check the selected row and Dark mode. Tell me what looks off.
+
 **L. One app that sets up the rest** (the bundled app; the setup window's install buttons).
 1. `apps/macos/scripts/build-app.sh` builds `Porter.app` with its helpers, the VS Code companion (`porter-vscode.vsix`), the Chrome extension folder and the Claude Code hook installer inside it. Check: `codesign --verify --deep --strict apps/macos/.build/app/Porter.app` is silent, and `apps/macos/.build/app/Porter.app/Contents/MacOS/Porter --self-test` passes.
 2. Open the bundle. In the setup window, **VS Code companion → Install in …** installs it in each found editor (VS Code, Cursor, Windsurf). Reload an editor window, then the row should turn ready within a few seconds. Tell me whether the companion works inside Cursor or Windsurf (untested).

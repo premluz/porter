@@ -404,6 +404,16 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Verified: panel model 62 tests (2 new); Mac app tests. Not verified: on the real windows. It only helps chats that get status events, which needs a new Claude Code session.
 - Next action: Prem reloads the VS Code windows (the real fix: the active tab of each window is stamped as used now) and starts a new Claude Code session for status.
 
+## LOG-20261009-017 — Row detail line: project pill, logo, status (TASK-023)
+
+- Date: 2026-10-09.
+- Author: assistant; Prem asked for each item to read "Chat title / [Amble] [logo] Idle", with the project as a pill and the assistant as a logo, after answering a layout question with that sketch.
+- Tasks: TASK-023.
+- Tags: area/macos, area/ux, phase/r1.
+- Changed: the second line of a pane row is now a project pill (only where a project can be recognised: a coding agent in an editor window, named by its folder), the assistant's logo, and the status; for browser chats the Chrome profile follows the status as text, so identical titles stay told apart. `PanelItem.projectName` and `ProviderNames.brand` carry the two facts; the logo is the icon of the installed Claude app or ChatGPT app (fetched at run time, not bundled, with a plain symbol when the app is absent). Claude Code versus Claude, and Codex versus ChatGPT, are told apart by the logo's tooltip and by the accessibility label, which is unchanged.
+- Verified: panel model 64 tests (2 new), Mac app 72, self-test lays a row out. Not verified: how it looks.
+- Next action: Prem looks at it (batch M).
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.

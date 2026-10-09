@@ -11,6 +11,7 @@ enum Palette {
     /// A calm backing under rows so text stays readable over bright or busy windows.
     static let contentBacking = Color(nsColor: .windowBackgroundColor).opacity(0.38)
     static let selection = Color.accentColor.opacity(0.22)
+    static let pillBacking = Color.secondary.opacity(0.2)
     static let statusAttention = Color.orange
     static let statusUnread = Color.accentColor
     static let statusWorking = Color.green

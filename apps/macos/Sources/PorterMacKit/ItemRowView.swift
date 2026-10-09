@@ -12,7 +12,7 @@ struct ItemRowView: View {
                 StatusDotView(status: item.status)
                 VStack(alignment: .leading, spacing: Tokens.Space.xs) {
                     Text(item.title).font(.body).lineLimit(1)
-                    Text(subtitle).font(.caption).foregroundStyle(Palette.textSecondary).lineLimit(1)
+                    detailLine
                 }
                 Spacer(minLength: Tokens.Space.s)
                 trailingMarks
@@ -28,12 +28,20 @@ struct ItemRowView: View {
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
     }
 
-    /// The profile is always shown when titles repeat, so identical rows are never ambiguous to the eye.
-    private var subtitle: String {
-        var parts = [ProviderNames.display(item.provider)]
-        if let alias = item.profileAlias { parts.append(alias) }
-        parts.append(StatusPresentation.label(for: item.status))
-        return parts.joined(separator: " · ")
+    /// The project (a pill), the assistant's logo and the status. A browser chat has no project, so its profile follows
+    /// the status as plain text, and it is always shown there so identical titles are never ambiguous to the eye.
+    private var detailLine: some View {
+        HStack(spacing: Tokens.Space.s) {
+            if let project = item.projectName { PillView(text: project) }
+            ProviderLogoView(provider: item.provider)
+            Text(statusText).font(.caption).foregroundStyle(Palette.textSecondary).lineLimit(1)
+        }
+    }
+
+    private var statusText: String {
+        let status = StatusPresentation.label(for: item.status)
+        guard item.projectName == nil, let alias = item.profileAlias else { return status }
+        return "\(status) · \(alias)"
     }
 
     @ViewBuilder

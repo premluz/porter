@@ -41,6 +41,17 @@ public enum ProviderNames {
 
     private static let names = ["claude": "Claude", "chatgpt": "ChatGPT", "claude-code": "Claude Code", "codex": "ChatGPT Codex", "claude-desktop": "Claude app", "chatgpt-desktop": "ChatGPT app"]
 
+    /// Whose assistant it is, for a logo. Claude Code and the Claude app are Claude; Codex and the ChatGPT app are ChatGPT.
+    public enum Brand: Sendable, Equatable { case claude, chatgpt, other }
+
+    public static func brand(for provider: String) -> Brand {
+        switch provider {
+        case "claude", "claude-code", "claude-desktop": .claude
+        case "chatgpt", "codex", "chatgpt-desktop": .chatgpt
+        default: .other
+        }
+    }
+
     public static func display(_ provider: String) -> String {
         names[provider] ?? provider
     }

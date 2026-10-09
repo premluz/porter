@@ -58,6 +58,10 @@ public enum SelfTest {
         controller.panel.contentView?.layoutSubtreeIfNeeded()
         check("SwiftUI content lays out", (controller.panel.contentView?.subviews.count ?? 0) > 0)
         checkSetupLayout(check)
+        if let item = controller.model.items.first {
+            let size = NSHostingView(rootView: ItemRowView(item: item, isSelected: false, activate: {})).fittingSize
+            check("a pane row lays out at least row height (\(size))", size.height >= Tokens.Size.rowHeight - 1 && size.width > 0)
+        }
     }
 
     /// The setup window's content must size itself from its rows, with every state present.
