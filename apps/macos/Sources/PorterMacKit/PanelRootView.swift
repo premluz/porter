@@ -14,12 +14,15 @@ struct PanelRootView: View {
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     var body: some View {
+        // The panel never activates the app, and its glass edge was missing after a collapse until the panel
+        // was pressed, which suggests an inactive-window look. This asks SwiftUI to always draw it as active.
         TimelineView(.animation(paused: !presentation.isMoving)) { context in
             frame(
                 progress: presentation.motion.progress(at: context.date),
                 content: presentation.motion.contentProgress(at: context.date)
             )
         }
+        .environment(\.controlActiveState, .key)
     }
 
     @ViewBuilder
