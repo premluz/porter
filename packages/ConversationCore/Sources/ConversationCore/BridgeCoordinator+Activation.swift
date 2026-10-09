@@ -59,7 +59,7 @@ extension BridgeCoordinator {
             return ActivateRequestPayload(
                 requestId: requestId, destinationId: destination.id, destinationRevision: destination.revision,
                 tabId: tab.tabId, windowId: tab.windowIdHint ?? 0, expectedProvider: conversation.provider,
-                expectedConversationId: providerConversationId, editor: nil
+                expectedConversationId: providerConversationId, editor: nil, app: nil
             )
         case .editorTab(let editor):
             return ActivateRequestPayload(
@@ -69,7 +69,15 @@ extension BridgeCoordinator {
                 editor: EditorTarget(
                     workspacePath: editor.workspacePath, viewColumn: editor.viewColumn, index: editor.index,
                     expectedTitle: conversation.title
-                )
+                ),
+                app: nil
+            )
+        case .appEntry(let entry):
+            return ActivateRequestPayload(
+                requestId: requestId, destinationId: destination.id, destinationRevision: destination.revision,
+                tabId: nil, windowId: nil, expectedProvider: conversation.provider,
+                expectedConversationId: providerConversationId, editor: nil,
+                app: AppTarget(bundleId: entry.bundleId, expectedTitle: entry.title, ordinal: entry.ordinal)
             )
         case .desktopLink, .mobileLink:
             return nil

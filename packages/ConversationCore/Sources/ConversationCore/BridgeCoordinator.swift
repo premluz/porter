@@ -97,6 +97,8 @@ public struct BridgeCoordinator: Sendable {
     var remembered: [RouteKey: RememberedRoute] = [:]
     /// Editor tabs have no tab ID, so a connector's routes are keyed by their provider conversation ID.
     var editorDestinations: [String: [String: UUID]] = [:]
+    /// Desktop-app entries are keyed the same way, by the connector-derived conversation ID.
+    var appDestinations: [String: [String: UUID]] = [:]
     /// When each route's tab was last the visible one, as its connector reports it. Ordering only.
     var lastActive: [UUID: Date] = [:]
     /// Agent sessions by ID, from hook events. Only the few fields of AgentEvent are ever kept.

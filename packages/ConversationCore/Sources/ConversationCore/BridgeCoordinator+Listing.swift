@@ -101,7 +101,8 @@ extension BridgeCoordinator {
             ConnectorSummary(
                 connectorId: connector.id, profileAlias: connector.profileAlias,
                 reachability: connectionByInstallation[connector.installationId] == nil ? .disconnected : .connected,
-                routeCount: (tabDestinations[connector.id]?.count ?? 0) + (editorDestinations[connector.id]?.count ?? 0),
+                routeCount: (tabDestinations[connector.id]?.count ?? 0) + (editorDestinations[connector.id]?.count ?? 0)
+                    + (appDestinations[connector.id]?.count ?? 0),
                 providerType: connector.providerType
             )
         }.sorted { ($0.profileAlias ?? "", $0.connectorId) < ($1.profileAlias ?? "", $1.connectorId) }

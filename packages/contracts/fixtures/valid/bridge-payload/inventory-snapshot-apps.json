@@ -1,0 +1,21 @@
+{
+  "tabs": [],
+  "appEntries": [
+    {
+      "provider": "claude-desktop",
+      "providerConversationId": "3f2a9c1b7d44-0",
+      "title": "Example chat",
+      "bundleId": "com.anthropic.claudefordesktop",
+      "ordinal": 0,
+      "lastActiveAt": "2026-10-09T07:00:09.250Z"
+    },
+    {
+      "provider": "claude-desktop",
+      "providerConversationId": "5b8e0d6a1c92-1",
+      "title": "Test",
+      "bundleId": "com.anthropic.claudefordesktop",
+      "ordinal": 1,
+      "unread": true
+    }
+  ]
+}

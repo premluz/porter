@@ -37,6 +37,8 @@ public struct TabReport: Codable, Sendable, Equatable {
 public enum ConnectorKind: String, Codable, Sendable {
     /// `chrome` is the browser extension; `chromeScripting` is Porter reading Chrome itself, with no extension.
     case chrome, vscode, chromeScripting
+    /// Desktop chat apps (Claude, ChatGPT) read through Accessibility.
+    case desktopApp
 
     /// The prefix that makes a connector ID readable and ties it to its kind.
     var idPrefix: String { rawValue }
@@ -46,6 +48,7 @@ public enum ConnectorKind: String, Codable, Sendable {
         case .chrome: .chromeExtension
         case .vscode: .vscodeExtension
         case .chromeScripting: .chromeScripting
+        case .desktopApp: .desktopApp
         }
     }
 }
@@ -104,13 +107,42 @@ public struct EditorTabReport: Codable, Sendable, Equatable {
     }
 }
 
+/// A conversation listed in a desktop chat app's sidebar. The app gives no identifier, so identity is
+/// the title plus its position among entries with the same title: a rename, or a duplicate that moves,
+/// looks like a different conversation. `providerConversationId` is derived by the connector from both.
+public struct AppEntryReport: Codable, Sendable, Equatable {
+    public let provider: String
+    public let providerConversationId: String
+    public let title: String
+    public let bundleId: String
+    public let ordinal: Int
+    /// The app's own "unread" marker, when it shows one. Absent means the app shows none, not "read".
+    public let unread: Bool?
+    public let lastActiveAt: Date?
+
+    public init(
+        provider: String, providerConversationId: String, title: String, bundleId: String, ordinal: Int,
+        unread: Bool? = nil, lastActiveAt: Date? = nil
+    ) {
+        self.provider = provider
+        self.providerConversationId = providerConversationId
+        self.title = title
+        self.bundleId = bundleId
+        self.ordinal = ordinal
+        self.unread = unread
+        self.lastActiveAt = lastActiveAt
+    }
+}
+
 public struct InventorySnapshotPayload: Codable, Sendable, Equatable {
     public let tabs: [TabReport]
     public let editorTabs: [EditorTabReport]?
+    public let appEntries: [AppEntryReport]?
 
-    public init(tabs: [TabReport], editorTabs: [EditorTabReport]? = nil) {
+    public init(tabs: [TabReport], editorTabs: [EditorTabReport]? = nil, appEntries: [AppEntryReport]? = nil) {
         self.tabs = tabs
         self.editorTabs = editorTabs
+        self.appEntries = appEntries
     }
 }
 
@@ -134,6 +166,13 @@ public struct EditorTarget: Codable, Sendable, Equatable {
     public let expectedTitle: String
 }
 
+/// Which sidebar entry of a desktop app to open, and the title it must still have for the connector to act.
+public struct AppTarget: Codable, Sendable, Equatable {
+    public let bundleId: String
+    public let expectedTitle: String
+    public let ordinal: Int
+}
+
 /// The registry's only navigation command. The connector re-verifies the target before acting.
 /// A browser target carries tabId and windowId; an editor target carries `editor`.
 public struct ActivateRequestPayload: Codable, Sendable, Equatable {
@@ -145,6 +184,7 @@ public struct ActivateRequestPayload: Codable, Sendable, Equatable {
     public let expectedProvider: String
     public let expectedConversationId: String
     public let editor: EditorTarget?
+    public let app: AppTarget?
 }
 
 public enum BridgeErrorCode: String, Codable, Sendable {

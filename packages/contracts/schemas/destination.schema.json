@@ -44,6 +44,9 @@
         },
         {
           "$ref": "#/$defs/editorTab"
+        },
+        {
+          "$ref": "#/$defs/appEntry"
         }
       ]
     },
@@ -195,6 +198,32 @@
           "type": "integer",
           "minimum": 0,
           "maximum": 8
+        }
+      }
+    },
+    "appEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "bundleId",
+        "title",
+        "ordinal"
+      ],
+      "properties": {
+        "kind": {
+          "const": "appEntry"
+        },
+        "bundleId": {
+          "$ref": "common.schema.json#/$defs/bundleId"
+        },
+        "title": {
+          "$ref": "common.schema.json#/$defs/title"
+        },
+        "ordinal": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 199
         }
       }
     }

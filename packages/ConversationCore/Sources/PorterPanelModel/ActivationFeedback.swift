@@ -37,9 +37,12 @@ public enum ActivationFeedbackBuilder {
             return failure("The account changed", "Porter will not open a chat from a different account. Check the list again.", [.refreshList])
         case .connectorOffline:
             let host = ProviderNames.host(for: item.provider)
+            if host.isDesktopChatApp {
+                return failure("\(host.displayName) is not open", "Open the \(host.displayName) app, then try again.", [.openHostApplication(host)])
+            }
             return failure("\(host.displayName) is not connected", "Open \(host.displayName) with Porter\'s extension, then try again.", [.openHostApplication(host), desktop, saved])
         case .permissionDenied:
-            return failure("Porter cannot see that tab", "Allow access to claude.ai in the extension options.", [.allowSiteAccess])
+            return failure("Porter is not allowed to do that", "Check Porter's permissions in System Settings (Privacy & Security), or allow claude.ai in the extension options.", [.allowSiteAccess])
         case .unsupported:
             return failure("This can't be opened from here", "That destination does not support opening.", [desktop, saved])
         case .versionMismatch:
@@ -52,7 +55,9 @@ public enum ActivationFeedbackBuilder {
     }
 
     private static func location(of item: PanelItem) -> String {
-        ProviderNames.host(for: item.provider) == .vscode ? "that VS Code window" : "its browser profile"
+        let host = ProviderNames.host(for: item.provider)
+        if host.isDesktopChatApp { return "the \(host.displayName) app" }
+        return host == .vscode ? "that VS Code window" : "its browser profile"
     }
 
     private static func failure(_ title: String, _ detail: String, _ actions: [RecoveryAction?]) -> ActivationFeedback {

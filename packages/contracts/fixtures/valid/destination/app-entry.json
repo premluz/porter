@@ -1,0 +1,21 @@
+{
+  "id": "6f1c2a3e-5555-4a1a-8a1a-00000000000a",
+  "conversationId": "6f1c2a3e-2222-4a1a-8a1a-000000000004",
+  "deviceId": "6f1c2a3e-1111-4a1a-8a1a-000000000001",
+  "connectorId": "desktopApp-6f1c2a3e-4444-4a1a-8a1a-0000000000cc",
+  "identityEpoch": "unverified",
+  "locator": {
+    "kind": "appEntry",
+    "bundleId": "com.anthropic.claudefordesktop",
+    "title": "Test",
+    "ordinal": 1
+  },
+  "capabilities": [
+    {
+      "name": "activate",
+      "supported": true
+    }
+  ],
+  "lastVerifiedAt": "2026-10-09T07:00:00Z",
+  "revision": 1
+}

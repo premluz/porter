@@ -1,0 +1,12 @@
+{
+  "requestId": "6f1c2a3e-8888-4a1a-8a1a-000000000003",
+  "destinationId": "6f1c2a3e-5555-4a1a-8a1a-00000000000a",
+  "destinationRevision": 1,
+  "expectedProvider": "claude-desktop",
+  "expectedConversationId": "5b8e0d6a1c92-1",
+  "app": {
+    "bundleId": "com.anthropic.claudefordesktop",
+    "expectedTitle": "Test",
+    "ordinal": 1
+  }
+}

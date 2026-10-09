@@ -98,7 +98,8 @@
           "enum": [
             "chrome",
             "vscode",
-            "chromeScripting"
+            "chromeScripting",
+            "desktopApp"
           ]
         }
       }
@@ -137,6 +138,13 @@
           "maxItems": 200,
           "items": {
             "$ref": "#/$defs/editorTabReport"
+          }
+        },
+        "appEntries": {
+          "type": "array",
+          "maxItems": 200,
+          "items": {
+            "$ref": "#/$defs/appEntryReport"
           }
         }
       }
@@ -238,6 +246,28 @@
               "$ref": "common.schema.json#/$defs/title"
             }
           }
+        },
+        "app": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "bundleId",
+            "expectedTitle",
+            "ordinal"
+          ],
+          "properties": {
+            "bundleId": {
+              "$ref": "common.schema.json#/$defs/bundleId"
+            },
+            "expectedTitle": {
+              "$ref": "common.schema.json#/$defs/title"
+            },
+            "ordinal": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 199
+            }
+          }
         }
       },
       "anyOf": [
@@ -250,6 +280,11 @@
         {
           "required": [
             "editor"
+          ]
+        },
+        {
+          "required": [
+            "app"
           ]
         }
       ]
@@ -317,6 +352,42 @@
           "type": "integer",
           "minimum": 0,
           "maximum": 8
+        },
+        "lastActiveAt": {
+          "$ref": "common.schema.json#/$defs/timestamp"
+        }
+      }
+    },
+    "appEntryReport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "providerConversationId",
+        "title",
+        "bundleId",
+        "ordinal"
+      ],
+      "properties": {
+        "provider": {
+          "$ref": "common.schema.json#/$defs/provider"
+        },
+        "providerConversationId": {
+          "$ref": "common.schema.json#/$defs/opaqueId"
+        },
+        "title": {
+          "$ref": "common.schema.json#/$defs/title"
+        },
+        "bundleId": {
+          "$ref": "common.schema.json#/$defs/bundleId"
+        },
+        "ordinal": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 199
+        },
+        "unread": {
+          "type": "boolean"
         },
         "lastActiveAt": {
           "$ref": "common.schema.json#/$defs/timestamp"

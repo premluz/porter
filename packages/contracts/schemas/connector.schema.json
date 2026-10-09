@@ -28,7 +28,8 @@
         "chromeExtension",
         "safariExtension",
         "vscodeExtension",
-        "chromeScripting"
+        "chromeScripting",
+        "desktopApp"
       ]
     },
     "profileAlias": {

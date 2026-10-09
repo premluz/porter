@@ -45,6 +45,8 @@ extension BridgeCoordinator {
         tabDestinations[connectorId] = nil
         for destinationId in (editorDestinations[connectorId] ?? [:]).values { registry.remove(destinationId) }
         editorDestinations[connectorId] = nil
+        for destinationId in (appDestinations[connectorId] ?? [:]).values { registry.remove(destinationId) }
+        appDestinations[connectorId] = nil
         remembered = remembered.filter { $0.key.connectorId != connectorId }
         pruneRecency()
     }

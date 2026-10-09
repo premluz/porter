@@ -12,7 +12,7 @@ public struct Capability: Codable, Sendable, Equatable {
 }
 
 public enum DestinationKind: String, Codable, Sendable {
-    case browserTab, desktopLink, mobileLink, editorTab
+    case browserTab, desktopLink, mobileLink, editorTab, appEntry
 }
 
 /// Mirrors destination.schema.json. The locator's kind is the destination kind.
@@ -69,12 +69,26 @@ public struct EditorTabLocator: Codable, Sendable, Equatable {
     }
 }
 
+/// An entry in a desktop chat app's sidebar, found again by title and position and re-checked before use.
+public struct AppEntryLocator: Codable, Sendable, Equatable {
+    public let bundleId: String
+    public let title: String
+    public let ordinal: Int
+
+    public init(bundleId: String, title: String, ordinal: Int) {
+        self.bundleId = bundleId
+        self.title = title
+        self.ordinal = ordinal
+    }
+}
+
 /// Encoded flat with a `kind` discriminator, matching the schema's oneOf branches.
 public enum Locator: Codable, Sendable, Equatable {
     case browserTab(BrowserTabLocator)
     case desktopLink(DesktopLinkLocator)
     case mobileLink(MobileLinkLocator)
     case editorTab(EditorTabLocator)
+    case appEntry(AppEntryLocator)
 
     private enum CodingKeys: String, CodingKey { case kind }
 
@@ -84,6 +98,7 @@ public enum Locator: Codable, Sendable, Equatable {
         case .desktopLink: .desktopLink
         case .mobileLink: .mobileLink
         case .editorTab: .editorTab
+        case .appEntry: .appEntry
         }
     }
 
@@ -94,6 +109,7 @@ public enum Locator: Codable, Sendable, Equatable {
         case .desktopLink: self = .desktopLink(try DesktopLinkLocator(from: decoder))
         case .mobileLink: self = .mobileLink(try MobileLinkLocator(from: decoder))
         case .editorTab: self = .editorTab(try EditorTabLocator(from: decoder))
+        case .appEntry: self = .appEntry(try AppEntryLocator(from: decoder))
         }
     }
 
@@ -103,6 +119,7 @@ public enum Locator: Codable, Sendable, Equatable {
         case .desktopLink(let value): try value.encode(to: encoder)
         case .mobileLink(let value): try value.encode(to: encoder)
         case .editorTab(let value): try value.encode(to: encoder)
+        case .appEntry(let value): try value.encode(to: encoder)
         }
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(kind, forKey: .kind)

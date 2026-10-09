@@ -309,6 +309,17 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Open: nothing tells the user when permission is refused; that belongs to the setup screen (TASK-084). Only Chrome is wired; other Chromium browsers are a value in `ChromiumBrowser` once their dictionaries are checked.
 - Next action: Prem runs batch I. Then TASK-086 (desktop apps) or TASK-087 (Safari), or the setup screen.
 
+## LOG-20261009-008 — Desktop-app connectors, slice 1: contracts and core (TASK-086)
+
+- Date: 2026-10-09.
+- Author: assistant.
+- Tasks: TASK-086.
+- Tags: area/macos, area/browser, phase/r1.
+- Changed: new connector kind `desktopApp` for the Claude and ChatGPT desktop apps. Contracts: `appEntries` in the snapshot, an `appEntry` destination locator, an `app` target in the activation request, six fixtures (two invalid: extra message text, ordinal out of range). Core: entries are routes keyed by a connector-derived id (title plus position among equal titles, so a rename or a moved duplicate looks new, as with VS Code tabs); snapshots replace the list; only the two known bundle ids are accepted; the connector may not report tabs or editor tabs, and a browser or editor connector may not report app entries. The panel model knows the two apps as hosts, with their own "not open" message, and the permission-refused message no longer says only "extension".
+- Verified: contracts validate (75 fixtures); core 106 tests (7 new); native-host 38; Mac app 53.
+- Not verified: nothing reads an app yet.
+- Next action: slice 2, the Accessibility reader, per-app adapters and the connector, tested on synthetic trees shaped like the ones the spike saw.
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.

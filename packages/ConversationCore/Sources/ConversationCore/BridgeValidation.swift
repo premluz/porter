@@ -57,7 +57,24 @@ enum BridgeValidation {
         guard (1...8).contains(tab.viewColumn), (0...8).contains(tab.index) else { throw .malformed("editor position") }
     }
 
+    static func validate(_ entry: AppEntryReport) throws(EnvelopeRejection) {
+        guard isProvider(entry.provider), isIdentifier(entry.providerConversationId) else {
+            throw .malformed("provider or conversation id")
+        }
+        guard (1...BridgeLimits.maximumTitleLength).contains(entry.title.count) else { throw .malformed("title length") }
+        guard LocatorPolicy.desktopAppBundleIds.contains(entry.bundleId) else { throw .malformed("unsupported app") }
+        guard (0..<BridgeLimits.maximumTabsPerSnapshot).contains(entry.ordinal) else { throw .malformed("entry ordinal") }
+    }
+
     static func validate(_ snapshot: InventorySnapshotPayload) throws(EnvelopeRejection) {
+        let appEntries = snapshot.appEntries ?? []
+        guard appEntries.count <= BridgeLimits.maximumTabsPerSnapshot else {
+            throw .malformed("snapshot has \(appEntries.count) app entries")
+        }
+        guard Set(appEntries.map(\.providerConversationId)).count == appEntries.count else {
+            throw .malformed("duplicate app entry id in snapshot")
+        }
+        for entry in appEntries { try validate(entry) }
         let editorTabs = snapshot.editorTabs ?? []
         guard editorTabs.count <= BridgeLimits.maximumTabsPerSnapshot else {
             throw .malformed("snapshot has \(editorTabs.count) editor tabs")

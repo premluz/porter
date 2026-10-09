@@ -5,15 +5,21 @@ extension BridgeCoordinator {
         _ snapshot: InventorySnapshotPayload, binding: Binding, connection: ConnectionID, now: Date
     ) -> BridgeResult {
         let editorTabs = snapshot.editorTabs ?? []
+        let appEntries = snapshot.appEntries ?? []
         switch binding.kind {
+        case .desktopApp:
+            guard snapshot.tabs.isEmpty, editorTabs.isEmpty else {
+                return violation(connection, .unauthorized, "an app connector may report app entries only", close: true)
+            }
+            return applyAppSnapshot(appEntries, binding: binding, connection: connection, now: now)
         case .vscode:
-            guard snapshot.tabs.isEmpty else {
+            guard snapshot.tabs.isEmpty, appEntries.isEmpty else {
                 return violation(connection, .unauthorized, "an editor connector may not report browser tabs", close: true)
             }
             return applyEditorSnapshot(editorTabs, binding: binding, connection: connection, now: now)
         case .chrome, .chromeScripting:
-            guard editorTabs.isEmpty else {
-                return violation(connection, .unauthorized, "a browser connector may not report editor tabs", close: true)
+            guard editorTabs.isEmpty, appEntries.isEmpty else {
+                return violation(connection, .unauthorized, "a browser connector may report browser tabs only", close: true)
             }
         }
         if let refusal = refusal(for: snapshot.tabs, binding: binding, connection: connection) { return refusal }
@@ -60,8 +66,8 @@ extension BridgeCoordinator {
     mutating func applyIncremental(
         _ binding: Binding, _ connection: ConnectionID, _ apply: (inout BridgeCoordinator) -> BridgeResult
     ) -> BridgeResult {
-        guard binding.kind != .vscode else {
-            return violation(connection, .unauthorized, "an editor connector reports snapshots only", close: true)
+        guard binding.kind == .chrome || binding.kind == .chromeScripting else {
+            return violation(connection, .unauthorized, "this connector reports snapshots only", close: true)
         }
         return apply(&self)
     }
