@@ -12,6 +12,8 @@ related: ["DOC-ARCHITECTURE", "PLAN-001"]
 
 # ADR-002 — Native app plus browser extension
 
+Refined by [ADR-006](ADR-006-native-first-sources.md): the extension becomes the optional enhancer for browsers, not the primary route.
+
 - Date: 2026-10-08.
 - Status: proposed technical default; feasibility validation pending.
 - Owner: future platform implementer.

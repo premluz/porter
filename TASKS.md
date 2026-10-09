@@ -31,8 +31,13 @@ Statuses: `todo`, `in_progress`, `blocked`, `done`, `deferred`, `cancelled`. A d
 | TASK-024 | P0 | M2 | todo | unassigned | TASK-022, TASK-023 | Integrate real sources; identity/status/restart acceptance TEST-001–007 |
 | TASK-025 | P0 | M3 | todo | unassigned | TASK-024 | Permission/source management, deletion and diagnostics; TEST-011–012 |
 | TASK-026 | P0 | M3 | todo | unassigned | TASK-024 | Accessibility, Spaces, multi-display, energy/performance evidence |
-| TASK-027 | P0 | M3 | todo | unassigned | TASK-025, TASK-026 | Signed/notarized installer and native-host registration on clean Mac account |
+| TASK-027 | P0 | M3 | todo | unassigned | TASK-025, TASK-026, TASK-084 | Signed/notarized app package for v1 (PLAN-002): app, helpers, native-host registration, bundled enhancers, launch at login; clean-account install test |
 | TASK-028 | P1 | M3 | todo | unassigned | TASK-027 | Release notes, compatibility table, update/rollback plan |
+| TASK-080 | P0 | M3 | todo | unassigned | TASK-021 | Source-adapter boundary (host connector, provider recognizer) in core and registry; Chrome extension and VS Code connectors become implementations with unchanged behavior (ADR-006, PLAN-002) |
+| TASK-081 | P0 | M3 | todo | unassigned | TASK-080 | Spike: Chrome and Safari tabs via Apple Events without an extension, including two profiles and the permission prompt; FACT and go/no-go; decide the extension install route |
+| TASK-082 | P0 | M3 | todo | unassigned | TASK-080 | Spike: ChatGPT and Claude desktop apps via Accessibility (titles, selecting a conversation, permission flow); FACT and go/no-go |
+| TASK-083 | P1 | M3 | todo | unassigned | TASK-080 | Spike: VS Code companion installed from the bundle by command line; Accessibility fallback assessment; other editors noted |
+| TASK-084 | P0 | M3 | todo | unassigned | TASK-081, TASK-082, TASK-083 | Setup assistant: first-launch checklist, permission requests, per-source on/off, optional enhancer installs |
 | TASK-029 | P0 | M3 | todo | unassigned | TASK-028 | Personal-use beta review and R1 acceptance evidence |
 | TASK-030 | P0 | M4 | todo | unassigned | TASK-029 | Validate CloudKit proposal, enrollment, freshness, deletion, sign-out; decide ADR-003 |
 | TASK-031 | P0 | M4 | todo | unassigned | TASK-030 | Versioned metadata DTO, snapshot sync and phone cache |

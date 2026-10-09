@@ -231,6 +231,16 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Not verified: how the group looks and feels; the pane keeps the height it opened with, so expanding a long group scrolls rather than growing it.
 - Next action: Prem tries it with more than six chats open.
 
+## LOG-20261009-001 — v1 direction: native-first sources, one app package
+
+- Date: 2026-10-09.
+- Author: assistant; Prem decided v1 must be one installable app that reads VS Code, the ChatGPT app, the Claude app and browser chats, that other models, browsers and editors must be easy to add, and that the browser extension stays at v0.1 as a secondary route.
+- Tasks: TASK-027, TASK-080 to TASK-084.
+- Tags: area/macos, area/distribution, phase/r1.
+- Changed: recorded ADR-006 (native tier primary, extension and editor companion as optional enhancers, identity reported as unknown rather than guessed when a profile cannot be told), PLAN-002 (adapter boundary, three feasibility spikes, setup assistant, signed package), five task rows, and a pointer from ADR-002. One assumption stated in ADR-006: VS Code keeps its companion as the primary route.
+- Not verified: every native route. Chrome scripting, Accessibility for the ChatGPT and Claude apps, and external extension install are untested here; the spikes decide.
+- Next action: TASK-080, then the spikes.
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.

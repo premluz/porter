@@ -43,6 +43,8 @@ SwiftUI/AppKit, Chrome Manifest V3, TypeScript adapters, and a small native mess
 
 ## Next action
 
+Direction set 2026-10-09 (ADR-006, PLAN-002): v1 is one app package that reads Chrome, VS Code, the ChatGPT app, the Claude app and other sources natively, with the browser extension and VS Code companion as optional enhancers. Next build step is TASK-080 (adapter boundary), then the spikes TASK-081 to TASK-083. Manual test batches below are still owed.
+
 Run the manual test batch in [docs/VALIDATION_RELEASE.md](docs/VALIDATION_RELEASE.md) (appearance and feel of the Mac panel, the live app with real Chrome, the Claude desktop link, packet review, the phone app, the ChatGPT adapter). Everything it covers is built and passes its automated checks but has never been looked at by a person. After that: provider status signals (TASK-013), a runnable signed app bundle and installer (TASK-027), and CloudKit sync (TASK-030). Record the ADR-002 and ADR-005 decisions once the panel is judged and the signed helper exists. Distribution assumption to record before TASK-027: Developer ID with notarization, because the Chrome native-host manifest must be installed outside an App Store sandbox. In parallel only if explicitly requested, other contributors can work on isolated tasks under the coordination rules.
 
 ## Highest uncertainty
