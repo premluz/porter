@@ -261,6 +261,15 @@ Evidence classes: `user_requirement`, `source_documentation`, `verified_test`. P
 - Tags: area/macos, area/ux, phase/r1.
 - Review trigger: a macOS update; Prem's look at it.
 
+## FACT-030 — Over a light page the panel's glass is pale and its text is lost
+
+- Class: reported by Prem with a screenshot (2026-10-09), not measured here.
+- Statement: in the dark appearance, over a white page, the capsule is a faint light shape with grey dots and the hover label ("Compare version legibility") is white text on a nearly white glass, while native menus and the battery menu next to it keep a mid-grey, readable glass. Over a dark page Porter looked right. The panel's window is never the active one and an inactive window's glass does not take on the system's own tone (the same cause as the missing edge, FACT-029).
+- Response: the glass is tinted with the system's window background colour at 55% (`Palette.glassTint`) on the capsule, the pane and the label, so it follows the appearance whatever is behind it. This is a first guess at matching a native menu; it was not compared side by side.
+- If it is still not native: use a vibrancy view with the menu or popover material forced to the active state (a documented setting), which looks like the classic menu at the cost of the glass's lensing; or find what makes system glass use its active look for a window that is not key.
+- Tags: area/macos, area/ux, phase/r1.
+- Review trigger: Prem's comparison (batch O).
+
 ## Adding a fact
 
 Include statement, evidence class, source/test reference, observed date, tags, and review trigger if volatile. A failed experiment can be a fact when its exact environment and outcome are recorded. Do not transform a plausible architectural assumption into a tested capability.

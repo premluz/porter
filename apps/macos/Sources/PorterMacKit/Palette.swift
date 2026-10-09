@@ -12,6 +12,11 @@ enum Palette {
     static let contentBacking = Color(nsColor: .windowBackgroundColor).opacity(0.38)
     static let selection = Color.accentColor.opacity(0.22)
     static let pillBacking = Color.secondary.opacity(0.2)
+    /// What the panel's glass is tinted with. The window is never the active one, and an inactive window's glass is
+    /// pale and lets a light page show straight through, which left white text on white. The window background colour
+    /// follows the system appearance, so the glass stays dark in the dark appearance (as a menu does) and light in the
+    /// light one, whatever is behind it.
+    static let glassTint = Color(nsColor: .windowBackgroundColor).opacity(0.55)
     static let glassEdge = Color.primary.opacity(0.22)
     static let dotHover = Color.primary.opacity(0.16)
     static let rowHover = Color.primary.opacity(0.07)

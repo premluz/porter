@@ -60,7 +60,7 @@ struct PanelRootView: View {
         } else {
             // The system draws the glass's edge only while its window is active, and this one never is, so the edge is
             // drawn here, which keeps it there whether or not the panel has been pressed or another window has focus.
-            shape.fill(.clear).glassEffect(.regular, in: shape)
+            shape.fill(.clear).glassEffect(.regular.tint(Palette.glassTint), in: shape)
                 .overlay(shape.strokeBorder(Palette.glassEdge, lineWidth: Tokens.Size.edgeLine))
         }
     }

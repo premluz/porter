@@ -471,6 +471,14 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Changed: rows in the open pane take a light tint under the pointer (7% of the primary colour, lighter than the keyboard selection) and show the pointing hand; the lit dot in the capsule is lighter (16% instead of 28%) and swells less (8% instead of 18%). The same pointer tracking that drives the capsule reports each row's frame, so hover works while Porter is inactive; only the part of the list that is visible counts, so a row scrolled under the search field is never hovered. The cursor is set only over dots, the open button and rows (and restored once on leaving a row), so the search field keeps its text cursor.
 - Verified: Mac app 78 tests (row hit test) and the self-test. Not verified: the look and the cursor, which need a pointer and eyes (batch O).
 
+## LOG-20261009-025 — Glass tinted to follow the system's tone (FACT-030)
+
+- Date: 2026-10-09.
+- Author: assistant; Prem showed the capsule and a hover label on a light page next to native menus and asked that Porter match their colour and style.
+- Finding: over a white page the capsule was a faint light shape and the label's white text was lost; native menus stay a readable mid-grey (FACT-030). The likely cause is the same as the missing edge: the panel is never the active window, and an inactive window's glass is pale.
+- Changed: the capsule, pane and hover label glass take a tint of the system's window background colour at 55% (`Palette.glassTint`), so it follows the appearance, dark in dark and light in light, over any backdrop. Nothing else about the glass changed.
+- Verified: Mac app 78 tests and the self-test. Not verified: how it looks or how close it is to a native menu (batch O step 3b); this is a guess from the screenshot, with a stronger fallback written in FACT-030.
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.
