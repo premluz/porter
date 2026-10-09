@@ -263,6 +263,18 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Not verified: which profile each window belongs to, the permission prompt for Porter itself, Safari beyond one window, and what the screen showed during activation (checked through Chrome's own report).
 - Next action: TASK-082, the ChatGPT and Claude desktop apps through Accessibility; that also needs the Accessibility permission, so it needs Prem's go-ahead. It can try reading the Chrome profile button too.
 
+## LOG-20261009-004 — Desktop apps through Accessibility (TASK-082)
+
+- Date: 2026-10-09.
+- Author: assistant; Prem granted Accessibility to a separate helper app (PorterSpike, since removed) and agreed to one chat being opened in each desktop app.
+- Tasks: TASK-082.
+- Tags: area/macos, area/browser, phase/r1.
+- Result: go with limits (FACT-025). Both apps' sidebars are readable and a chat can be opened by pressing its entry. Identity is only the title and position, not an id; the ChatGPT app shows an "Unread" marker that could feed status. Chrome's profile name is readable from its accessibility window title (FACT-024).
+- Slips to disclose: the first helper runs printed more than I had said they would, because they filtered by control type. One printed Gmail inbox rows and a Claude chat's message-action labels, a later one printed links from inside chat messages. I deleted those outputs, recorded none of it, and then limited the tool to the left 300 points of each window. I also deleted a run's output file while its process was still writing to it.
+- Cleanup: helper app removed from the Desktop and its permission entry reset.
+- Not verified: the apps' behavior when hidden or on another desktop, duplicate titles, and the real Porter app's permission prompt.
+- Next action: TASK-083 (VS Code companion install from the bundle; Accessibility fallback assessment), then TASK-084.
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.
