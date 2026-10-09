@@ -68,9 +68,17 @@ public enum PanelBuilder {
                 key: key, title: first.title, provider: first.provider, profileAlias: first.profileAlias,
                 canonicalUrl: first.url, pinned: record?.pinned ?? false, hidden: record?.hidden ?? false,
                 availability: .open(routes), status: bestStatus(sorted, inputs: inputs), sharesTitle: false,
-                lastActiveAt: sorted.compactMap(\.lastActiveAt).max(), listRank: sorted.compactMap(\.listRank).min()
+                lastActiveAt: lastUsed(sorted, inputs: inputs), listRank: sorted.compactMap(\.listRank).min()
             )
         }
+    }
+
+    /// When it was last used: the latest of what its connector reported and the last status signal received for it.
+    /// A coding agent that has just worked in a tab has been used, even by a connector that reports no times.
+    private static func lastUsed(_ rows: [DestinationRow], inputs: PanelInputs) -> Date? {
+        let reported = rows.compactMap(\.lastActiveAt)
+        let signalled = rows.compactMap { inputs.statuses[$0.destinationId]?.lastKnown?.receivedAt }
+        return (reported + signalled).max()
     }
 
     private static func closedPins(

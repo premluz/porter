@@ -124,3 +124,35 @@ struct BuilderTests {
         #expect(old.freshness == .stale && old.display == .unknown)
     }
 }
+
+@Suite("A status signal counts as use when the connector reports no time")
+struct StatusRecencyTests {
+    private func status(for row: DestinationRow, secondsAgo: TimeInterval) -> DestinationStatus {
+        let observation = Sample.observation(destinationId: row.destinationId, activity: .idle, receivedAt: Fixture.now.addingTimeInterval(-secondsAgo))
+        return DestinationStatus(display: .idle, freshness: .stale, reachability: .connected, lastKnown: observation)
+    }
+
+    @Test("a row with no time takes the time of its last status signal, and so ranks above a row with none")
+    func signalFillsMissingTime() {
+        let used = Fixture.row("a", title: "Used by the agent", tab: 1)
+        let untouched = Fixture.row("b", title: "Aardvark", tab: 2)
+        let snapshot = Fixture.build(rows: [untouched, used], statuses: [used.destinationId: status(for: used, secondsAgo: 120)])
+        #expect(snapshot.open.map(\.title) == ["Used by the agent", "Aardvark"])
+        #expect(snapshot.open.first?.lastActiveAt == Fixture.now.addingTimeInterval(-120))
+    }
+
+    @Test("a reported time later than the signal wins, and a signal later than the reported time wins")
+    func latestWins() {
+        func row(_ secondsAgo: TimeInterval) -> DestinationRow {
+            DestinationRow(
+                destinationId: UUID(), revision: 1, conversationId: UUID(), providerConversationId: "a", provider: "claude",
+                title: "A", profileAlias: "Personal", connectorId: Fixture.personal, reachability: .connected, tabId: 1,
+                windowId: 1, url: nil, routeCount: 1, lastActiveAt: Fixture.now.addingTimeInterval(-secondsAgo)
+            )
+        }
+        let reportedLater = row(10)
+        #expect(Fixture.build(rows: [reportedLater], statuses: [reportedLater.destinationId: status(for: reportedLater, secondsAgo: 500)]).open.first?.lastActiveAt == Fixture.now.addingTimeInterval(-10))
+        let signalLater = row(900)
+        #expect(Fixture.build(rows: [signalLater], statuses: [signalLater.destinationId: status(for: signalLater, secondsAgo: 30)]).open.first?.lastActiveAt == Fixture.now.addingTimeInterval(-30))
+    }
+}

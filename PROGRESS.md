@@ -395,6 +395,15 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Not verified: that a reloaded window then lists its chats with times and moves them to the top; that needs Prem to reload the windows. Still open: a chat in the Claude Code side panel is not an editor tab and cannot be seen (Q-022).
 - Next action: Prem reloads the VS Code windows (or quits and reopens VS Code) and reports whether this chat moves to Today.
 
+## LOG-20261009-016 — A status signal counts as use
+
+- Date: 2026-10-09.
+- Author: assistant; Prem showed this chat still in the folded Older group and asked for it under Today, first if most recent.
+- Finding: the registry shows every VS Code window's companion declaring version 0.1.0 (checked with `porterctl list --json`), so no window has been reloaded since the companion learned to report times, and none of the ten VS Code chats has one. The installed Claude Code hooks point at the bundled helper, but a running Claude Code session only reads hooks when it starts, so this conversation sends no status events either.
+- Changed: an item's last-used time is now the latest of what its connector reported and the last status signal received for it (`lastUsed` in the panel builder), so a chat an agent has just worked in ranks as used even when its connector reports no time.
+- Verified: panel model 62 tests (2 new); Mac app tests. Not verified: on the real windows. It only helps chats that get status events, which needs a new Claude Code session.
+- Next action: Prem reloads the VS Code windows (the real fix: the active tab of each window is stamped as used now) and starts a new Claude Code session for status.
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.
