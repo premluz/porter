@@ -21,6 +21,13 @@ struct SetupView: View {
                     ForEach(section.rows) { row in SetupRowView(row: row, isBusy: model.isWorking, perform: model.perform) }
                 }
             }
+            if model.canRestart {
+                HStack {
+                    Text("Changed a permission? Porter only notices after it restarts.").font(.callout).foregroundStyle(Palette.textSecondary)
+                    Spacer(minLength: Tokens.Space.s)
+                    Button("Restart Porter") { model.restart() }
+                }
+            }
             if let message = model.message {
                 Text(message).font(.callout).fixedSize(horizontal: false, vertical: true)
                     .accessibilityLabel("Result: \(message)")

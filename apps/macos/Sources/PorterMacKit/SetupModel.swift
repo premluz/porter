@@ -22,6 +22,7 @@ public final class SetupModel {
     private let confirm: @MainActor (_ title: String, _ detail: String) -> Bool
     private let reveal: @MainActor (_ folder: String) -> Void
     private let loginItem: any LoginItemControlling
+    private let relaunch: @MainActor () -> Void
 
     static let automationSettings = "x-apple.systempreferences:com.apple.preference.security?Privacy_Automation"
     static let loginItemsSettings = "x-apple.systempreferences:com.apple.LoginItems-Settings.extension"
@@ -33,6 +34,7 @@ public final class SetupModel {
         confirm: @escaping @MainActor (String, String) -> Bool = { _, _ in false },
         reveal: @escaping @MainActor (String) -> Void = { _ in },
         loginItem: any LoginItemControlling = LiveLoginItem(),
+        relaunch: @escaping @MainActor () -> Void = SetupModel.relaunchThisApp,
         readInputs: @escaping @MainActor () -> SetupInputs
     ) {
         self.performer = performer
@@ -41,8 +43,28 @@ public final class SetupModel {
         self.confirm = confirm
         self.reveal = reveal
         self.loginItem = loginItem
+        self.relaunch = relaunch
         self.readInputs = readInputs
         refresh()
+    }
+
+    /// A running app is not told when a permission changes, so Porter offers to start again. Only a bundled app can.
+    public var canRestart: Bool { Bundle.main.bundlePath.hasSuffix(".app") }
+
+    public func restart() { relaunch() }
+
+    /// Starts a new copy a moment after this one has quit, so the two never hold the registry's sockets together.
+    public static func relaunchThisApp() {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/bin/sh")
+        process.arguments = ["-c", "sleep 1; /usr/bin/open \"$1\"", "relaunch", Bundle.main.bundlePath]
+        do {
+            try process.run()
+        } catch {
+            NSLog("Porter could not restart itself: \(error)")
+            return
+        }
+        NSApp.terminate(nil)
     }
 
     public func refresh() {

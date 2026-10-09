@@ -377,6 +377,14 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Not verified: how it looks (no screenshots here), and the app's headings in another language or at the turn of a year (parsed in English only).
 - Next action: Prem looks at it with the real apps (batch J).
 
+## LOG-20261009-014 — Restart button in the setup window
+
+- Date: 2026-10-09.
+- Author: assistant; Prem had switched Porter on under Accessibility but the setup window still showed "needs your permission" for the Claude and ChatGPT apps.
+- Cause: a running process is not told that a permission changed (seen in the spike, and the window already said "then restart Porter" without offering a way). A rebuild can also leave an entry that belongs to an older build.
+- Changed: a "Restart Porter" button in the setup window (bundled app only). It starts a new copy a second after this one quits, through `sh -c 'sleep 1; open <bundle>'`, so the two never hold the registry's sockets at once.
+- Verified: Mac app 71 tests (the button calls the relaunch hook); the shell form launches an app when the path is passed as an argument. Not verified: the full quit-and-reopen on the real app.
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.

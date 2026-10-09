@@ -179,3 +179,15 @@ struct LaunchAtLoginTests {
         #expect(refusing.state == .off && failing.message?.hasPrefix("Could not change the login setting") == true)
     }
 }
+
+@MainActor
+@Suite("Restarting so a changed permission is noticed")
+struct RestartTests {
+    @Test("the restart button asks the app to relaunch itself, once per press")
+    func restart() {
+        var relaunched = 0
+        let model = SetupModel(performer: RecordingPerformer(), relaunch: { relaunched += 1 }) { SetupInputs() }
+        model.restart()
+        #expect(relaunched == 1)
+    }
+}
