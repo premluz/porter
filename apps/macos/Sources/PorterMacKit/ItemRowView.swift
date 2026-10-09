@@ -28,12 +28,12 @@ struct ItemRowView: View {
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
     }
 
-    /// The project (a pill), the assistant's logo and the status. A browser chat has no project, so its profile follows
+    /// The assistant's logo, the project (a pill) and the status. A browser chat has no project, so its profile follows
     /// the status as plain text, and it is always shown there so identical titles are never ambiguous to the eye.
     private var detailLine: some View {
         HStack(spacing: Tokens.Space.s) {
-            if let project = item.projectName { PillView(text: project) }
             ProviderLogoView(provider: item.provider)
+            if let project = item.projectName { PillView(text: project) }
             Text(statusText).font(.caption).foregroundStyle(Palette.textSecondary).lineLimit(1)
         }
     }

@@ -115,8 +115,8 @@ Everything above is automated. This batch covers what automation cannot: appeara
 4. Rename a thread in Codex, then click its old row before the list refreshes: expect "changed", not another thread. Archive or delete one: it should disappear within seconds.
 5. Compare with the `~/.codex` truth without printing it: `PORTER_LIVE_CODEX=1 swift test --package-path services/native-host --filter LiveCodexTests` prints how many threads and projects it found.
 
-**M. Row detail line** (project pill, assistant logo, status). Each row's second line reads like `[Amble] (logo) Idle`.
-1. Rebuild and open the app. A Claude Code or Codex chat in a VS Code window shows the window's folder as a rounded pill, then the Claude or ChatGPT logo, then the status. A browser chat has no pill: the logo, the status, then the Chrome profile (`Unknown · Prem`) so identical titles stay distinguishable. Desktop-app chats show the logo and the status.
+**M. Row detail line** (project pill, assistant logo, status). Each row's second line reads like `(logo) [Amble] Idle`.
+1. Rebuild and open the app. A Claude Code or Codex chat in a VS Code window shows the Claude or ChatGPT logo, then the window's folder as a rounded pill, then the status. A browser chat has no pill: the logo, the status, then the Chrome profile (`Unknown · Prem`) so identical titles stay distinguishable. Desktop-app chats show the logo and the status.
 2. The logo is the icon of the Claude app or the ChatGPT app installed on this Mac; without that app a plain sparkle stands in. Hover it for the product name (Claude Code versus Claude, Codex versus ChatGPT are told apart there, and in VoiceOver).
 3. Long folder names are cut at a width; check one. Check the selected row and Dark mode. Tell me what looks off.
 

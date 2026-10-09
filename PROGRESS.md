@@ -424,6 +424,13 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Not verified: opening any thread (batch N), the `codex://` link for the app (inferred from its code), and which VS Code window handles the link when several are open.
 - Next action: Prem runs batch N.
 
+## LOG-20261009-019 — Logo before the project pill
+
+- Date: 2026-10-09.
+- Author: assistant; Prem asked for the icon first, then the project name.
+- Changed: a row's second line is now `(logo) [Project] status`. Only the order changed (`ItemRowView`); the validation text for batch M was updated to match.
+- Verified: Mac app 73 tests and the self-test (a row lays out). Not verified: how it looks.
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.
