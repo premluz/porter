@@ -14,11 +14,19 @@ public struct SetupInputs: Sendable, Equatable {
     public var installedEditors: [String]
     /// Whether Claude Code's settings contain Porter's hook; nil when that could not be read.
     public var claudeCodeHook: Bool?
+    /// Which optional pieces this build carries, so a setup button is offered only when it can work.
+    public var canInstallCompanion: Bool
+    public var canEnableClaudeCodeStatus: Bool
+    public var canSetUpChromeExtension: Bool
 
     public init(
         chrome: SourceHealth? = nil, claudeApp: SourceHealth? = nil, chatgptApp: SourceHealth? = nil,
-        connectors: [ConnectorSummary] = [], installedEditors: [String] = [], claudeCodeHook: Bool? = nil
+        connectors: [ConnectorSummary] = [], installedEditors: [String] = [], claudeCodeHook: Bool? = nil,
+        canInstallCompanion: Bool = false, canEnableClaudeCodeStatus: Bool = false, canSetUpChromeExtension: Bool = false
     ) {
+        self.canInstallCompanion = canInstallCompanion
+        self.canEnableClaudeCodeStatus = canEnableClaudeCodeStatus
+        self.canSetUpChromeExtension = canSetUpChromeExtension
         self.chrome = chrome
         self.claudeApp = claudeApp
         self.chatgptApp = chatgptApp
@@ -44,6 +52,9 @@ public enum SetupAction: Sendable, Equatable {
     case openAutomationSettings
     case requestAccessibility
     case openApplication(HostApplication)
+    case installEditorCompanion
+    case enableClaudeCodeStatus
+    case setUpChromeExtension
 }
 
 public struct SetupRow: Sendable, Equatable, Identifiable {
@@ -126,7 +137,10 @@ public enum SetupChecklist {
         guard inputs.chrome != nil else { return nil }
         let connected = inputs.connectors.filter { $0.providerType == .chromeExtension && $0.reachability == .connected }
         if connected.isEmpty {
-            return row("chromeExtension", "Chrome extension", "Not connected. It adds profile names and exact tabs; Porter works without it.", .optional)
+            return row(
+                "chromeExtension", "Chrome extension", "Not connected. It adds profile names and exact tabs; Porter works without it.", .optional,
+                action: inputs.canSetUpChromeExtension ? .setUpChromeExtension : nil, actionTitle: inputs.canSetUpChromeExtension ? "Set up…" : nil
+            )
         }
         return row("chromeExtension", "Chrome extension", "\(connected.count) profile\(connected.count == 1 ? "" : "s") connected.", .ready)
     }
@@ -138,13 +152,26 @@ public enum SetupChecklist {
         }
         guard !inputs.installedEditors.isEmpty else { return nil }
         let names = inputs.installedEditors.joined(separator: ", ")
-        return row("editors", "VS Code companion", "Found \(names), but no window is connected. Install the companion with extensions/vscode/scripts/package-vsix.sh, then reload the window.", .optional)
+        let detail = inputs.canInstallCompanion
+            ? "Found \(names), but no window is connected. Install the companion, then reload the window."
+            : "Found \(names), but no window is connected. Install the companion with extensions/vscode/scripts/package-vsix.sh, then reload the window."
+        return row(
+            "editors", "VS Code companion", detail, .optional,
+            action: inputs.canInstallCompanion ? .installEditorCompanion : nil, actionTitle: inputs.canInstallCompanion ? "Install in \(names)" : nil
+        )
     }
 
     private static func hookRow(_ inputs: SetupInputs) -> SetupRow? {
         guard let installed = inputs.claudeCodeHook, inputs.chrome != nil || !inputs.installedEditors.isEmpty else { return nil }
         return installed
             ? row("claudeCodeStatus", "Claude Code status", "Working and Needs you are shown on Claude Code tabs.", .ready)
-            : row("claudeCodeStatus", "Claude Code status", "Not set up. Run services/native-host/scripts/claude-hooks.sh --apply to show Working and Needs you.", .optional)
+            : row(
+                "claudeCodeStatus", "Claude Code status",
+                inputs.canEnableClaudeCodeStatus
+                    ? "Not set up. Turning it on adds Porter's hooks to Claude Code's settings (a backup is made first) and shows Working and Needs you."
+                    : "Not set up. Run services/native-host/scripts/claude-hooks.sh --apply to show Working and Needs you.",
+                .optional, action: inputs.canEnableClaudeCodeStatus ? .enableClaudeCodeStatus : nil,
+                actionTitle: inputs.canEnableClaudeCodeStatus ? "Turn on…" : nil
+            )
     }
 }

@@ -18,8 +18,12 @@ struct SetupView: View {
                 VStack(alignment: .leading, spacing: Tokens.Space.s) {
                     Text(section.title).font(.caption).textCase(.uppercase).foregroundStyle(Palette.textSecondary)
                         .accessibilityAddTraits(.isHeader)
-                    ForEach(section.rows) { row in SetupRowView(row: row, perform: model.perform) }
+                    ForEach(section.rows) { row in SetupRowView(row: row, isBusy: model.isWorking, perform: model.perform) }
                 }
+            }
+            if let message = model.message {
+                Text(message).font(.callout).fixedSize(horizontal: false, vertical: true)
+                    .accessibilityLabel("Result: \(message)")
             }
             Spacer(minLength: 0)
         }
@@ -30,6 +34,7 @@ struct SetupView: View {
 
 private struct SetupRowView: View {
     let row: SetupRow
+    let isBusy: Bool
     let perform: (SetupAction) -> Void
 
     var body: some View {
@@ -42,7 +47,7 @@ private struct SetupRowView: View {
             }
             Spacer(minLength: Tokens.Space.s)
             if let action = row.action, let title = row.actionTitle {
-                Button(title) { perform(action) }
+                Button(title) { perform(action) }.disabled(isBusy)
             }
         }
         .accessibilityElement(children: .combine)

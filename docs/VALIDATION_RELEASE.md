@@ -108,6 +108,13 @@ Everything above is automated. This batch covers what automation cannot: appeara
 1. Expect a "Sample data" banner, Pinned and Open sections, status in words, a dashed marker for anything not live. Tap a row: details sheet with a note that the account on the phone may differ and no open button (sample links go nowhere).
 2. Settings, Accessibility, larger text at the maximum: expect no clipped rows. Rotate to landscape. Search for "release".
 
+**L. One app that sets up the rest** (the bundled app; the setup window's install buttons).
+1. `apps/macos/scripts/build-app.sh` builds `Porter.app` with its helpers, the VS Code companion (`porter-vscode.vsix`), the Chrome extension folder and the Claude Code hook installer inside it. Check: `codesign --verify --deep --strict apps/macos/.build/app/Porter.app` is silent, and `apps/macos/.build/app/Porter.app/Contents/MacOS/Porter --self-test` passes.
+2. Open the bundle. In the setup window, **VS Code companion → Install in …** installs it in each found editor (VS Code, Cursor, Windsurf). Reload an editor window, then the row should turn ready within a few seconds. Tell me whether the companion works inside Cursor or Windsurf (untested).
+3. **Claude Code status → Turn on…** asks first, then runs the bundled hook installer. Check `~/.claude/settings.json` gained Porter's hooks, that a dated backup exists next to it, and that your other settings are unchanged. Start a new Claude Code session to see Working and Needs you.
+4. **Chrome extension → Set up…** registers the helper in the bundle with Chrome (this replaces the development registration that points into the repository), opens the extension folder in Finder and Chrome's extensions page. Load it unpacked in each profile as the message says; the row should turn ready. Quit Porter and reopen: the extension must reconnect.
+5. Not covered yet: signing with a Developer ID, notarization, a disk image, launching at login and updates. Everything above is signed ad hoc.
+
 **K. Setup window** (the one place that says what works and what needs a permission).
 1. Rebuild and restart the Mac app. On the very first launch it opens "Set up Porter"; later use the menu bar item **Set up Porter…**. To see the first-launch behavior again: `defaults delete <the app's domain> porter.setup.shown` (the domain is the executable's name, `Porter`), or just use the menu item.
 2. Expect three lines under "Reads on its own" (Chrome, Claude app, ChatGPT app) and up to three under "Optional" (Chrome extension, VS Code companion, Claude Code status), each with a state icon. The summary line should match them (for example "1 of 3 ready; 1 needs your permission").
@@ -117,7 +124,7 @@ Everything above is automated. This batch covers what automation cannot: appeara
 6. Tell me anything unclear in the wording; the text is meant to be understood without this document.
 
 **J. Claude and ChatGPT desktop apps** (FACT-025; read through Accessibility, no extension). Their sidebar chats appear in Porter and open from it.
-1. Build: `swift build -c release --package-path apps/macos` and restart the Mac app. Porter is not a signed app yet, so macOS asks for Accessibility for the process that started it. Open System Settings → Privacy & Security → Accessibility and either switch on the terminal you start Porter from, or click **+** and add `apps/macos/.build/release/Porter`. Restart Porter after switching it on (a running process does not notice the change).
+1. Build and open the bundle as in batch I. macOS asks for Accessibility for Porter itself: use the setup window's **Allow Accessibility** button, switch **Porter** on in the pane that opens, then quit and reopen Porter (a running process does not notice the change). The build is signed ad hoc, so each rebuild is a new identity to macOS and the permission has to be granted again; a Developer ID signature fixes that.
 2. Open the Claude app and the ChatGPT app with their sidebars showing, on the desktop you are on. Within a few seconds their chats should be listed, with the app's own order (newest first) and no profile name.
 3. Click a chat: that chat must open in its app and the app must come forward. Try a chat whose title is shared by another (several "Test" or "Untitled"): it must open the one you clicked, or say it changed, never silently the wrong one. Tell me what you see.
 4. Rename or delete a chat in the app, then click its old row: expect "gone" or "changed", not another chat.
@@ -127,7 +134,7 @@ Everything above is automated. This batch covers what automation cannot: appeara
 8. Automated check against the real apps (counts only; needs the permission for the test process): `PORTER_LIVE_APPS=1 swift test --package-path services/native-host --filter LiveDesktopTests`.
 
 **I. Chrome without the extension** (FACT-024; the app reads Chrome itself). Chrome tabs on claude.ai and chatgpt.com appear with no extension and no profile name.
-1. Build: `swift build -c release --package-path apps/macos` and restart the Mac app. To see the no-extension result clearly, switch the Porter extension off in `chrome://extensions` (or compare with it on).
+1. Build and open the app bundle: `apps/macos/scripts/build-app.sh && open apps/macos/.build/app/Porter.app` (quit any running Porter first). To see the no-extension result clearly, switch the Porter extension off in `chrome://extensions` (or compare with it on).
 2. Open two Claude chats, one of them in a second profile's window. Open the panel: both should be listed within a couple of seconds, with the profile shown as unknown.
 3. The first time, macOS asks whether Porter (or the terminal you started it from) may control Chrome. Allow it. If you refuse, nothing is listed and nothing explains why yet (the setup screen, TASK-084, will); tell me what you see.
 4. Click each chat: Chrome must come forward on exactly that tab, in the right window. Rename a chat or navigate away and click the old row: expect a clear "changed" or "gone" message, not the wrong tab.

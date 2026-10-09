@@ -39,6 +39,7 @@ public final class LiveRegistrySource: DestinationSource {
     private let nativeSessions = Mutex<[LocalConnectorSession]>([])
     private let chromeScripting = Mutex<ChromeScriptingConnector?>(nil)
     private let desktopApps = Mutex<DesktopAppConnector?>(nil)
+    private let assets = BundledAssets.from()
 
     public init(log: @escaping @Sendable (String) -> Void) {
         let relay = ChangeRelay()
@@ -91,8 +92,10 @@ public final class LiveRegistrySource: DestinationSource {
         let health = nativeHealth
         return SetupInputs(
             chrome: health["chromeScripting"], claudeApp: health["claude-desktop"], chatgptApp: health["chatgpt-desktop"],
-            connectors: service.listing().connectors, installedEditors: SetupEnvironment.installedEditors(),
-            claudeCodeHook: SetupEnvironment.claudeCodeHookInstalled()
+            connectors: service.listing().connectors, installedEditors: SetupEnvironment.installedEditors().map(\.name),
+            claudeCodeHook: SetupEnvironment.claudeCodeHookInstalled(),
+            canInstallCompanion: assets.vsix != nil, canEnableClaudeCodeStatus: assets.hookScript != nil && assets.porterctl != nil,
+            canSetUpChromeExtension: assets.nativeHost != nil && assets.chromeExtensionFolder != nil
         )
     }
 

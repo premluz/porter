@@ -30,7 +30,9 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
         self.controller = controller
         controller.show()
         registerHotKey(for: controller, notes: &notes)
-        let setupModel = SetupModel(performer: WorkspaceRecoveryPerformer()) { [source = setup.source] in source.setupInputs() }
+        let setupModel = SetupModel(
+            performer: WorkspaceRecoveryPerformer(), confirm: Self.confirm, reveal: Self.reveal
+        ) { [source = setup.source] in source.setupInputs() }
         let setupWindow = SetupWindowController(model: setupModel)
         self.setupWindow = setupWindow
         statusItem = StatusItemController(controller: controller, setup: setupWindow, notes: notes)
@@ -82,6 +84,24 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         source.attachNativeSources()
         return Setup(model: model, source: source)
+    }
+
+    private static func confirm(_ title: String, _ detail: String) -> Bool {
+        let alert = NSAlert()
+        alert.messageText = title
+        alert.informativeText = detail
+        alert.addButton(withTitle: "Turn on")
+        alert.addButton(withTitle: "Cancel")
+        NSApp.activate()
+        return alert.runModal() == .alertFirstButtonReturn
+    }
+
+    /// Shows the extension's folder in Finder and opens Chrome's extensions page, where it is loaded by hand.
+    private static func reveal(_ folder: String) {
+        NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: folder)])
+        guard let chrome = NSWorkspace.shared.urlForApplication(withBundleIdentifier: HostApplication.chrome.bundleIdentifier),
+              let page = URL(string: "chrome://extensions") else { return }
+        NSWorkspace.shared.open([page], withApplicationAt: chrome, configuration: NSWorkspace.OpenConfiguration())
     }
 
     private func registerHotKey(for controller: PanelController, notes: inout [String]) {

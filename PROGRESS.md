@@ -342,6 +342,17 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Not verified: how it looks (no screenshots here; a person should judge), the permission prompts end to end, and the wording. Not built: installing the enhancers from the window; that waits for the bundled app (TASK-027) and the extension-install test.
 - Next action: Prem runs batches I, J and K and says what is unclear or wrong. Then the bundled app and installer (TASK-027), and the Chrome extension install route.
 
+## LOG-20261009-011 — The app bundle and in-app installs (TASK-027, TASK-084)
+
+- Date: 2026-10-09.
+- Author: assistant.
+- Tasks: TASK-027, TASK-084.
+- Tags: area/macos, area/release, phase/r1.
+- Changed: `apps/macos/scripts/build-app.sh` assembles `Porter.app`: the app, `porterctl` and the native-messaging relay in `Contents/Helpers`, the VS Code companion packed as a `.vsix`, the Chrome extension folder, the hook installer, an Info.plist (menu-bar app, Automation usage text, macOS 26) and an entitlements file for Apple events, then signs it (ad hoc by default; a Developer ID identity switches on the hardened runtime). The app registers the relay with Chrome itself (`ChromeNativeHostRegistration`, which derives the extension id from the manifest key exactly as the old script does). The setup window gained three buttons, each offered only when the bundle carries what it needs: install the companion in every found editor (VS Code, Cursor, Windsurf, each by its own command), turn on Claude Code status (asks first, uses the script that backs up settings), and set up the Chrome extension (registers the relay, opens the folder and Chrome's extensions page). One step at a time; each says what it did.
+- Verified: native-host 54+4 tests, Mac app 68 (7 new), the extension id equals the script's, registration leaves other host manifests alone and refuses a missing helper before writing; the built bundle passes `codesign --verify --deep --strict` and its own `--self-test`.
+- Not verified: any of the buttons on a real Mac (batch L), the companion in Cursor and Windsurf, loading the unpacked extension, and a clean-account install. Signing is ad hoc: each rebuild looks new to macOS and permissions are asked again. Not built: Developer ID signing and notarization (needs the Apple Developer account), a disk image, launch at login, updates.
+- Next action: Prem runs batches I, J, K and L. Then signing and the disk image once there is an account, launch at login, and the extension-install route test on a throwaway profile.
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.
