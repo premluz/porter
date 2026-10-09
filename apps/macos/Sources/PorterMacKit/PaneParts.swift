@@ -86,7 +86,6 @@ struct FeedbackView: View {
         }
         .padding(Tokens.Space.m)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Palette.contentBacking)
         .accessibilityElement(children: .contain)
     }
 

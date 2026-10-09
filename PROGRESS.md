@@ -487,6 +487,14 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Trade-off: the Liquid Glass bending-light look is gone from the surface; the opening motion is unchanged.
 - Verified: Mac app 78 tests, the self-test, and the animation probe (23 distinct sizes, settles at 360 pt). Not verified: how it looks beside a native menu (batch O step 3b); one token switches the material if another is closer.
 
+## LOG-20261009-027 — One backing under the whole pane
+
+- Date: 2026-10-10.
+- Author: assistant; Prem showed the open pane with a lighter search field and footer than the list and asked for the same tone.
+- Cause: the darkening backing (`Palette.contentBacking`) was applied to the list and to the feedback box only, so the header and footer were bare menu material.
+- Changed: the backing is applied once under the whole pane (search field, feedback, list, footer) and removed from the list and the feedback box so nothing is darkened twice.
+- Verified: Mac app tests and the self-test. Not verified: the look.
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.

@@ -19,6 +19,8 @@ struct PaneView: View {
             content
             footer.reveal(progress: progress, order: Tokens.Motion.staggerLimit)
         }
+        // One backing under the whole pane, so the search field and the footer are the same tone as the list.
+        .background(Palette.contentBacking)
         .frame(width: Tokens.Size.paneWidth)
         .onChange(of: model.focusRequest) { searchFocused = true }
         .onAppear { searchFocused = true }
@@ -64,7 +66,6 @@ struct PaneView: View {
                     olderGroup(split.older, firstOrder: 1 + model.snapshot.pinned.count + split.recent.count)
                 }
                 .padding(.horizontal, Tokens.Space.s)
-                .background(Palette.contentBacking)
             }
             .onGeometryChange(for: CGRect.self) { $0.frame(in: .named(PanelPresentation.coordinateSpace)) } action: { presentation.listFrame = $0 }
             // The bar belongs to scrolling, not to layout: it stays hidden during resize and
