@@ -99,6 +99,8 @@ public struct BridgeCoordinator: Sendable {
     var editorDestinations: [String: [String: UUID]] = [:]
     /// Desktop-app entries are keyed the same way, by the connector-derived conversation ID.
     var appDestinations: [String: [String: UUID]] = [:]
+    /// Where an app lists each route, for ordering routes that have no time. Never compared across connectors.
+    var listRank: [UUID: Int] = [:]
     /// When each route's tab was last the visible one, as its connector reports it. Ordering only.
     var lastActive: [UUID: Date] = [:]
     /// Agent sessions by ID, from hook events. Only the few fields of AgentEvent are ever kept.

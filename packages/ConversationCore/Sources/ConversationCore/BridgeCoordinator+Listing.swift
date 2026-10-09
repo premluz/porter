@@ -19,12 +19,15 @@ public struct DestinationRow: Codable, Sendable, Equatable {
     public let routeCount: Int
     /// When this route's tab was last the visible one, if its connector said. Orders the list.
     public let lastActiveAt: Date?
+    /// Where the source app lists this route, 0 first, for ordering routes with no time.
+    public let listRank: Int?
 
     public init(
         destinationId: UUID, revision: Int, conversationId: UUID, providerConversationId: String, provider: String,
         title: String, profileAlias: String?, connectorId: String, reachability: Reachability,
-        tabId: Int?, windowId: Int?, url: String?, routeCount: Int, lastActiveAt: Date? = nil
+        tabId: Int?, windowId: Int?, url: String?, routeCount: Int, lastActiveAt: Date? = nil, listRank: Int? = nil
     ) {
+        self.listRank = listRank
         self.destinationId = destinationId
         self.revision = revision
         self.conversationId = conversationId
@@ -69,7 +72,7 @@ extension BridgeCoordinator {
             providerConversationId: providerConversationId, provider: conversation.provider, title: conversation.title, profileAlias: connector?.profileAlias,
             connectorId: connectorId, reachability: live ? .connected : .disconnected,
             tabId: tabId, windowId: windowId, url: url, routeCount: routeCount[conversation.id] ?? 1,
-            lastActiveAt: lastActive[destination.id]
+            lastActiveAt: lastActive[destination.id], listRank: listRank[destination.id]
         )
     }
 }

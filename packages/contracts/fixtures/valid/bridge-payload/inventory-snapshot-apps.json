@@ -7,6 +7,7 @@
       "title": "Example chat",
       "bundleId": "com.anthropic.claudefordesktop",
       "ordinal": 0,
+      "position": 0,
       "lastActiveAt": "2026-10-09T07:00:09.250Z"
     },
     {
@@ -15,6 +16,7 @@
       "title": "Test",
       "bundleId": "com.anthropic.claudefordesktop",
       "ordinal": 1,
+      "position": 1,
       "unread": true
     }
   ]

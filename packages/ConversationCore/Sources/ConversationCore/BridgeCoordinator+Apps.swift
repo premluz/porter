@@ -43,7 +43,8 @@ extension BridgeCoordinator {
         let previous = existingId.flatMap { registry.destination($0) }
         let locator = Locator.appEntry(AppEntryLocator(bundleId: entry.bundleId, title: entry.title, ordinal: entry.ordinal))
         if let previous, previous.locator == locator, previous.conversationId == conversationId {
-            return setRecency(previous.id, entry.lastActiveAt) ? .changed : .unchanged
+            let ranked = setRank(previous.id, entry.position)
+            return setRecency(previous.id, entry.lastActiveAt) || ranked ? .changed : .unchanged
         }
         let destination = Destination(
             id: existingId ?? UUID(), conversationId: conversationId, deviceId: deviceId, connectorId: binding.connectorId,
@@ -54,12 +55,20 @@ extension BridgeCoordinator {
         case .inserted, .updated:
             appDestinations[binding.connectorId, default: [:]][entry.providerConversationId] = destination.id
             setRecency(destination.id, entry.lastActiveAt)
+            setRank(destination.id, entry.position)
             return .changed
         case .ignoredOlderRevision:
             return .unchanged
         case .rejected(let reason):
             return .rejected("destination rejected: \(reason)")
         }
+    }
+
+    @discardableResult
+    mutating func setRank(_ destinationId: UUID, _ position: Int?) -> Bool {
+        guard listRank[destinationId] != position else { return false }
+        listRank[destinationId] = position
+        return true
     }
 
     static let appCapabilities = [

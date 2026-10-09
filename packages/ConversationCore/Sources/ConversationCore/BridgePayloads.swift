@@ -119,11 +119,14 @@ public struct AppEntryReport: Codable, Sendable, Equatable {
     /// The app's own "unread" marker, when it shows one. Absent means the app shows none, not "read".
     public let unread: Bool?
     public let lastActiveAt: Date?
+    /// Where the app lists it, 0 first. Apps list newest first, so this orders entries when no time is known.
+    public let position: Int?
 
     public init(
         provider: String, providerConversationId: String, title: String, bundleId: String, ordinal: Int,
-        unread: Bool? = nil, lastActiveAt: Date? = nil
+        unread: Bool? = nil, lastActiveAt: Date? = nil, position: Int? = nil
     ) {
+        self.position = position
         self.provider = provider
         self.providerConversationId = providerConversationId
         self.title = title

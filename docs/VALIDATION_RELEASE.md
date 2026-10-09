@@ -108,6 +108,16 @@ Everything above is automated. This batch covers what automation cannot: appeara
 1. Expect a "Sample data" banner, Pinned and Open sections, status in words, a dashed marker for anything not live. Tap a row: details sheet with a note that the account on the phone may differ and no open button (sample links go nowhere).
 2. Settings, Accessibility, larger text at the maximum: expect no clipped rows. Rotate to landscape. Search for "release".
 
+**J. Claude and ChatGPT desktop apps** (FACT-025; read through Accessibility, no extension). Their sidebar chats appear in Porter and open from it.
+1. Build: `swift build -c release --package-path apps/macos` and restart the Mac app. Porter is not a signed app yet, so macOS asks for Accessibility for the process that started it. Open System Settings → Privacy & Security → Accessibility and either switch on the terminal you start Porter from, or click **+** and add `apps/macos/.build/release/Porter`. Restart Porter after switching it on (a running process does not notice the change).
+2. Open the Claude app and the ChatGPT app with their sidebars showing, on the desktop you are on. Within a few seconds their chats should be listed, with the app's own order (newest first) and no profile name.
+3. Click a chat: that chat must open in its app and the app must come forward. Try a chat whose title is shared by another (several "Test" or "Untitled"): it must open the one you clicked, or say it changed, never silently the wrong one. Tell me what you see.
+4. Rename or delete a chat in the app, then click its old row: expect "gone" or "changed", not another chat.
+5. Collapse the sidebar: the list should stay as it was, not empty out, and the problem should show in Porter's log (stderr). Hide the app or move it to another desktop: same.
+6. In the ChatGPT app a chat with unread replies is marked; Porter does not show that yet (it is not a verified status). Tell me if the list is missing chats that the sidebar shows (for example pinned ones or older groups).
+7. Without the permission: nothing is listed and nothing explains why yet (the setup screen, TASK-084, will).
+8. Automated check against the real apps (counts only; needs the permission for the test process): `PORTER_LIVE_APPS=1 swift test --package-path services/native-host --filter LiveDesktopTests`.
+
 **I. Chrome without the extension** (FACT-024; the app reads Chrome itself). Chrome tabs on claude.ai and chatgpt.com appear with no extension and no profile name.
 1. Build: `swift build -c release --package-path apps/macos` and restart the Mac app. To see the no-extension result clearly, switch the Porter extension off in `chrome://extensions` (or compare with it on).
 2. Open two Claude chats, one of them in a second profile's window. Open the panel: both should be listed within a couple of seconds, with the profile shown as unknown.

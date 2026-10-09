@@ -57,6 +57,8 @@ public struct PanelItem: Sendable, Equatable, Identifiable {
     public let sharesTitle: Bool
     /// The latest time any of its tabs was the visible one, when its connector reports it.
     public private(set) var lastActiveAt: Date? = nil
+    /// Where the source app lists it, 0 first; orders items that have no time, within one app.
+    public private(set) var listRank: Int? = nil
 
     public var routes: [PanelRoute] {
         if case .open(let routes) = availability { return routes }

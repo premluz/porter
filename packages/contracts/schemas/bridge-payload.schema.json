@@ -391,6 +391,11 @@
         },
         "lastActiveAt": {
           "$ref": "common.schema.json#/$defs/timestamp"
+        },
+        "position": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 199
         }
       }
     }

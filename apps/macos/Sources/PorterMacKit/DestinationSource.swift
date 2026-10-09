@@ -32,6 +32,7 @@ public final class LiveRegistrySource: DestinationSource {
     private let log: @Sendable (String) -> Void
     private let nativeSessions = Mutex<[LocalConnectorSession]>([])
     private let chromeScripting = Mutex<ChromeScriptingConnector?>(nil)
+    private let desktopApps = Mutex<DesktopAppConnector?>(nil)
 
     public init(log: @escaping @Sendable (String) -> Void) {
         let relay = ChangeRelay()
@@ -50,18 +51,27 @@ public final class LiveRegistrySource: DestinationSource {
     /// Starts the sources that read other applications directly, with no extension. A source that is not
     /// allowed or not running simply reports nothing; its state is in `nativeHealth`.
     public func attachNativeSources(defaults: UserDefaults = .standard) {
-        let connector = ChromeScriptingConnector(installationId: Self.installationId(named: "chromeScripting", defaults: defaults))
-        do {
-            let session = try service.attach(connector)
-            nativeSessions.withLock { $0.append(session) }
-            chromeScripting.withLock { $0 = connector }
-        } catch {
-            log("native source chromeScripting could not start: \(error)")
+        let chrome = ChromeScriptingConnector(installationId: Self.installationId(named: "chromeScripting", defaults: defaults))
+        let apps = DesktopAppConnector(installationId: Self.installationId(named: "desktopApp", defaults: defaults))
+        // The system asks once per launch while Porter is not trusted; the setup screen will own this.
+        if !LiveAccessibility().isTrusted { _ = LiveAccessibility.requestTrust() }
+        for connector: any HostConnector in [chrome, apps] {
+            do {
+                let session = try service.attach(connector)
+                nativeSessions.withLock { $0.append(session) }
+            } catch {
+                log("native source \(connector.kind.rawValue) could not start: \(error)")
+            }
         }
+        chromeScripting.withLock { $0 = chrome }
+        desktopApps.withLock { $0 = apps }
     }
 
     public var nativeHealth: [String: SourceHealth] {
-        chromeScripting.withLock { $0 }.map { ["chromeScripting": $0.health] } ?? [:]
+        var health: [String: SourceHealth] = [:]
+        if let chrome = chromeScripting.withLock({ $0 }) { health["chromeScripting"] = chrome.health }
+        for (provider, value) in desktopApps.withLock({ $0 })?.health ?? [:] { health[provider] = value }
+        return health
     }
 
     /// A source keeps one identity across launches, so the registry sees a restart, not a new connector.

@@ -29,6 +29,7 @@ extension PanelBuilder {
             case (_?, nil): return true
             case (nil, _?): return false
             default:
+                if let left = lhs.listRank, let right = rhs.listRank, left != right { return left < right }
                 return (lhs.profileAlias ?? "", lhs.title, lhs.routes.first?.tabId ?? 0, lhs.id)
                     < (rhs.profileAlias ?? "", rhs.title, rhs.routes.first?.tabId ?? 0, rhs.id)
             }

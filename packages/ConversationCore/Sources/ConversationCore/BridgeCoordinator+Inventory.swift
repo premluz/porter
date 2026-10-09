@@ -164,6 +164,7 @@ extension BridgeCoordinator {
     /// Routes that no longer exist take their recency with them, so the table stays as small as the list.
     mutating func pruneRecency() {
         lastActive = lastActive.filter { registry.destination($0.key) != nil }
+        listRank = listRank.filter { registry.destination($0.key) != nil }
     }
 
     static let browserCapabilities = [

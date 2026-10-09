@@ -320,6 +320,17 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Not verified: nothing reads an app yet.
 - Next action: slice 2, the Accessibility reader, per-app adapters and the connector, tested on synthetic trees shaped like the ones the spike saw.
 
+## LOG-20261009-009 — Desktop-app connectors, slice 2: reader, adapters, connector, wiring (TASK-086)
+
+- Date: 2026-10-09.
+- Author: assistant.
+- Tasks: TASK-086.
+- Tags: area/macos, area/browser, phase/r1.
+- Changed: in `NativeSources`: an accessibility abstraction (a node protocol so everything runs on synthetic trees; a live implementation on one serial queue that asks Chromium apps to build their tree), a sidebar strip that reads only the leftmost 300 points of a window (message text sits outside it), adapters for the Claude app and the ChatGPT app (OpenAI's `com.openai.codex`) and `DesktopAppConnector`. It reports a layout it does not recognise (sidebar closed, no Recents list) as a failure with a reason, never as an empty list; keeps the last list when the window cannot be read; never asks an app that is not running; reports `permissionDenied` without the Accessibility permission; and before pressing an entry re-reads the sidebar and checks title and position (gone, changed, or pressed, then brings the app forward). Ids are a short digest of the title plus an ordinal among equal titles. The app's list position is carried as `position` so the panel keeps the app's newest-first order when no time is known, which makes "most recent six" follow the app. The Mac app attaches the connector at launch and asks for the permission once per launch while untrusted.
+- Verified: native-host 53 automated tests (new: adapters, connector, registry end to end, all on synthetic trees with placeholder titles); core 106; contracts 75 fixtures; Mac app 53; release build. A mutation or live check was not possible for the readers: this Mac's terminal has no Accessibility permission, so the live test is gated and was not run.
+- Not verified: everything against the real apps (batch J). The adapter rules come from one observed layout per app and may be wrong for pinned chats, older groups or other states; that is why an unrecognised layout is an error, not an empty list.
+- Next action: Prem runs batches I and J, then the setup screen (TASK-084).
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.
