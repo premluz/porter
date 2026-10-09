@@ -76,7 +76,7 @@ public final class PanelController {
         let items = model.items
         if expanded {
             let split = model.snapshot.recentSplit()
-            let sections = [model.snapshot.pinned, split.recent, split.older].filter { !$0.isEmpty }.count
+            let sections = [model.snapshot.pinned, split.older].filter { !$0.isEmpty }.count + model.recentGroups.count
             let rows = items.isEmpty ? 3 : items.count
             return EdgeGeometry.paneFrame(in: visible, edge: settings.edge, anchor: settings.anchor, rowCount: rows, sectionCount: sections)
         }

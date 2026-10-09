@@ -4,10 +4,13 @@ import Foundation
 public struct SidebarEntry: Equatable, Sendable {
     public let title: String
     public let unread: Bool
+    /// The app's own group heading above it ("Yesterday", "Oct 7", "Older"), when the app shows one.
+    public let section: String?
 
-    public init(title: String, unread: Bool = false) {
+    public init(title: String, unread: Bool = false, section: String? = nil) {
         self.title = title
         self.unread = unread
+        self.section = section
     }
 }
 

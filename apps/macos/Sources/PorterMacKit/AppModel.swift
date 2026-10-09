@@ -67,6 +67,9 @@ public final class AppModel {
 
     public var showsOlder: Bool { olderExpanded || !query.trimmingCharacters(in: .whitespaces).isEmpty }
 
+    /// The most recent open conversations under the day each was last used (Today, Yesterday, 2 days ago, …).
+    public var recentGroups: [ItemGroup] { DayGrouping.groups(snapshot.recentSplit().recent, now: clock()) }
+
     public var items: [PanelItem] { snapshot.navigable(showingOlder: showsOlder) }
 
     public var selectedItem: PanelItem? { items.first { $0.id == selection.selectedId } }

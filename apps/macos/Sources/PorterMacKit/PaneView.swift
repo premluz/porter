@@ -52,11 +52,14 @@ struct PaneView: View {
 
     private var list: some View {
         let split = model.snapshot.recentSplit()
+        let groups = model.recentGroups
         return ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 0) {
                     section("Pinned", model.snapshot.pinned, firstOrder: 1)
-                    section("Open", split.recent, firstOrder: 1 + model.snapshot.pinned.count)
+                    ForEach(Array(groups.enumerated()), id: \.element.id) { index, group in
+                        section(group.title, group.items, firstOrder: 1 + model.snapshot.pinned.count + groups[..<index].reduce(0) { $0 + $1.items.count })
+                    }
                     olderGroup(split.older, firstOrder: 1 + model.snapshot.pinned.count + split.recent.count)
                 }
                 .padding(.horizontal, Tokens.Space.s)

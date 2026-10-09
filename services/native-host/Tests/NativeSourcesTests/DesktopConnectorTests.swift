@@ -11,6 +11,7 @@ private func claudeTree(_ press: @escaping @Sendable (String) -> Void) -> FakeNo
         side("AXRadioButton", "Claude"),
         side("AXButton", "Yesterday"),
         side("AXGroup", "", onPress: press, children: [side("AXStaticText", "Chat A", onPress: press)]),
+        side("AXButton", "Older"),
         side("AXStaticText", "Chat B", onPress: press),
         side("AXStaticText", "Chat A", onPress: press),
     ])
@@ -36,6 +37,8 @@ struct DesktopConnectorTests {
         #expect(entries.map(\.title) == ["Chat A", "Chat B", "Chat A"])
         #expect(entries.map(\.ordinal) == [0, 0, 1])
         #expect(entries.map(\.position) == [0, 1, 2])
+        // "Yesterday" becomes a day; "Older" says nothing about when, so it stays unknown.
+        #expect(entries[0].lastActiveAt != nil && entries[1].lastActiveAt == nil && entries[2].lastActiveAt == nil)
         #expect(entries[0].providerConversationId != entries[2].providerConversationId)
         #expect(entries[0].providerConversationId.hasSuffix("-0") && entries[2].providerConversationId.hasSuffix("-1"))
         #expect(entries.allSatisfy { $0.provider == "claude-desktop" && $0.bundleId == claudeBundle })

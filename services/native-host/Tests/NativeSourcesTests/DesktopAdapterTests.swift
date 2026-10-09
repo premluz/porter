@@ -45,7 +45,10 @@ struct DesktopAdapterTests {
     @Test("Claude: chats only, never project names, controls, labels or message text; equal titles are kept")
     func claudeReads() {
         let reading = ClaudeDesktopAdapter().read(claudeWindow())
-        #expect(reading == .entries([SidebarEntry(title: "Chat A"), SidebarEntry(title: "Chat B"), SidebarEntry(title: "Chat A"), SidebarEntry(title: "Untitled")]))
+        #expect(reading == .entries([
+            SidebarEntry(title: "Chat A", section: "Yesterday"), SidebarEntry(title: "Chat B", section: "Older"),
+            SidebarEntry(title: "Chat A", section: "Older"), SidebarEntry(title: "Untitled", section: "Older"),
+        ]))
     }
 
     @Test("Claude: with the sidebar closed the layout is unrecognised, not an empty list")
@@ -89,5 +92,37 @@ struct DesktopAdapterTests {
         let labels = SidebarStrip.nodes(in: window, width: 300).map(\.label)
         #expect(!labels.contains("A message that must never be read"))
         #expect(labels.contains("Chat B"))
+    }
+}
+
+@Suite("Turning an app's group heading into a day")
+struct AppSectionDateTests {
+    private var calendar: Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "UTC") ?? .gmt
+        return calendar
+    }
+
+    /// Friday 2026-10-09, 15:00 UTC.
+    private let now = Date(timeIntervalSince1970: 1_791_558_000)
+
+    private func day(_ date: Date?) -> String? {
+        date.map { calendar.dateComponents([.month, .day, .hour], from: $0) }.map { "\($0.month ?? 0)/\($0.day ?? 0) \($0.hour ?? 0)h" }
+    }
+
+    @Test("Today is now, Yesterday and a dated heading are noon of that day, and a heading in the future means last year")
+    func headings() {
+        #expect(AppSectionDate.date(for: "Today", now: now, calendar: calendar) == now)
+        #expect(day(AppSectionDate.date(for: "Yesterday", now: now, calendar: calendar)) == "10/8 12h")
+        #expect(day(AppSectionDate.date(for: "Oct 7", now: now, calendar: calendar)) == "10/7 12h")
+        #expect(day(AppSectionDate.date(for: "Dec 30", now: now, calendar: calendar)) == "12/30 12h")
+        #expect(AppSectionDate.date(for: "Dec 30", now: now, calendar: calendar).map { calendar.component(.year, from: $0) } == 2025)
+    }
+
+    @Test("Older and anything not understood give no date, never a guessed one")
+    func unknown() {
+        for heading in [nil, "Older", "Last week", "Oct", "Foo 7", "Oct 40", ""] {
+            #expect(AppSectionDate.date(for: heading, now: now, calendar: calendar) == nil, "\(heading ?? "nil")")
+        }
     }
 }

@@ -21,12 +21,15 @@ public final class DesktopAppConnector: HostConnector {
     private let adapters: [any DesktopAppAdapter]
     private let accessibility: any AccessibilityProviding
     private let pollInterval: Duration
+    private let now: @Sendable () -> Date
     private let state = Mutex(State())
 
     public init(
         installationId: UUID, adapters: [any DesktopAppAdapter] = [ClaudeDesktopAdapter(), ChatGPTDesktopAdapter()],
-        accessibility: any AccessibilityProviding = LiveAccessibility(), pollInterval: Duration = .seconds(3)
+        accessibility: any AccessibilityProviding = LiveAccessibility(), pollInterval: Duration = .seconds(3),
+        now: @escaping @Sendable () -> Date = { Date() }
     ) {
+        self.now = now
         self.installationId = installationId
         self.adapters = adapters
         self.accessibility = accessibility
@@ -95,7 +98,7 @@ public final class DesktopAppConnector: HostConnector {
         for adapter in adapters {
             all += await entries(for: adapter)
         }
-        return (all, all.map { "\($0.providerConversationId)|\($0.title)|\($0.unread ?? false)" })
+        return (all, all.map { "\($0.providerConversationId)|\($0.title)|\($0.unread ?? false)|\($0.lastActiveAt.map { Int($0.timeIntervalSince1970 / 86_400) } ?? 0)" })
     }
 
     private func entries(for adapter: any DesktopAppAdapter) async -> [AppEntryReport] {
@@ -111,7 +114,7 @@ public final class DesktopAppConnector: HostConnector {
             let reading = try await accessibility.withWindow(bundleId: adapter.bundleId) { adapter.read($0) }
             switch reading {
             case .entries(let found):
-                let reports = Self.reports(found, adapter: adapter)
+                let reports = Self.reports(found, adapter: adapter, now: now())
                 state.withLock { $0.health[adapter.provider] = .ready; $0.lastEntries[adapter.provider] = reports }
                 return reports
             case .unrecognised(let reason):
@@ -126,7 +129,7 @@ public final class DesktopAppConnector: HostConnector {
     }
 
     /// Identity is the title plus its position among equal titles; the id is a short digest so it is a safe identifier.
-    static func reports(_ entries: [SidebarEntry], adapter: any DesktopAppAdapter) -> [AppEntryReport] {
+    static func reports(_ entries: [SidebarEntry], adapter: any DesktopAppAdapter, now: Date) -> [AppEntryReport] {
         var seen: [String: Int] = [:]
         return entries.prefix(BridgeLimits.maximumTabsPerSnapshot).enumerated().map { position, entry in
             let ordinal = seen[entry.title, default: 0]
@@ -135,7 +138,8 @@ public final class DesktopAppConnector: HostConnector {
             return AppEntryReport(
                 provider: adapter.provider, providerConversationId: "\(digest)-\(ordinal)",
                 title: String(entry.title.prefix(BridgeLimits.maximumTitleLength)), bundleId: adapter.bundleId,
-                ordinal: ordinal, unread: entry.unread ? true : nil, position: position
+                ordinal: ordinal, unread: entry.unread ? true : nil,
+                lastActiveAt: AppSectionDate.date(for: entry.section, now: now), position: position
             )
         }
     }

@@ -365,6 +365,18 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Not verified: Chrome's approval prompt as a person sees it, a Chrome that is already running noticing the file without a restart, several profiles, open at login on a real login, and any Developer ID or notarization step.
 - Next action: Prem runs batches I to L. With an Apple Developer account: signing, notarization, and a clean-account install test.
 
+## LOG-20261009-013 — Recent chats grouped by day (TASK-023)
+
+- Date: 2026-10-09.
+- Author: assistant; Prem showed the Claude app's sidebar (Yesterday, Oct 7, Oct 6, Older) and asked for chats grouped that way: Today, Yesterday, 2 days ago.
+- Tasks: TASK-023, TASK-086.
+- Tags: area/macos, area/ux, phase/r1.
+- Assumption stated: the grouping applies to the pane's recent list (the six newest unpinned chats); pinned chats and the folded "Older" group are unchanged. Neighbouring chats with the same label share one header; a chat with no known time sits under "Open" instead of being given a day.
+- Changed: `DayGrouping` (calendar days, not hours: Today, Yesterday, "2 days ago" to 6, then a date such as "Sep 28"), used by the pane and by the pane's height calculation. The Claude app adapter now reads the app's own headings and `AppSectionDate` turns "Today", "Yesterday" and "Oct 7" into a day (noon, never in the future; "Dec 30" read in January is last year; "Older" and anything not understood give no date), so its chats group beside browser tabs by day. The ChatGPT app shows no headings, so its chats stay under "Open".
+- Verified: panel model 60 and core 106 tests (4 new for grouping, including a late arrival that must not merge into an earlier header); native-host 62 (heading parsing, adapter sections, connector times); Mac app 70; self-test; release build.
+- Not verified: how it looks (no screenshots here), and the app's headings in another language or at the turn of a year (parsed in English only).
+- Next action: Prem looks at it with the real apps (batch J).
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.
