@@ -464,6 +464,13 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Changed: no delay. The first label grows out of the capsule's side (slightly smaller, 0.14 s) and, moving to the next dot, the same window glides there (0.09 s, with the new content) instead of leaving and returning; it fades out (0.12 s) only when the pointer leaves the dots. Reduce Motion: a 0.06 s fade, no grow or glide. The dot under the pointer lights and swells (the panel's own pointer tracking drives it, since SwiftUI hover is not delivered to an inactive window); the cursor is the pointing hand over dots and over the open button, set on every pointer move because an inactive window's cursor is otherwise reset.
 - Verified: Mac app 77 tests (hit test now covers the open button) and the self-test. Not verified: any of the motion, the glide, the cursor in an inactive window (the least certain part), since they need a pointer and eyes (batch O).
 
+## LOG-20261009-024 — Hover in the open pane; subtler hover
+
+- Date: 2026-10-09.
+- Author: assistant; Prem asked for hover in the expanded state as well, and for the hover to be subtler.
+- Changed: rows in the open pane take a light tint under the pointer (7% of the primary colour, lighter than the keyboard selection) and show the pointing hand; the lit dot in the capsule is lighter (16% instead of 28%) and swells less (8% instead of 18%). The same pointer tracking that drives the capsule reports each row's frame, so hover works while Porter is inactive; only the part of the list that is visible counts, so a row scrolled under the search field is never hovered. The cursor is set only over dots, the open button and rows (and restored once on leaving a row), so the search field keeps its text cursor.
+- Verified: Mac app 78 tests (row hit test) and the self-test. Not verified: the look and the cursor, which need a pointer and eyes (batch O).
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.

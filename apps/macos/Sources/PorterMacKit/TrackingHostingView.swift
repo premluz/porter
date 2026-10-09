@@ -6,9 +6,9 @@ import SwiftUI
 final class TrackingHostingView<Content: View>: NSHostingView<Content> {
     /// The pointer's position, or nil when it left the view.
     var onPointer: ((CGPoint?) -> Void)?
-    /// The cursor to show at a point; the arrow when nil. Set on every move, because an inactive window's cursor is
-    /// otherwise reset by the system as soon as the pointer moves.
-    var cursorAt: ((CGPoint) -> NSCursor)?
+    /// The cursor to show at a point, or nil to leave the cursor to the views underneath (the search field's I-beam).
+    /// Set on every move, because an inactive window's cursor is otherwise reset by the system as the pointer moves.
+    var cursorAt: ((CGPoint) -> NSCursor?)?
 
     override func updateTrackingAreas() {
         super.updateTrackingAreas()
@@ -29,7 +29,7 @@ final class TrackingHostingView<Content: View>: NSHostingView<Content> {
     }
 
     private func setCursor(for event: NSEvent) {
-        (cursorAt?(topLeft(event)) ?? NSCursor.arrow).set()
+        cursorAt?(topLeft(event))?.set()
     }
 
     private func report(_ event: NSEvent) {

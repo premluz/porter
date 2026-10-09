@@ -30,7 +30,7 @@ public enum Tokens {
         public static let setupWidth: CGFloat = 520
         public static let providerLogo: CGFloat = 14
         public static let edgeLine: CGFloat = 1
-        public static let dotHoverScale: CGFloat = 1.18
+        public static let dotHoverScale: CGFloat = 1.08
         public static let tooltipMaximumWidth: CGFloat = 280
         public static let pillMaximumWidth: CGFloat = 120
         public static let setupIcon: CGFloat = 24

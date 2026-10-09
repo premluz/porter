@@ -5,6 +5,7 @@ import SwiftUI
 /// All keyboard handling is on the search field, which keeps focus so typing always works.
 struct PaneView: View {
     @Bindable var model: AppModel
+    let presentation: PanelPresentation
     /// How far the opening move has got, which paces the staggered fade-in of the content.
     let progress: Double
     let close: () -> Void
@@ -65,6 +66,7 @@ struct PaneView: View {
                 .padding(.horizontal, Tokens.Space.s)
                 .background(Palette.contentBacking)
             }
+            .onGeometryChange(for: CGRect.self) { $0.frame(in: .named(PanelPresentation.coordinateSpace)) } action: { presentation.listFrame = $0 }
             // The bar belongs to scrolling, not to layout: it stays hidden during resize and
             // appears only while a scroll is under way.
             .scrollIndicators(isScrolling ? .automatic : .hidden)
@@ -113,11 +115,13 @@ struct PaneView: View {
     @ViewBuilder
     private func rows(_ items: [PanelItem], firstOrder: Int) -> some View {
         ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
-            ItemRowView(item: item, isSelected: item.id == model.selection.selectedId) {
+            ItemRowView(item: item, isSelected: item.id == model.selection.selectedId, isHovered: presentation.hoveredRow == item.id) {
                 model.select(item)
                 Task { await submit() }
             }
             .reveal(progress: progress, order: firstOrder + index)
+            .onGeometryChange(for: CGRect.self) { $0.frame(in: .named(PanelPresentation.coordinateSpace)) } action: { presentation.rowFrames[item.id] = $0 }
+            .onDisappear { presentation.rowFrames[item.id] = nil }
             .id(item.id)
             .contextMenu { menu(for: item) }
         }

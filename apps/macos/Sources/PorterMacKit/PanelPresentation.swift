@@ -20,6 +20,12 @@ public final class PanelPresentation {
     /// The dot (or the open button, `PanelPresentation.openButtonId`) under the pointer, for its hover look.
     public var hoveredDot: String?
     public nonisolated static let openButtonId = "open"
+    /// The open pane's rows by item id, and the part of the pane they are visible in, in the window's top-left
+    /// coordinates. Read when the pointer moves, like `dotFrames`; not observed.
+    @ObservationIgnored public var rowFrames: [String: CGRect] = [:]
+    @ObservationIgnored public var listFrame = CGRect.zero
+    /// The row under the pointer in the open pane, for its hover look.
+    public var hoveredRow: String?
     /// Attached only by the animation probe, to see each frame of a move.
     @ObservationIgnored public var recorder: (@Sendable (CGRect) -> Void)?
     /// Both rectangles in the window's top-left coordinates; the shape moves between them.

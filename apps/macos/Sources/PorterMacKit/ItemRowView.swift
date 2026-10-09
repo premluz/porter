@@ -5,6 +5,7 @@ import SwiftUI
 struct ItemRowView: View {
     let item: PanelItem
     let isSelected: Bool
+    var isHovered = false
     let activate: () -> Void
 
     var body: some View {
@@ -20,13 +21,19 @@ struct ItemRowView: View {
             }
             .padding(.horizontal, Tokens.Space.m)
             .frame(maxWidth: .infinity, minHeight: Tokens.Size.rowHeight, alignment: .leading)
-            .background(RoundedRectangle(cornerRadius: Tokens.Space.m, style: .continuous).fill(isSelected ? Palette.selection : .clear))
+            .background(RoundedRectangle(cornerRadius: Tokens.Space.m, style: .continuous).fill(background))
+            .animation(.easeOut(duration: Tokens.Motion.dotHover), value: isHovered)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(StatusPresentation.accessibilityLabel(for: item))
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+    }
+
+    /// Selection (keyboard) is the stronger of the two; the pointer only tints the row it is over.
+    private var background: Color {
+        isSelected ? Palette.selection : (isHovered ? Palette.rowHover : .clear)
     }
 
     @ViewBuilder

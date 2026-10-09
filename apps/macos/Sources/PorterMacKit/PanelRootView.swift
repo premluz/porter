@@ -40,7 +40,7 @@ struct PanelRootView: View {
             }
             // Always built, so opening only has to fade it in: creating it at the first frame of the move
             // cost about 75 ms and showed as a stutter. Hidden from touch and VoiceOver while collapsed.
-            PaneView(model: model, progress: content, close: close)
+            PaneView(model: model, presentation: presentation, progress: content, close: close)
                 .opacity(PanelPhases.paneOpacity(progress: content))
                 .allowsHitTesting(progress > 0.9)
                 .accessibilityHidden(progress < 0.5)

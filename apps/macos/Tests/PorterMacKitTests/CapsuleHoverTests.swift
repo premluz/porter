@@ -51,3 +51,19 @@ struct CapsuleHoverTests {
         #expect(low.minY >= visible.minY)
     }
 }
+
+@Suite("Hovering a row in the open pane")
+struct RowHoverTests {
+    private let rows: [String: CGRect] = [
+        "a": CGRect(x: 8, y: 100, width: 344, height: 56),
+        "b": CGRect(x: 8, y: 156, width: 344, height: 56),
+    ]
+
+    @Test("a row is hit only inside its own frame, with no reach beyond it")
+    func hit() {
+        #expect(CapsuleHover.item(at: CGPoint(x: 100, y: 120), frames: rows, horizontalReach: 0, verticalReach: 0) == "a")
+        #expect(CapsuleHover.item(at: CGPoint(x: 100, y: 180), frames: rows, horizontalReach: 0, verticalReach: 0) == "b")
+        #expect(CapsuleHover.item(at: CGPoint(x: 4, y: 120), frames: rows, horizontalReach: 0, verticalReach: 0) == nil)
+        #expect(CapsuleHover.item(at: CGPoint(x: 100, y: 90), frames: rows, horizontalReach: 0, verticalReach: 0) == nil)
+    }
+}
