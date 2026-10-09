@@ -479,6 +479,14 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Changed: the capsule, pane and hover label glass take a tint of the system's window background colour at 55% (`Palette.glassTint`), so it follows the appearance, dark in dark and light in light, over any backdrop. Nothing else about the glass changed.
 - Verified: Mac app 78 tests and the self-test. Not verified: how it looks or how close it is to a native menu (batch O step 3b); this is a guess from the screenshot, with a stronger fallback written in FACT-030.
 
+## LOG-20261009-026 — Menu material instead of Liquid Glass
+
+- Date: 2026-10-09.
+- Author: assistant; Prem corrected my reading of the screenshot: native glass stays dark on a light page, while Porter's adapts to the backdrop, which is not what native does.
+- Changed: the capsule, pane and hover label sit on the system's menu material (`VisualEffectSurface`: `NSVisualEffectView`, `.menu`, behind-window, forced active) instead of `glassEffect`. It follows the appearance and not the backdrop, and looks the same whether or not the window has focus. The window-colour tint of LOG-20261009-025 is removed; the 1 pt edge stays. Reduce Transparency keeps its opaque surface.
+- Trade-off: the Liquid Glass bending-light look is gone from the surface; the opening motion is unchanged.
+- Verified: Mac app 78 tests, the self-test, and the animation probe (23 distinct sizes, settles at 360 pt). Not verified: how it looks beside a native menu (batch O step 3b); one token switches the material if another is closer.
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.

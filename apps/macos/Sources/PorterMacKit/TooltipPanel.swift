@@ -36,7 +36,8 @@ struct TooltipView: View {
         .fixedSize(horizontal: true, vertical: true)
         .background {
             let shape = RoundedRectangle(cornerRadius: Tokens.Space.m, style: .continuous)
-            shape.fill(.clear).glassEffect(.regular.tint(Palette.glassTint), in: shape)
+            VisualEffectSurface(material: Tokens.Surface.material)
+                .clipShape(shape)
                 .overlay(shape.strokeBorder(Palette.glassEdge, lineWidth: Tokens.Size.edgeLine))
         }
     }

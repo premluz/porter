@@ -1,3 +1,4 @@
+import AppKit
 import CoreGraphics
 import Foundation
 
@@ -38,6 +39,11 @@ public enum Tokens {
 
     public enum Capsule {
         public static let maximumDots = 6
+    }
+
+    public enum Surface {
+        /// The material under the capsule, the pane and the label: what a native menu is made of.
+        static let material = NSVisualEffectView.Material.menu
     }
 
     public enum Motion {

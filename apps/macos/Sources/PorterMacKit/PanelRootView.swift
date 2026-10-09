@@ -58,9 +58,11 @@ struct PanelRootView: View {
         if reduceTransparency {
             shape.fill(Palette.surfaceOpaque).overlay(shape.strokeBorder(Palette.borderSubtle))
         } else {
-            // The system draws the glass's edge only while its window is active, and this one never is, so the edge is
-            // drawn here, which keeps it there whether or not the panel has been pressed or another window has focus.
-            shape.fill(.clear).glassEffect(.regular.tint(Palette.glassTint), in: shape)
+            // The menu material, not Liquid Glass: glass lightens over a light page and darkens over a dark one, which
+            // is not what a native menu does, and it looked pale and lost its edge because this window is never active.
+            // The edge is drawn here so it is there whatever has focus.
+            VisualEffectSurface(material: Tokens.Surface.material)
+                .clipShape(shape)
                 .overlay(shape.strokeBorder(Palette.glassEdge, lineWidth: Tokens.Size.edgeLine))
         }
     }
