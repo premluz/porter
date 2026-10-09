@@ -331,6 +331,17 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Not verified: everything against the real apps (batch J). The adapter rules come from one observed layout per app and may be wrong for pinned chats, older groups or other states; that is why an unrecognised layout is an error, not an empty list.
 - Next action: Prem runs batches I and J, then the setup screen (TASK-084).
 
+## LOG-20261009-010 — Setup window (TASK-084, first slice)
+
+- Date: 2026-10-09.
+- Author: assistant.
+- Tasks: TASK-084.
+- Tags: area/macos, area/ux, phase/r1.
+- Changed: a "Set up Porter" window, opened on first launch and from the menu bar, lists each source with a state (ready, needs your permission, not open, optional, checking) and one action: open System Settings at Automation, prompt for Accessibility and open that pane, or open the app. Rows come from a pure checklist function over plain inputs (source health, connected connectors, installed VS Code-family editors, whether Claude Code's settings carry Porter's hook), so it is tested without this Mac's state. Sources that are not attached are not listed. The automatic Accessibility prompt at launch is gone; the window owns it. The window refreshes every 2 s while open.
+- Verified: Mac app 61 tests (8 new); the headless self-test lays the window out at 520 pt wide; release build.
+- Not verified: how it looks (no screenshots here; a person should judge), the permission prompts end to end, and the wording. Not built: installing the enhancers from the window; that waits for the bundled app (TASK-027) and the extension-install test.
+- Next action: Prem runs batches I, J and K and says what is unclear or wrong. Then the bundled app and installer (TASK-027), and the Chrome extension install route.
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.

@@ -27,6 +27,8 @@ public enum Tokens {
         public static let paneCorner: CGFloat = 28
         public static let edgeMargin: CGFloat = 8
         public static let minimumPaneHeight: CGFloat = 160
+        public static let setupWidth: CGFloat = 520
+        public static let setupIcon: CGFloat = 24
     }
 
     public enum Capsule {

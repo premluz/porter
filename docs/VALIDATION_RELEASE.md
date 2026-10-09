@@ -108,6 +108,14 @@ Everything above is automated. This batch covers what automation cannot: appeara
 1. Expect a "Sample data" banner, Pinned and Open sections, status in words, a dashed marker for anything not live. Tap a row: details sheet with a note that the account on the phone may differ and no open button (sample links go nowhere).
 2. Settings, Accessibility, larger text at the maximum: expect no clipped rows. Rotate to landscape. Search for "release".
 
+**K. Setup window** (the one place that says what works and what needs a permission).
+1. Rebuild and restart the Mac app. On the very first launch it opens "Set up Porter"; later use the menu bar item **Set up Porter…**. To see the first-launch behavior again: `defaults delete <the app's domain> porter.setup.shown` (the domain is the executable's name, `Porter`), or just use the menu item.
+2. Expect three lines under "Reads on its own" (Chrome, Claude app, ChatGPT app) and up to three under "Optional" (Chrome extension, VS Code companion, Claude Code status), each with a state icon. The summary line should match them (for example "1 of 3 ready; 1 needs your permission").
+3. Refuse a permission on purpose (Automation for Chrome, or leave Accessibility off): the row must turn orange with a button. "Open Automation settings" opens that pane. "Allow Accessibility" shows the system prompt and opens the Accessibility pane; switch Porter on there, restart Porter, and the row should turn ready.
+4. Quit Chrome or a desktop app: its row becomes "not open" with an **Open** button, never an error. Reopen it: the row turns ready within a few seconds without closing the window.
+5. The window should list only what is attached: in sample-data mode (`Porter --fixtures`) it says there is nothing to set up.
+6. Tell me anything unclear in the wording; the text is meant to be understood without this document.
+
 **J. Claude and ChatGPT desktop apps** (FACT-025; read through Accessibility, no extension). Their sidebar chats appear in Porter and open from it.
 1. Build: `swift build -c release --package-path apps/macos` and restart the Mac app. Porter is not a signed app yet, so macOS asks for Accessibility for the process that started it. Open System Settings → Privacy & Security → Accessibility and either switch on the terminal you start Porter from, or click **+** and add `apps/macos/.build/release/Porter`. Restart Porter after switching it on (a running process does not notice the change).
 2. Open the Claude app and the ChatGPT app with their sidebars showing, on the desktop you are on. Within a few seconds their chats should be listed, with the app's own order (newest first) and no profile name.

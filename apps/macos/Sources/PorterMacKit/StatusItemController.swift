@@ -6,10 +6,12 @@ import UniformTypeIdentifiers
 public final class StatusItemController: NSObject {
     private let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     private let controller: PanelController
+    private let setup: SetupWindowController
     private let notes: [String]
 
-    public init(controller: PanelController, notes: [String]) {
+    public init(controller: PanelController, setup: SetupWindowController, notes: [String]) {
         self.controller = controller
+        self.setup = setup
         self.notes = notes
         super.init()
         if let button = item.button {
@@ -23,6 +25,8 @@ public final class StatusItemController: NSObject {
     }
 
     @objc private func openPane() { controller.open() }
+
+    @objc private func openSetup() { setup.show() }
 
     @objc private func chooseEdge(_ sender: NSMenuItem) {
         guard let raw = sender.representedObject as? String, let edge = PanelEdge(rawValue: raw) else { return }
@@ -48,6 +52,7 @@ public final class StatusItemController: NSObject {
         let menu = NSMenu()
         menu.addItem(NSMenuItem(title: "Open Porter (⌃⌥Space)", action: #selector(openPane), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Open context packet…", action: #selector(openPacket), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Set up Porter…", action: #selector(openSetup), keyEquivalent: ""))
         menu.addItem(.separator())
         for edge in PanelEdge.allCases {
             let entry = NSMenuItem(title: "\(edge.rawValue.capitalized) edge", action: #selector(chooseEdge), keyEquivalent: "")

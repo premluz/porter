@@ -2,6 +2,7 @@ import AppKit
 import Foundation
 import PorterPanelModel
 import PorterStore
+import SwiftUI
 
 /// Headless smoke test of the AppKit layer: builds the real panel and views off screen, drives the
 /// state machine, and compares real window frames with the geometry. It never orders a window
@@ -56,6 +57,18 @@ public enum SelfTest {
         check("collapsed panel cannot take keyboard focus", !controller.panel.canBecomeKey)
         controller.panel.contentView?.layoutSubtreeIfNeeded()
         check("SwiftUI content lays out", (controller.panel.contentView?.subviews.count ?? 0) > 0)
+        checkSetupLayout(check)
+    }
+
+    /// The setup window's content must size itself from its rows, with every state present.
+    private static func checkSetupLayout(_ check: (String, Bool) -> Void) {
+        let inputs = SetupInputs(
+            chrome: .permissionDenied, claudeApp: .ready, chatgptApp: .notRunning,
+            installedEditors: ["VS Code"], claudeCodeHook: false
+        )
+        let model = SetupModel(performer: WorkspaceRecoveryPerformer()) { inputs }
+        let size = NSHostingView(rootView: SetupView(model: model)).fittingSize
+        check("setup window lays out at its width (\(size))", size.width == Tokens.Size.setupWidth && size.height > Tokens.Size.setupIcon * 4)
     }
 
     private static func checkHotKey(_ check: (String, Bool) -> Void) {

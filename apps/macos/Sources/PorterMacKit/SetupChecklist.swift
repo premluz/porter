@@ -1,0 +1,150 @@
+import ConversationCore
+import Foundation
+import NativeSources
+import PorterPanelModel
+
+/// What Porter knows about its sources right now. Plain values, so the checklist can be tested without a Mac's state.
+public struct SetupInputs: Sendable, Equatable {
+    /// Nil means the source is not attached at all (sample-data mode).
+    public var chrome: SourceHealth?
+    public var claudeApp: SourceHealth?
+    public var chatgptApp: SourceHealth?
+    public var connectors: [ConnectorSummary]
+    /// Names of VS Code-family editors installed on this Mac.
+    public var installedEditors: [String]
+    /// Whether Claude Code's settings contain Porter's hook; nil when that could not be read.
+    public var claudeCodeHook: Bool?
+
+    public init(
+        chrome: SourceHealth? = nil, claudeApp: SourceHealth? = nil, chatgptApp: SourceHealth? = nil,
+        connectors: [ConnectorSummary] = [], installedEditors: [String] = [], claudeCodeHook: Bool? = nil
+    ) {
+        self.chrome = chrome
+        self.claudeApp = claudeApp
+        self.chatgptApp = chatgptApp
+        self.connectors = connectors
+        self.installedEditors = installedEditors
+        self.claudeCodeHook = claudeCodeHook
+    }
+}
+
+public enum SetupState: Sendable, Equatable {
+    /// Working now.
+    case ready
+    /// Needs the user to do something.
+    case needsAction
+    /// Fine, but the app is not open, so there is nothing to read yet.
+    case waiting
+    /// Not set up, and Porter works without it.
+    case optional
+    case checking
+}
+
+public enum SetupAction: Sendable, Equatable {
+    case openAutomationSettings
+    case requestAccessibility
+    case openApplication(HostApplication)
+}
+
+public struct SetupRow: Sendable, Equatable, Identifiable {
+    public let id: String
+    public let title: String
+    public let detail: String
+    public let state: SetupState
+    public let action: SetupAction?
+    public let actionTitle: String?
+}
+
+public struct SetupSection: Sendable, Equatable, Identifiable {
+    public let id: String
+    public let title: String
+    public let rows: [SetupRow]
+}
+
+public enum SetupChecklist {
+    public static func sections(for inputs: SetupInputs) -> [SetupSection] {
+        let reads = [chromeRow(inputs.chrome), appRow(.claudeApp, id: "claudeApp", inputs.claudeApp), appRow(.chatgptApp, id: "chatgptApp", inputs.chatgptApp)]
+            .compactMap { $0 }
+        let extras = [extensionRow(inputs), editorsRow(inputs), hookRow(inputs)].compactMap { $0 }
+        return [
+            SetupSection(id: "sources", title: "Reads on its own", rows: reads),
+            SetupSection(id: "extras", title: "Optional, adds detail", rows: extras),
+        ].filter { !$0.rows.isEmpty }
+    }
+
+    /// How many of the sources that need nothing more than permission are ready, for a one-line summary.
+    public static func summary(_ sections: [SetupSection]) -> String {
+        let required = sections.first { $0.id == "sources" }?.rows ?? []
+        let ready = required.filter { $0.state == .ready }.count
+        let blocked = required.filter { $0.state == .needsAction }.count
+        if required.isEmpty { return "Showing sample data" }
+        if blocked > 0 { return "\(ready) of \(required.count) ready; \(blocked) need\(blocked == 1 ? "s" : "") your permission" }
+        return ready == required.count ? "All ready" : "\(ready) of \(required.count) ready; the rest are not open"
+    }
+
+    private static func row(
+        _ id: String, _ title: String, _ detail: String, _ state: SetupState,
+        action: SetupAction? = nil, actionTitle: String? = nil
+    ) -> SetupRow {
+        SetupRow(id: id, title: title, detail: detail, state: state, action: action, actionTitle: actionTitle)
+    }
+
+    private static func chromeRow(_ health: SourceHealth?) -> SetupRow? {
+        guard let health else { return nil }
+        switch health {
+        case .ready:
+            return row("chrome", "Chrome", "Your Claude and ChatGPT tabs are listed. The profile shows as unknown without the extension.", .ready)
+        case .unknown:
+            return row("chrome", "Chrome", "Checking…", .checking)
+        case .notRunning:
+            return row("chrome", "Chrome", "Chrome is not open, so there is nothing to read yet.", .waiting, action: .openApplication(.chrome), actionTitle: "Open Chrome")
+        case .permissionDenied:
+            return row("chrome", "Chrome", "Porter is not allowed to control Chrome. Switch Porter on under Privacy & Security → Automation.", .needsAction, action: .openAutomationSettings, actionTitle: "Open Automation settings")
+        case .failed(let reason):
+            return row("chrome", "Chrome", "Chrome could not be read: \(reason)", .needsAction)
+        }
+    }
+
+    private static func appRow(_ host: HostApplication, id: String, _ health: SourceHealth?) -> SetupRow? {
+        guard let health else { return nil }
+        let name = "\(host.displayName) app"
+        switch health {
+        case .ready:
+            return row(id, name, "Its sidebar chats are listed.", .ready)
+        case .unknown:
+            return row(id, name, "Checking…", .checking)
+        case .notRunning:
+            return row(id, name, "The app is not open, so there is nothing to read yet.", .waiting, action: .openApplication(host), actionTitle: "Open \(host.displayName)")
+        case .permissionDenied:
+            return row(id, name, "Porter needs the Accessibility permission to read the app's sidebar. Switch Porter on under Privacy & Security → Accessibility, then restart Porter.", .needsAction, action: .requestAccessibility, actionTitle: "Allow Accessibility")
+        case .failed(let reason):
+            return row(id, name, reason.prefix(1).uppercased() + reason.dropFirst() + ".", .needsAction)
+        }
+    }
+
+    private static func extensionRow(_ inputs: SetupInputs) -> SetupRow? {
+        guard inputs.chrome != nil else { return nil }
+        let connected = inputs.connectors.filter { $0.providerType == .chromeExtension && $0.reachability == .connected }
+        if connected.isEmpty {
+            return row("chromeExtension", "Chrome extension", "Not connected. It adds profile names and exact tabs; Porter works without it.", .optional)
+        }
+        return row("chromeExtension", "Chrome extension", "\(connected.count) profile\(connected.count == 1 ? "" : "s") connected.", .ready)
+    }
+
+    private static func editorsRow(_ inputs: SetupInputs) -> SetupRow? {
+        let windows = inputs.connectors.filter { $0.providerType == .vscodeExtension && $0.reachability == .connected }
+        if !windows.isEmpty {
+            return row("editors", "VS Code companion", "\(windows.count) window\(windows.count == 1 ? "" : "s") connected.", .ready)
+        }
+        guard !inputs.installedEditors.isEmpty else { return nil }
+        let names = inputs.installedEditors.joined(separator: ", ")
+        return row("editors", "VS Code companion", "Found \(names), but no window is connected. Install the companion with extensions/vscode/scripts/package-vsix.sh, then reload the window.", .optional)
+    }
+
+    private static func hookRow(_ inputs: SetupInputs) -> SetupRow? {
+        guard let installed = inputs.claudeCodeHook, inputs.chrome != nil || !inputs.installedEditors.isEmpty else { return nil }
+        return installed
+            ? row("claudeCodeStatus", "Claude Code status", "Working and Needs you are shown on Claude Code tabs.", .ready)
+            : row("claudeCodeStatus", "Claude Code status", "Not set up. Run services/native-host/scripts/claude-hooks.sh --apply to show Working and Needs you.", .optional)
+    }
+}

@@ -12,6 +12,12 @@ public protocol DestinationSource: Sendable {
     func statuses() -> [UUID: DestinationStatus]
     func activate(destinationId: UUID, revision: Int) async -> ActivationReport
     func setChangeHandler(_ handler: @escaping @Sendable () -> Void)
+    /// What the setup window shows. Sample data has no sources, so it reports none.
+    func setupInputs() -> SetupInputs
+}
+
+extension DestinationSource {
+    public func setupInputs() -> SetupInputs { SetupInputs() }
 }
 
 final class ChangeRelay: Sendable {
@@ -53,8 +59,6 @@ public final class LiveRegistrySource: DestinationSource {
     public func attachNativeSources(defaults: UserDefaults = .standard) {
         let chrome = ChromeScriptingConnector(installationId: Self.installationId(named: "chromeScripting", defaults: defaults))
         let apps = DesktopAppConnector(installationId: Self.installationId(named: "desktopApp", defaults: defaults))
-        // The system asks once per launch while Porter is not trusted; the setup screen will own this.
-        if !LiveAccessibility().isTrusted { _ = LiveAccessibility.requestTrust() }
         for connector: any HostConnector in [chrome, apps] {
             do {
                 let session = try service.attach(connector)
@@ -81,6 +85,15 @@ public final class LiveRegistrySource: DestinationSource {
         let created = UUID()
         defaults.set(created.uuidString, forKey: key)
         return created
+    }
+
+    public func setupInputs() -> SetupInputs {
+        let health = nativeHealth
+        return SetupInputs(
+            chrome: health["chromeScripting"], claudeApp: health["claude-desktop"], chatgptApp: health["chatgpt-desktop"],
+            connectors: service.listing().connectors, installedEditors: SetupEnvironment.installedEditors(),
+            claudeCodeHook: SetupEnvironment.claudeCodeHookInstalled()
+        )
     }
 
     public func listing() -> RegistryListing { service.listing() }

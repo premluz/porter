@@ -14,6 +14,7 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
     private let mode: LaunchMode
     private var controller: PanelController?
     private var statusItem: StatusItemController?
+    private var setupWindow: SetupWindowController?
     private var hotKey: GlobalHotKey?
 
     public init(mode: LaunchMode) {
@@ -29,7 +30,11 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
         self.controller = controller
         controller.show()
         registerHotKey(for: controller, notes: &notes)
-        statusItem = StatusItemController(controller: controller, notes: notes)
+        let setupModel = SetupModel(performer: WorkspaceRecoveryPerformer()) { [source = setup.source] in source.setupInputs() }
+        let setupWindow = SetupWindowController(model: setupModel)
+        self.setupWindow = setupWindow
+        statusItem = StatusItemController(controller: controller, setup: setupWindow, notes: notes)
+        if mode == .live { setupWindow.showOnFirstLaunch() }
         setup.source.setChangeHandler { [model = setup.model] in Task { @MainActor in await model.refresh() } }
         Task {
             await setup.prepare()
