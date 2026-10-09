@@ -5,7 +5,7 @@ title: "v1: one installable app that reads every source"
 status: "active"
 updated: "2026-10-09"
 owner: "project-maintainer"
-tags: ["area/macos", "area/browser", "area/distribution", "phase/r1"]
+tags: ["area/macos", "area/browser", "area/release", "phase/r1"]
 summary: "Native-first source adapters, feasibility spikes, and the single app package with a setup assistant."
 related: ["ADR-006", "ADR-002", "ADR-005", "DOC-PLAN", "DOC-TASKS"]
 ---

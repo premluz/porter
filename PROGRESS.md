@@ -236,7 +236,7 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Date: 2026-10-09.
 - Author: assistant; Prem decided v1 must be one installable app that reads VS Code, the ChatGPT app, the Claude app and browser chats, that other models, browsers and editors must be easy to add, and that the browser extension stays at v0.1 as a secondary route.
 - Tasks: TASK-027, TASK-080 to TASK-084.
-- Tags: area/macos, area/distribution, phase/r1.
+- Tags: area/macos, area/release, phase/r1.
 - Changed: recorded ADR-006 (native tier primary, extension and editor companion as optional enhancers, identity reported as unknown rather than guessed when a profile cannot be told), PLAN-002 (adapter boundary, three feasibility spikes, setup assistant, signed package), five task rows, and a pointer from ADR-002. One assumption stated in ADR-006: VS Code keeps its companion as the primary route.
 - Not verified: every native route. Chrome scripting, Accessibility for the ChatGPT and Claude apps, and external extension install are untested here; the spikes decide.
 - Next action: TASK-080, then the spikes.

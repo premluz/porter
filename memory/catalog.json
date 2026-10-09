@@ -126,7 +126,7 @@
         "area/macos",
         "area/browser",
         "area/identity",
-        "area/distribution",
+        "area/release",
         "phase/r1"
       ],
       "summary": "v1 is one installable app that observes browsers, desktop apps and editors natively; the browser extension and editor companion become optional enhancers behind the same adapter boundary.",
@@ -137,7 +137,7 @@
         "DOC-ARCHITECTURE"
       ],
       "path": "decisions/ADR-006-native-first-sources.md",
-      "revision": "sha256:207d26181cdca7830fe6fbc15b11aff4dbee6a2b7e785ee19867d01d5447b3bb",
+      "revision": "sha256:d9bdac2d248c727e693e9763ef2117464580e42fb6e97dd415a2ec5761ca72c2",
       "line_count": 41
     },
     {
@@ -314,7 +314,7 @@
         "DOC-MEMORY"
       ],
       "path": "memory/INDEX.md",
-      "revision": "sha256:39378ed98dad747586874e72782a350393e703427b200289995f6f89d42a1228",
+      "revision": "sha256:d4c922c56ef3fc12847bbb9a43719f13c21bac58cd3b214f5ebdbbb3d082d4e7",
       "line_count": 50
     },
     {
@@ -383,7 +383,7 @@
         "DOC-TEMPLATES"
       ],
       "path": "PROGRESS.md",
-      "revision": "sha256:a4c71d32c9cf1fa0a8310fedf1d5c5047efc4cf54d82b08214b4cd8e0e42eb00",
+      "revision": "sha256:b98265e3e51cfabdfff1fbe6193453aa70ec64426ef56bbbaceee213a8ef8497",
       "line_count": 246
     },
     {
@@ -656,7 +656,7 @@
       "tags": [
         "area/macos",
         "area/browser",
-        "area/distribution",
+        "area/release",
         "phase/r1"
       ],
       "summary": "Native-first source adapters, feasibility spikes, and the single app package with a setup assistant.",
@@ -668,7 +668,7 @@
         "DOC-TASKS"
       ],
       "path": "plans/PLAN-002-v1-app-package.md",
-      "revision": "sha256:bccf86d9cce6f1310f7d0aedd36272a50d43544caff736d92a8632cd8990f82e",
+      "revision": "sha256:823ce9831080f5ff99573fb8d5848ac2c12b11a1c25830666ed546572bf88d84",
       "line_count": 39
     }
   ]

@@ -5,7 +5,7 @@ title: "Native-first sources, optional enhancers"
 status: "proposed"
 updated: "2026-10-09"
 owner: "project-maintainer"
-tags: ["area/macos", "area/browser", "area/identity", "area/distribution", "phase/r1"]
+tags: ["area/macos", "area/browser", "area/identity", "area/release", "phase/r1"]
 summary: "v1 is one installable app that observes browsers, desktop apps and editors natively; the browser extension and editor companion become optional enhancers behind the same adapter boundary."
 related: ["ADR-002", "ADR-005", "PLAN-002", "DOC-ARCHITECTURE"]
 ---
