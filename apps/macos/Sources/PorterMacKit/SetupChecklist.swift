@@ -9,6 +9,8 @@ public struct SetupInputs: Sendable, Equatable {
     public var chrome: SourceHealth?
     public var claudeApp: SourceHealth?
     public var chatgptApp: SourceHealth?
+    /// Codex's own thread list, read from its local files; nil when Codex is not installed.
+    public var codexThreads: SourceHealth?
     public var connectors: [ConnectorSummary]
     /// Names of VS Code-family editors installed on this Mac.
     public var installedEditors: [String]
@@ -21,7 +23,7 @@ public struct SetupInputs: Sendable, Equatable {
     public var launchAtLogin: LoginItemState
 
     public init(
-        chrome: SourceHealth? = nil, claudeApp: SourceHealth? = nil, chatgptApp: SourceHealth? = nil,
+        chrome: SourceHealth? = nil, claudeApp: SourceHealth? = nil, chatgptApp: SourceHealth? = nil, codexThreads: SourceHealth? = nil,
         connectors: [ConnectorSummary] = [], installedEditors: [String] = [], claudeCodeHook: Bool? = nil,
         canInstallCompanion: Bool = false, canEnableClaudeCodeStatus: Bool = false, canSetUpChromeExtension: Bool = false,
         launchAtLogin: LoginItemState = .notAvailable
@@ -33,6 +35,7 @@ public struct SetupInputs: Sendable, Equatable {
         self.chrome = chrome
         self.claudeApp = claudeApp
         self.chatgptApp = chatgptApp
+        self.codexThreads = codexThreads
         self.connectors = connectors
         self.installedEditors = installedEditors
         self.claudeCodeHook = claudeCodeHook
@@ -79,7 +82,10 @@ public struct SetupSection: Sendable, Equatable, Identifiable {
 
 public enum SetupChecklist {
     public static func sections(for inputs: SetupInputs) -> [SetupSection] {
-        let reads = [chromeRow(inputs.chrome), appRow(.claudeApp, id: "claudeApp", inputs.claudeApp), appRow(.chatgptApp, id: "chatgptApp", inputs.chatgptApp)]
+        let reads = [
+            chromeRow(inputs.chrome), appRow(.claudeApp, id: "claudeApp", inputs.claudeApp), appRow(.chatgptApp, id: "chatgptApp", inputs.chatgptApp),
+            codexRow(inputs.codexThreads),
+        ]
             .compactMap { $0 }
         let extras = [extensionRow(inputs), editorsRow(inputs), hookRow(inputs), loginRow(inputs)].compactMap { $0 }
         return [
@@ -136,6 +142,14 @@ public enum SetupChecklist {
         case .failed(let reason):
             return row(id, name, reason.prefix(1).uppercased() + reason.dropFirst() + ".", .needsAction)
         }
+    }
+
+    private static func codexRow(_ health: SourceHealth?) -> SetupRow? {
+        guard health == .ready else { return nil }
+        return row(
+            "codexThreads", "Codex threads",
+            "Your recent Codex threads are listed under their project, from Codex's own thread list. They open in VS Code or the Codex app.", .ready
+        )
     }
 
     private static func extensionRow(_ inputs: SetupInputs) -> SetupRow? {

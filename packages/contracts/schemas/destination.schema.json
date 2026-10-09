@@ -224,6 +224,15 @@
           "type": "integer",
           "minimum": 0,
           "maximum": 199
+        },
+        "workspacePath": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 1024,
+          "pattern": "^/[^\\u0000]*$",
+          "not": {
+            "pattern": "(^|/)\\.\\.(/|$)"
+          }
         }
       }
     }

@@ -49,3 +49,35 @@ struct ScriptedRouteTests {
         #expect(PanelBuilder.preferringEnhancedRoutes(rows, connectors: [Fixture.connector(), scripted()]).count == 2)
     }
 }
+
+@Suite("Codex's thread list stands in for its editor tabs")
+struct CodexTabSupersessionTests {
+    private func row(_ chat: String, connector: String, provider: String = "codex") -> DestinationRow {
+        DestinationRow(
+            destinationId: UUID(), revision: 1, conversationId: UUID(), providerConversationId: chat, provider: provider,
+            title: chat, profileAlias: "Atlas", connectorId: connector, reachability: .connected, tabId: nil,
+            windowId: nil, url: nil, routeCount: 1
+        )
+    }
+
+    private let connectors = [
+        ConnectorSummary(connectorId: "desktopApp-1", profileAlias: nil, reachability: .connected, routeCount: 1, providerType: .desktopApp),
+        ConnectorSummary(connectorId: "vscode-1", profileAlias: "Atlas", reachability: .connected, routeCount: 2, providerType: .vscodeExtension),
+    ]
+
+    @Test("with the thread list present, a window's Codex tabs are dropped and its other routes stay")
+    func dropsTabs() {
+        let rows = [
+            row("thread-a", connector: "desktopApp-1"), row("tab-a", connector: "vscode-1"),
+            row("claude-tab", connector: "vscode-1", provider: "claude-code"),
+        ]
+        let kept = PanelBuilder.preferringEnhancedRoutes(rows, connectors: connectors).map(\.providerConversationId)
+        #expect(kept == ["thread-a", "claude-tab"])
+    }
+
+    @Test("with no Codex thread routes, the editor tabs are kept")
+    func keepsTabsWithoutList() {
+        let rows = [row("tab-a", connector: "vscode-1"), row("claude-app", connector: "desktopApp-1", provider: "claude-desktop")]
+        #expect(PanelBuilder.preferringEnhancedRoutes(rows, connectors: connectors).count == 2)
+    }
+}

@@ -64,6 +64,7 @@ enum BridgeValidation {
         guard (1...BridgeLimits.maximumTitleLength).contains(entry.title.count) else { throw .malformed("title length") }
         guard LocatorPolicy.desktopAppBundleIds.contains(entry.bundleId) else { throw .malformed("unsupported app") }
         guard (0..<BridgeLimits.maximumTabsPerSnapshot).contains(entry.ordinal) else { throw .malformed("entry ordinal") }
+        if let path = entry.workspacePath, !isWorkspacePath(path) { throw .malformed("workspace path") }
     }
 
     static func validate(_ snapshot: InventorySnapshotPayload) throws(EnvelopeRejection) {

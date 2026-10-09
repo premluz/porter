@@ -66,10 +66,15 @@ extension BridgeCoordinator {
             (tabId, windowId, url) = (tab.tabId, tab.windowIdHint, tab.canonicalUrl)
         }
         let connector = connectors[connectorId]
+        // A project's name stands in for the profile: an entry that records its folder is named by it.
+        var projectName: String?
+        if case .appEntry(let entry) = destination.locator, let path = entry.workspacePath {
+            projectName = path.split(separator: "/").last.map(String.init)
+        }
         let live = connector.map { connectionByInstallation[$0.installationId] != nil } ?? false
         return DestinationRow(
             destinationId: destination.id, revision: destination.revision, conversationId: conversation.id,
-            providerConversationId: providerConversationId, provider: conversation.provider, title: conversation.title, profileAlias: connector?.profileAlias,
+            providerConversationId: providerConversationId, provider: conversation.provider, title: conversation.title, profileAlias: connector?.profileAlias ?? projectName,
             connectorId: connectorId, reachability: live ? .connected : .disconnected,
             tabId: tabId, windowId: windowId, url: url, routeCount: routeCount[conversation.id] ?? 1,
             lastActiveAt: lastActive[destination.id], listRank: listRank[destination.id]

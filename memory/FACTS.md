@@ -242,6 +242,15 @@ Evidence classes: `user_requirement`, `source_documentation`, `verified_test`. P
 - Tags: area/browser, area/release, phase/r1.
 - Review trigger: a Chrome major update; the first run on a real profile.
 
+## FACT-028 — Codex's thread list is a local file shared by VS Code, the app and the CLI
+
+- Class: verified_test (on this Mac, 2026-10-09; Codex VS Code extension 26.930.51102, Codex desktop app 26.1002.52244; synthetic and live checks printing counts only).
+- Statement: `~/.codex/session_index.jsonl` holds one JSON line per thread update (`id`, `thread_name`, `updated_at`); the same id can appear on many lines, and the latest is current. Each thread has a session file `sessions/YYYY/MM/DD/rollout-<time>-<id>.jsonl` whose first line is a `session_meta` record with `cwd` (the project folder), `originator` (`codex_vscode` for the VS Code extension, `Codex Desktop` or `codex_work_desktop` for the app), `source` and `parent_thread_id`. Of 76 indexed threads here, 51 were helper threads (`source.subagent`, with a parent), 19 came from VS Code and 5 from the app. The extension's link handler (`vscode://openai.chatgpt/<route>`) navigates its panel to the route, and `/local/<thread id>` is the thread route; the app registers the `codex` scheme and its code builds links of the form `codex://<route>`. The extension and the app therefore list the same threads, and VS Code's side panel, invisible to other extensions, does not hide them from this list.
+- Used for: listing recent (7 days) user threads under their project, ordered by real update time, opened through those links after bringing the project's window forward.
+- Not established: that `codex://local/<id>` opens a thread in the app (the form is inferred from the code, not tried); whether `vscode://` routes to the window just brought forward when several windows are open; what happens for a project folder with no open window; threads older than a week.
+- Tags: area/macos, area/identity, phase/r1.
+- Review trigger: a Codex update; the first real click on each kind of thread.
+
 ## Adding a fact
 
 Include statement, evidence class, source/test reference, observed date, tags, and review trigger if volatile. A failed experiment can be a fact when its exact environment and outcome are recorded. Do not transform a plausible architectural assumption into a tested capability.

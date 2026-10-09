@@ -129,3 +129,14 @@ struct CompanionVersionTests {
         #expect(row([window("0.10.0")])?.state == .ready)
     }
 }
+
+@Suite("The Codex threads row")
+struct CodexRowTests {
+    @Test("it appears only when Codex's thread list was found, and counts as a ready source")
+    func row() {
+        func ids(_ inputs: SetupInputs) -> [String] { SetupChecklist.sections(for: inputs).flatMap(\.rows).map(\.id) }
+        #expect(!ids(SetupInputs(chrome: .ready)).contains("codexThreads"))
+        #expect(ids(SetupInputs(chrome: .ready, codexThreads: .ready)).contains("codexThreads"))
+        #expect(SetupChecklist.summary(SetupChecklist.sections(for: SetupInputs(chrome: .ready, codexThreads: .ready))) == "All ready")
+    }
+}

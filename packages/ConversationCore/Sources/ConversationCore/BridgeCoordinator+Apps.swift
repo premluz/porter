@@ -41,7 +41,9 @@ extension BridgeCoordinator {
         )
         let existingId = appDestinations[binding.connectorId]?[entry.providerConversationId]
         let previous = existingId.flatMap { registry.destination($0) }
-        let locator = Locator.appEntry(AppEntryLocator(bundleId: entry.bundleId, title: entry.title, ordinal: entry.ordinal))
+        let locator = Locator.appEntry(AppEntryLocator(
+            bundleId: entry.bundleId, title: entry.title, ordinal: entry.ordinal, workspacePath: entry.workspacePath
+        ))
         if let previous, previous.locator == locator, previous.conversationId == conversationId {
             let ranked = setRank(previous.id, entry.position)
             return setRecency(previous.id, entry.lastActiveAt) || ranked ? .changed : .unchanged

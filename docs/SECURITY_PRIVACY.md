@@ -23,6 +23,7 @@ The switcher does not decide which agent actions to approve. R1 reads selected m
 | Pinned shortcut | User-supplied title/link | Open intended destination | R1 |
 | Web discovery | Supported tab URLs, titles, tab/window locators | Activate selected tab/window | R1 |
 | Status | Minimal provider-specific UI/event signals | Update local indicator | R1 |
+| Native sources (ADR-006) | Chrome and Safari: titles and URLs of provider tabs only, by Apple Events, incognito skipped. Desktop apps: titles of sidebar entries within the leftmost 300 points of the window, by Accessibility. Codex: its thread list (id, title, last update) and, from each session file, only the folder, the surface that made it and whether it is a helper thread; the rest of the file is never parsed or kept | Activate the selected tab, press the selected sidebar entry, or open a thread through its owner's link | R1 |
 | Phone sync | Selected normalized metadata | Store/sync to enrolled device | R2 |
 | Preview | Latest selected message excerpt | Read/cache/display content | R3 |
 | Composer | User draft, exact target context | Send through supported destination | R4 |

@@ -18,6 +18,15 @@
       "ordinal": 1,
       "position": 1,
       "unread": true
+    },
+    {
+      "provider": "codex",
+      "providerConversationId": "0199c2f4-7a1e-7d52-9b0e-3c5d8a6f1b24",
+      "title": "Example thread",
+      "bundleId": "com.microsoft.VSCode",
+      "ordinal": 0,
+      "workspacePath": "/Users/example/Atlas",
+      "lastActiveAt": "2026-10-09T07:00:09.250Z"
     }
   ]
 }

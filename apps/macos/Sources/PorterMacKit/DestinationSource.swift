@@ -39,6 +39,7 @@ public final class LiveRegistrySource: DestinationSource {
     private let nativeSessions = Mutex<[LocalConnectorSession]>([])
     private let chromeScripting = Mutex<ChromeScriptingConnector?>(nil)
     private let desktopApps = Mutex<DesktopAppConnector?>(nil)
+    private let codexThreads = Mutex<CodexThreadsConnector?>(nil)
     private let assets = BundledAssets.from()
 
     public init(log: @escaping @Sendable (String) -> Void) {
@@ -60,7 +61,8 @@ public final class LiveRegistrySource: DestinationSource {
     public func attachNativeSources(defaults: UserDefaults = .standard) {
         let chrome = ChromeScriptingConnector(installationId: Self.installationId(named: "chromeScripting", defaults: defaults))
         let apps = DesktopAppConnector(installationId: Self.installationId(named: "desktopApp", defaults: defaults))
-        for connector: any HostConnector in [chrome, apps] {
+        let codex = CodexThreadsConnector(installationId: Self.installationId(named: "codexThreads", defaults: defaults))
+        for connector: any HostConnector in [chrome, apps, codex] {
             do {
                 let session = try service.attach(connector)
                 nativeSessions.withLock { $0.append(session) }
@@ -70,12 +72,15 @@ public final class LiveRegistrySource: DestinationSource {
         }
         chromeScripting.withLock { $0 = chrome }
         desktopApps.withLock { $0 = apps }
+        codexThreads.withLock { $0 = codex }
     }
 
     public var nativeHealth: [String: SourceHealth] {
         var health: [String: SourceHealth] = [:]
         if let chrome = chromeScripting.withLock({ $0 }) { health["chromeScripting"] = chrome.health }
         for (provider, value) in desktopApps.withLock({ $0 })?.health ?? [:] { health[provider] = value }
+        // Codex's thread list is a file read, so it is either there or Codex is not installed (no row then).
+        if let codex = codexThreads.withLock({ $0 }), codex.isAvailable { health["codex"] = .ready }
         return health
     }
 
@@ -92,6 +97,7 @@ public final class LiveRegistrySource: DestinationSource {
         let health = nativeHealth
         return SetupInputs(
             chrome: health["chromeScripting"], claudeApp: health["claude-desktop"], chatgptApp: health["chatgpt-desktop"],
+            codexThreads: health["codex"],
             connectors: service.listing().connectors, installedEditors: SetupEnvironment.installedEditors().map(\.name),
             claudeCodeHook: SetupEnvironment.claudeCodeHookInstalled(),
             canInstallCompanion: assets.vsix != nil, canEnableClaudeCodeStatus: assets.hookScript != nil && assets.porterctl != nil,

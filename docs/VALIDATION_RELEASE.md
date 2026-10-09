@@ -108,6 +108,13 @@ Everything above is automated. This batch covers what automation cannot: appeara
 1. Expect a "Sample data" banner, Pinned and Open sections, status in words, a dashed marker for anything not live. Tap a row: details sheet with a note that the account on the phone may differ and no open button (sample links go nowhere).
 2. Settings, Accessibility, larger text at the maximum: expect no clipped rows. Rotate to landscape. Search for "release".
 
+**N. Codex threads** (from Codex's own thread list; VS Code chats and Codex-app chats together).
+1. Rebuild and open the app. Setup shows a **Codex threads** row (only if `~/.codex` exists). Within a few seconds recent Codex threads (last 7 days, no helper threads) are listed under their project: `[Atlas] (logo) …`. Codex tabs from VS Code windows are no longer listed separately (the thread list covers them; no companion reload is needed for that).
+2. Click a Codex thread that was made in VS Code: its project's window should come forward and the thread should open in the Codex panel. With several windows open, check it is the right one; tell me if it opens in the wrong window or nothing happens.
+3. Click a thread that was made in the Codex app (the **ChatGPT** app here): the app should open that thread. This uses `codex://local/<id>`, inferred from the app's code and not tried; tell me what happens.
+4. Rename a thread in Codex, then click its old row before the list refreshes: expect "changed", not another thread. Archive or delete one: it should disappear within seconds.
+5. Compare with the `~/.codex` truth without printing it: `PORTER_LIVE_CODEX=1 swift test --package-path services/native-host --filter LiveCodexTests` prints how many threads and projects it found.
+
 **M. Row detail line** (project pill, assistant logo, status). Each row's second line reads like `[Amble] (logo) Idle`.
 1. Rebuild and open the app. A Claude Code or Codex chat in a VS Code window shows the window's folder as a rounded pill, then the Claude or ChatGPT logo, then the status. A browser chat has no pill: the logo, the status, then the Chrome profile (`Unknown · Prem`) so identical titles stay distinguishable. Desktop-app chats show the logo and the status.
 2. The logo is the icon of the Claude app or the ChatGPT app installed on this Mac; without that app a plain sparkle stands in. Hover it for the product name (Claude Code versus Claude, Codex versus ChatGPT are told apart there, and in VoiceOver).

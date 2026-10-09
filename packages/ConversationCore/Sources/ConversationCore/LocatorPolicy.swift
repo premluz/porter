@@ -16,7 +16,7 @@ public enum LocatorRejection: Error, Equatable, Sendable {
 public struct LocatorPolicy: Sendable {
     public static let vscodeBundleId = "com.microsoft.VSCode"
     /// Desktop chat apps whose sidebar Porter knows how to read and open an entry in.
-    public static let desktopAppBundleIds: Set<String> = ["com.anthropic.claudefordesktop", "com.openai.codex"]
+    public static let desktopAppBundleIds: Set<String> = ["com.anthropic.claudefordesktop", "com.openai.codex", vscodeBundleId]
     private static let webScheme = "https"
     private static let neverOpenedSchemes: Set<String> = ["file", "http", "javascript", "data"]
 
@@ -41,6 +41,7 @@ public struct LocatorPolicy: Sendable {
         case .appEntry(let entry):
             guard Self.desktopAppBundleIds.contains(entry.bundleId) else { throw .unsupportedApp(entry.bundleId) }
             guard (1...BridgeLimits.maximumTitleLength).contains(entry.title.count), (0..<BridgeLimits.maximumTabsPerSnapshot).contains(entry.ordinal) else { throw .invalidAppEntry }
+            if let path = entry.workspacePath, !BridgeValidation.isWorkspacePath(path) { throw .invalidWorkspacePath }
         }
     }
 

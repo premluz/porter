@@ -98,4 +98,51 @@ struct BridgeAppTests {
         #expect(throws: LocatorRejection.invalidAppEntry) { try policy.validate(locator("com.openai.codex", "")) }
         #expect(throws: LocatorRejection.invalidAppEntry) { try policy.validate(locator("com.openai.codex", "T", 200)) }
     }
+
+    private let vscode = "com.microsoft.VSCode"
+
+    private func threadEntry(_ id: String, _ title: String, path: String) -> String {
+        #"{"provider":"codex","providerConversationId":"\#(id)","title":"\#(title)","bundleId":"\#(vscode)","ordinal":0,"workspacePath":"\#(path)"}"#
+    }
+
+    private func threadConnector(_ entries: [String]) -> (BridgeHarness, BridgeHarness.Client) {
+        var harness = BridgeHarness()
+        let client = BridgeHarness.Client(connection: ConnectionID(1), installationId: UUID(), epoch: "epoch-1", kind: .desktopApp)
+        harness.send(client, type: "hello", payload: #"{"installationId":"\#(client.installationId.uuidString)","connectorKind":"desktopApp","adapterVersions":{"codex":"0.1.0"}}"#)
+        harness.send(client, type: "inventory.snapshot", payload: #"{"tabs":[],"appEntries":[\#(entries.joined(separator: ","))]}"#)
+        return (harness, client)
+    }
+
+    @Test("a thread that records its project folder is named by that folder, in place of a profile")
+    func projectNamesTheRow() throws {
+        let (harness, _) = threadConnector([threadEntry("0199c2f4-aaaa", "Fix login", path: "/Users/example/Atlas")])
+        let row = try #require(harness.coordinator.rows().first)
+        #expect(row.provider == "codex" && row.profileAlias == "Atlas" && row.title == "Fix login")
+    }
+
+    @Test("opening such a thread first asks for the project's window to be brought forward")
+    func threadActivationPreparesTheWindow() throws {
+        var (harness, client) = threadConnector([threadEntry("0199c2f4-aaaa", "Fix login", path: "/Users/example/Atlas")])
+        let row = try #require(harness.coordinator.rows().first)
+        let start = harness.coordinator.requestActivation(destinationId: row.destinationId, expectedRevision: row.revision, now: harness.now)
+        guard case .dispatchedAfterPreparation(_, let outbound, let preparation) = start else { Issue.record("got \(start)"); return }
+        #expect(preparation == ActivationPreparation(bundleId: vscode, workspacePath: "/Users/example/Atlas"))
+        harness.record(BridgeResult(outbound: outbound))
+        guard case .activateRequest(let payload) = try #require(try harness.messages(to: client.connection).last).body else { Issue.record("no request"); return }
+        #expect(payload.expectedConversationId == "0199c2f4-aaaa" && payload.app?.bundleId == vscode)
+    }
+
+    @Test("a folder path that climbs out with .. is malformed, and the registry accepts only plain absolute paths")
+    func pathsAreChecked() throws {
+        var (harness, client) = threadConnector([])
+        harness.send(client, type: "inventory.snapshot", payload: #"{"tabs":[],"appEntries":[\#(threadEntry("x-1", "T", path: "/Users/example/../etc"))]}"#)
+        #expect(try harness.errorCodes(to: client.connection) == [.malformed])
+        let policy = LocatorPolicy()
+        #expect(throws: LocatorRejection.invalidWorkspacePath) {
+            try policy.validate(.appEntry(AppEntryLocator(bundleId: vscode, title: "T", ordinal: 0, workspacePath: "relative/path")))
+        }
+        #expect(throws: Never.self) {
+            try policy.validate(.appEntry(AppEntryLocator(bundleId: vscode, title: "T", ordinal: 0, workspacePath: "/Users/example/Atlas")))
+        }
+    }
 }

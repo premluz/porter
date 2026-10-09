@@ -74,11 +74,13 @@ public struct AppEntryLocator: Codable, Sendable, Equatable {
     public let bundleId: String
     public let title: String
     public let ordinal: Int
+    public let workspacePath: String?
 
-    public init(bundleId: String, title: String, ordinal: Int) {
+    public init(bundleId: String, title: String, ordinal: Int, workspacePath: String? = nil) {
         self.bundleId = bundleId
         self.title = title
         self.ordinal = ordinal
+        self.workspacePath = workspacePath
     }
 }
 

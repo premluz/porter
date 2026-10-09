@@ -47,6 +47,11 @@ extension BridgeCoordinator {
             let preparation = ActivationPreparation(bundleId: editor.bundleId, workspacePath: editor.workspacePath)
             return .dispatchedAfterPreparation(requestId: requestId, outbound: outbound, preparation: preparation)
         }
+        // A thread of a project is opened in that project's editor window, which must be in front first.
+        if case .appEntry(let entry) = destination.locator, let path = entry.workspacePath, entry.bundleId == LocatorPolicy.vscodeBundleId {
+            let preparation = ActivationPreparation(bundleId: entry.bundleId, workspacePath: path)
+            return .dispatchedAfterPreparation(requestId: requestId, outbound: outbound, preparation: preparation)
+        }
         return .dispatched(requestId: requestId, outbound: outbound)
     }
 
