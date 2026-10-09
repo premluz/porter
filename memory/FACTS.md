@@ -204,13 +204,14 @@ Evidence classes: `user_requirement`, `source_documentation`, `verified_test`. P
 - Tags: area/macos, area/ux, phase/r1.
 - Review trigger: any change to the panel's motion; rerun the probe.
 
-## FACT-024 — Chrome can be read and driven without an extension, for one profile (interim)
+## FACT-024 — Chrome and Safari can be read and driven without an extension; profiles cannot be told apart
 
-- Class: verified_test (on this Mac, 2026-10-09, Chrome with one window open; Apple Events from a terminal).
-- Statement: Chrome's scripting interface lists windows and tabs with a per-tab `id`, `title` and `URL`, a per-window `id`, `mode` (normal or incognito) and `active tab index`, in about 0.2 to 0.35 s per query. Setting `active tab index` and the window's `index` to 1, then `activate`, brought a specific tab (found by its `id`) to the front; a second tab was selected the same way. No Chrome setting or extension was needed, and no prompt appeared because Automation access for Chrome had already been granted to the calling terminal. Safari's interface was reachable too but had no window open, so Safari tab behavior is not tested.
-- Not established: whether windows of a second Chrome profile are listed (only one window was open, so the two-profile case is untested); how to tell which profile a window belongs to (no such property in the dictionary); last-used times (none exist, so they can only be recorded while Porter runs); whether the permission prompt names Porter once it runs as its own app; Safari tabs; behavior with Chrome minimized, on another Space or in full screen.
+- Class: verified_test (on this Mac, 2026-10-09; Apple Events from a terminal; Chrome with four windows open, Safari with one).
+- Statement: Chrome's scripting interface lists every window and tab it has, including those of a second profile and an incognito window, with a per-tab `id`, `title` and `URL`, a per-window `id`, `mode` (normal or incognito) and `active tab index`, in about 0.2 to 0.35 s per query. Setting `active tab index`, then the window's `index` to 1, then `activate`, brought a chosen tab forward, including a tab in the second profile's window and back again; the check was Chrome's own report of its front window, not a look at the screen. No Chrome setting or extension was needed. Safari lists windows (with `id`) and tabs (name, URL, position; no tab id), and a tab was brought forward by window id and `current tab`.
+- Pitfalls found: an incognito window is listed, so incognito must be excluded by default (`mode`). A window's `name` is only its active tab's title, with no profile label. Windows must be addressed by `window id`; looping with a window reference gave the wrong window after the order changed. Safari tabs have no id, so they are found by URL within a window.
+- Not established: which profile a Chrome window belongs to (no property exists, so the same chat open in two profiles is ambiguous; Accessibility might expose the profile button and is untested); last-used times (none exist; Porter could only record them from when it runs); whether the permission prompt names Porter once it runs as its own app (tests ran from a terminal that already had access); behavior with Chrome minimized, on another Space or full screen; Safari with several windows or profiles; whether Chrome accepts an externally installed extension (not part of this spike).
 - Tags: area/browser, area/macos, phase/r1.
-- Review trigger: the two-profile test (TASK-081) and any Chrome major update.
+- Review trigger: a Chrome or Safari major update; the Accessibility spike (TASK-082) for profile identification.
 
 ## Adding a fact
 

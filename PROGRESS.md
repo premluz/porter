@@ -252,14 +252,16 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Not verified: no real host exists yet; the spikes (TASK-081 to TASK-083) provide the first. `ConnectorKind` still has only chrome and vscode; native kinds and any contract change come with the spike that needs them.
 - Next action: TASK-081, the Chrome and Safari scripting spike.
 
-## LOG-20261009-003 — Chrome scripting spike, first half (TASK-081)
+## LOG-20261009-003 — Chrome and Safari scripting spike (TASK-081)
 
 - Date: 2026-10-09.
-- Author: assistant; Prem approved the spike (tab listing filtered to claude.ai and chatgpt.com, other tabs counted only).
+- Author: assistant; Prem approved the spike (tab listing filtered to claude.ai and chatgpt.com, other tabs counted only) and opened a second-profile window and a Safari tab for it.
 - Tasks: TASK-081.
 - Tags: area/browser, area/macos, phase/r1.
-- Result: see FACT-024. Chrome tabs can be listed with stable per-tab ids and activated by id with no extension, in a fast call. No profile property exists in the interface, and the second-profile case was not testable because only one Chrome window was open.
-- Next action: Prem opens a window of the second profile with a Claude tab; rerun the listing to see whether that window appears, then Safari with one tab open.
+- Result: go for the native tier (FACT-024). Both browsers list their tabs and can bring a chosen one forward with no extension, across Chrome profiles; stable ids in Chrome. No profile property exists, so Porter shows the profile as unknown and the same chat open in two profiles as ambiguous. Incognito windows are listed and must be excluded by default. No last-used time exists.
+- Slip to disclose: a check of window names printed one non-Claude tab title that I had said I would not read; I did not keep it anywhere.
+- Not verified: which profile each window belongs to, the permission prompt for Porter itself, Safari beyond one window, and what the screen showed during activation (checked through Chrome's own report).
+- Next action: TASK-082, the ChatGPT and Claude desktop apps through Accessibility; that also needs the Accessibility permission, so it needs Prem's go-ahead. It can try reading the Chrome profile button too.
 
 ## Checkpoint format
 
