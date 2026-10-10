@@ -7,6 +7,29 @@ struct AgentSession: Sendable, Equatable {
     let attention: Attention
     let receivedAt: Date
     let sequence: Int
+    let tty: String?
+    let hostApp: String?
+}
+
+/// An agent running in a terminal, as its hook events show it.
+public struct TerminalSession: Sendable, Equatable {
+    public let sessionId: String
+    public let cwd: String
+    public let tty: String
+    public let hostApp: String
+    public let activity: Activity
+    public let attention: Attention
+    public let receivedAt: Date
+
+    public init(sessionId: String, cwd: String, tty: String, hostApp: String, activity: Activity, attention: Attention, receivedAt: Date) {
+        self.sessionId = sessionId
+        self.cwd = cwd
+        self.tty = tty
+        self.hostApp = hostApp
+        self.activity = activity
+        self.attention = attention
+        self.receivedAt = receivedAt
+    }
 }
 
 /// Which tab a session belongs to, kept by the tab's connector-derived conversation id (not the registry's route id,
@@ -56,7 +79,8 @@ extension BridgeCoordinator {
         case .set(let activity, let attention):
             let next = AgentSession(
                 cwd: event.cwd, entrypoint: event.entrypoint, activity: activity, attention: attention,
-                receivedAt: now, sequence: agentSequence
+                receivedAt: now, sequence: agentSequence, tty: event.tty ?? agentSessions[event.sessionId]?.tty,
+                hostApp: event.hostApp ?? agentSessions[event.sessionId]?.hostApp
             )
             let previous = agentSessions.updateValue(next, forKey: event.sessionId)
             pruneAgentSessions()
@@ -95,6 +119,19 @@ extension BridgeCoordinator {
         guard agentBindings.count > Self.maximumAgentBindings else { return }
         let keep = agentBindings.sorted { $0.value.boundAt > $1.value.boundAt }.prefix(Self.maximumAgentBindings)
         agentBindings = Dictionary(uniqueKeysWithValues: keep.map { ($0.key, $0.value) })
+    }
+
+    /// Agents running in a terminal that have said which terminal they are in, newest first, while their last word is
+    /// still within the status lifetime. A session started from VS Code's panel is not here: it has a tab.
+    public func terminalSessions(now: Date) -> [TerminalSession] {
+        agentSessions.compactMap { id, session -> TerminalSession? in
+            guard session.entrypoint != AgentEvent.vscodeEntrypoint, let tty = session.tty, let host = session.hostApp,
+                  now.timeIntervalSince(session.receivedAt) <= Self.agentStatusLifetime else { return nil }
+            return TerminalSession(
+                sessionId: id, cwd: session.cwd, tty: tty, hostApp: host, activity: session.activity,
+                attention: session.attention, receivedAt: session.receivedAt
+            )
+        }.sorted { $0.receivedAt > $1.receivedAt }
     }
 
     /// The bindings to keep across a restart of Porter.
@@ -143,6 +180,15 @@ extension BridgeCoordinator {
                 projection.record(observation(for: route.destinationId, from: session))
                 reachability[route.destinationId] = route.reachability
             }
+        }
+        for destination in registry.allDestinations() {
+            // A terminal session is its own route (its id is the session's), so no tab has to be guessed.
+            guard case .appEntry = destination.locator,
+                  let conversation = conversations[destination.conversationId], conversation.provider == AgentEvent.claudeCodeSource,
+                  let sessionId = conversation.providerConversationId, let session = agentSessions[sessionId],
+                  let connectorId = destination.connectorId, let connector = connectors[connectorId] else { continue }
+            projection.record(observation(for: destination.id, from: session))
+            reachability[destination.id] = connectionByInstallation[connector.installationId] != nil ? .connected : .disconnected
         }
         return Dictionary(uniqueKeysWithValues: reachability.map { id, reach in
             (id, projection.status(for: id, reachability: reach, now: now))

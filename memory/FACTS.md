@@ -272,6 +272,15 @@ Evidence classes: `user_requirement`, `source_documentation`, `verified_test`. P
 - Tags: area/macos, area/ux, phase/r1.
 - Review trigger: Prem's comparison (batch O).
 
+## FACT-031 — A hook can tell which terminal an agent runs in
+
+- Class: verified_test for the process walk (synthetic process tables, and this process on the real kernel table); the AppleScript for Terminal and iTerm is written from their scripting dictionaries and has not been run against those applications.
+- Statement: a Claude Code hook runs as the agent's descendant, so walking up its parent processes finds the terminal device (`ttys003`, from the first process with a controlling terminal) and the application that hosts it (the outermost `.app` on the path of an ancestor, then its bundle id from Info.plist). The hook adds both to its event for any session that did not start from VS Code's panel. The registry then lists those sessions as routes of their own (keyed by session id, with the project folder, the real time of the last event, the status, and a tab title when Terminal or iTerm can give one). Terminal and iTerm tabs are found again by their device; VS Code's integrated terminal needs only its window; other terminals (Ghostty, WezTerm, kitty, Warp, Alacritty, cmux) are listed with their status but cannot be brought forward by tab, and are reported as unsupported. A session whose hosting application is not on the known list is not listed.
+- This Mac: the installed terminals are Terminal and cmux; no Claude Code session was running in a terminal when this was built, so nothing was seen end to end.
+- Not established: the Terminal and iTerm scripts on the real applications (tty matching, selecting the tab, bringing the window forward, the title text Claude Code leaves in the tab), cmux's own way to select a workspace, and what a nested tmux or ssh session reports.
+- Tags: area/macos, area/browser, phase/r1.
+- Review trigger: the first terminal session on a real Mac; any terminal added to the list.
+
 ## Adding a fact
 
 Include statement, evidence class, source/test reference, observed date, tags, and review trigger if volatile. A failed experiment can be a fact when its exact environment and outcome are recorded. Do not transform a plausible architectural assumption into a tested capability.

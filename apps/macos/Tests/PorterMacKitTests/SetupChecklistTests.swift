@@ -159,3 +159,17 @@ struct ReadsLineTests {
         #expect(SetupChecklist.privacyStatement.hasPrefix("Nothing leaves this Mac"))
     }
 }
+
+@Suite("The terminal agents row")
+struct TerminalRowTests {
+    @Test("it counts the agents that have reported, says how to get one when none has, and is absent when not watched")
+    func row() {
+        func row(_ count: Int?) -> SetupRow? {
+            SetupChecklist.sections(for: SetupInputs(chrome: .ready, terminalAgents: count)).flatMap(\.rows).first { $0.id == "terminalAgents" }
+        }
+        #expect(row(nil) == nil)
+        #expect(row(0)?.state == .optional && row(0)?.detail.contains("Claude Code status") == true)
+        #expect(row(2)?.state == .ready && row(2)?.detail.hasPrefix("2 agents") == true)
+        #expect(row(1)?.detail.hasPrefix("1 agent ") == true)
+    }
+}

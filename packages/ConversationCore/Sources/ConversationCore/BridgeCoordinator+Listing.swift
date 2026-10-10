@@ -2,12 +2,13 @@ import Foundation
 
 /// Where a conversation lives, in the words the panel uses.
 public enum RouteSource: String, Codable, Sendable {
-    case browser, editor, app
+    case browser, editor, terminal, app
 
     public var label: String {
         switch self {
         case .browser: "Browser"
         case .editor: "VS Code"
+        case .terminal: "Terminal"
         case .app: "App"
         }
     }
@@ -102,10 +103,12 @@ extension BridgeCoordinator {
 extension BridgeCoordinator {
     static func source(of locator: Locator) -> RouteSource? {
         switch locator {
-        case .browserTab: .browser
-        case .editorTab: .editor
-        case .appEntry(let entry): entry.bundleId == LocatorPolicy.vscodeBundleId ? .editor : .app
-        case .desktopLink, .mobileLink: nil
+        case .browserTab: return .browser
+        case .editorTab: return .editor
+        case .appEntry(let entry):
+            if entry.bundleId == LocatorPolicy.vscodeBundleId { return .editor }
+            return LocatorPolicy.terminalBundleIds.contains(entry.bundleId) ? .terminal : .app
+        case .desktopLink, .mobileLink: return nil
         }
     }
 }

@@ -308,3 +308,56 @@ struct AgentBindingTests {
         #expect(harness.coordinator.exportedAgentBindings().isEmpty)
     }
 }
+
+@Suite("Agents running in a terminal")
+struct TerminalSessionTests {
+    private let terminal = "com.apple.Terminal"
+
+    private func event(
+        _ name: String, session: String = "sess-1", entrypoint: String? = "cli", tty: String? = "ttys003", host: String? = "com.apple.Terminal",
+        notification: String? = nil
+    ) -> AgentEvent {
+        AgentEvent(event: name, sessionId: session, cwd: "/Users/example/Atlas", notificationType: notification, entrypoint: entrypoint, tty: tty, hostApp: host)
+    }
+
+    @Test("a session that says which terminal it is in is listed, newest first, until it goes quiet; VS Code sessions and unplaced ones are not")
+    func listing() {
+        var harness = BridgeHarness()
+        _ = harness.coordinator.recordAgentEvent(event("UserPromptSubmit", session: "old"), now: harness.now)
+        _ = harness.coordinator.recordAgentEvent(event("UserPromptSubmit", session: "new"), now: harness.now.addingTimeInterval(60))
+        _ = harness.coordinator.recordAgentEvent(event("UserPromptSubmit", session: "panel", entrypoint: AgentEvent.vscodeEntrypoint), now: harness.now)
+        _ = harness.coordinator.recordAgentEvent(event("UserPromptSubmit", session: "bare", tty: nil, host: nil), now: harness.now)
+        #expect(harness.coordinator.terminalSessions(now: harness.now.addingTimeInterval(61)).map(\.sessionId) == ["new", "old"])
+        let late = harness.now.addingTimeInterval(60 + BridgeCoordinator.agentStatusLifetime + 1)
+        #expect(harness.coordinator.terminalSessions(now: late).isEmpty)
+    }
+
+    @Test("a later event that does not repeat the terminal keeps the one already known")
+    func keepsPlace() {
+        var harness = BridgeHarness()
+        _ = harness.coordinator.recordAgentEvent(event("SessionStart"), now: harness.now)
+        _ = harness.coordinator.recordAgentEvent(event("PreToolUse", tty: nil, host: nil), now: harness.now)
+        #expect(harness.coordinator.terminalSessions(now: harness.now).first?.tty == "ttys003")
+    }
+
+    @Test("the terminal device and host application are checked, so nothing odd is kept")
+    func validation() {
+        #expect(throws: Never.self) { try event("Stop").validated() }
+        #expect(throws: AgentEventRejection.invalidField("tty")) { try event("Stop", tty: "../etc/passwd").validated() }
+        #expect(throws: AgentEventRejection.invalidField("tty")) { try event("Stop", tty: "/dev/ttys003").validated() }
+        #expect(throws: AgentEventRejection.invalidField("hostApp")) { try event("Stop", host: "bad app id").validated() }
+    }
+
+    @Test("a terminal session that has its own route shows its status on that route, with no tab to guess")
+    func statusOnItsRoute() throws {
+        var harness = BridgeHarness()
+        let client = BridgeHarness.Client(connection: ConnectionID(1), installationId: UUID(), epoch: "e", kind: .desktopApp)
+        harness.send(client, type: "hello", payload: #"{"installationId":"\#(client.installationId.uuidString)","connectorKind":"desktopApp","adapterVersions":{"claude-code":"0.1.0"}}"#)
+        harness.send(client, type: "inventory.snapshot", payload: #"{"tabs":[],"appEntries":[{"provider":"claude-code","providerConversationId":"sess-1","title":"Atlas agent","bundleId":"\#(terminal)","ordinal":0,"workspacePath":"/Users/example/Atlas"}]}"#)
+        let route = try #require(harness.coordinator.rows().first)
+        _ = harness.coordinator.recordAgentEvent(event("UserPromptSubmit"), now: harness.now)
+        #expect(harness.coordinator.agentStatuses(now: harness.now)[route.destinationId]?.display == .working)
+        _ = harness.coordinator.recordAgentEvent(event("Notification", notification: "permission_prompt"), now: harness.now)
+        #expect(harness.coordinator.agentStatuses(now: harness.now)[route.destinationId]?.display == .needsUser)
+    }
+}

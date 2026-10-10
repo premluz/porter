@@ -520,6 +520,14 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Verified: panel model 69 tests (3 new), Mac app 83 (3 new: notice lifecycle, quiet while open, setup row) and the self-test. Not verified: a real notice, which needs the bundled app, the permission and a waiting chat (batch P).
 - Limits: status exists only where Porter has hook events, so only Claude Code in VS Code (and, once built, terminals) can be waiting; browser and desktop-app chats cannot.
 
+## LOG-20261010-004 — Agents in terminals (from the review of One)
+
+- Date: 2026-10-10.
+- Author: assistant.
+- Changed: until now Porter ignored any Claude Code session not started from VS Code's panel. The hook now places a session that did not (a terminal one) by walking up its parent processes to the terminal device and the hosting application, and sends both with its event (`TerminalProbe`). The registry lists such sessions as routes of their own (`TerminalSession`; `TerminalSessionsConnector`), keyed by session id with the project folder, the real time of its last event as the last-used time, its status (so Needs you and notices work for them) and, for Terminal and iTerm, the tab's title. Clicking brings a Terminal or iTerm tab forward by its device; VS Code's terminal brings its window forward; other known terminals are listed and report unsupported; an unknown host is not listed. The row says "Terminal" as its source. Setup gains an Agents in terminals row. The `tty` and `hostApp` fields are validated and optional.
+- Verified: core 127 tests (5 new: listing, keeping the place, validation, status on the session's route, source label), native-host 86 (4 probe tests incl. the real process table; 7 connector tests on a fake runner), Mac app 84. Not verified: anything on a real terminal session (batch Q): the AppleScript for Terminal and iTerm has not been run, and no terminal session existed to try.
+- Not done: bringing a tab forward in cmux, Ghostty, Warp, WezTerm, kitty or Alacritty; the activation feedback text still says "VS Code window" for these routes.
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.

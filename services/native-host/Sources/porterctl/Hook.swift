@@ -19,12 +19,21 @@ enum Hook {
             let input = FileHandle.standardInput.readData(ofLength: HookInput.maximumBytes + 1)
             guard input.count <= HookInput.maximumBytes else { throw HookFailure("hook input is larger than \(HookInput.maximumBytes) bytes") }
             let entrypoint = ProcessInfo.processInfo.environment[entrypointVariable]
-            let event = try HookInput.parse(input, entrypoint: entrypoint)
-            try send(event)
+            try send(withPlacement(try HookInput.parse(input, entrypoint: entrypoint)))
         } catch {
             FileHandle.standardError.write(Data("porter hook: \(error)\n".utf8))
         }
         exit(0)
+    }
+
+    /// An agent started from VS Code's panel has a tab; any other (a terminal) is placed by the terminal it runs in.
+    private static func withPlacement(_ event: AgentEvent) -> AgentEvent {
+        guard event.entrypoint != AgentEvent.vscodeEntrypoint else { return event }
+        let placement = TerminalProbe.probe(from: getppid(), table: LiveProcessTable(), bundleId: TerminalProbe.bundleIdentifier(ofApplicationAt:))
+        return AgentEvent(
+            event: event.event, sessionId: event.sessionId, cwd: event.cwd, notificationType: event.notificationType,
+            entrypoint: event.entrypoint, tty: placement.tty, hostApp: placement.hostApp
+        )
     }
 
     private struct HookFailure: Error, CustomStringConvertible {

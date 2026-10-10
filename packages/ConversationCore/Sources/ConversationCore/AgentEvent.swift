@@ -14,11 +14,17 @@ public struct AgentEvent: Codable, Sendable, Equatable {
     public let cwd: String
     public let notificationType: String?
     public let entrypoint: String?
+    /// For an agent running in a terminal: the terminal device it runs on (`ttys003`) and the application that hosts
+    /// that terminal (a bundle id). Only the hook, which runs beside the agent, can know these.
+    public let tty: String?
+    public let hostApp: String?
 
     public init(
         source: String = AgentEvent.claudeCodeSource, event: String, sessionId: String, cwd: String,
-        notificationType: String? = nil, entrypoint: String? = nil
+        notificationType: String? = nil, entrypoint: String? = nil, tty: String? = nil, hostApp: String? = nil
     ) {
+        self.tty = tty
+        self.hostApp = hostApp
         self.source = source
         self.event = event
         self.sessionId = sessionId
@@ -53,6 +59,8 @@ extension AgentEvent {
         guard Self.knownEvents.contains(event) else { throw .unsupportedEvent(event) }
         guard BridgeValidation.isIdentifier(sessionId) else { throw .invalidField("sessionId") }
         guard BridgeValidation.isWorkspacePath(cwd) else { throw .invalidField("cwd") }
+        if let tty, tty.wholeMatch(of: /tty[A-Za-z0-9]{1,12}/) == nil { throw .invalidField("tty") }
+        if let hostApp, !BridgeValidation.isIdentifier(hostApp) { throw .invalidField("hostApp") }
         for (name, value) in [("notificationType", notificationType), ("entrypoint", entrypoint)] {
             guard let value else { continue }
             guard (1...Self.maximumFieldLength).contains(value.count), value.unicodeScalars.allSatisfy(Self.tokenCharacters.contains) else {

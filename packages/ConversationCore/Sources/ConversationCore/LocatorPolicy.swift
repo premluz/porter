@@ -16,7 +16,14 @@ public enum LocatorRejection: Error, Equatable, Sendable {
 public struct LocatorPolicy: Sendable {
     public static let vscodeBundleId = "com.microsoft.VSCode"
     /// Desktop chat apps whose sidebar Porter knows how to read and open an entry in.
-    public static let desktopAppBundleIds: Set<String> = ["com.anthropic.claudefordesktop", "com.openai.codex", vscodeBundleId]
+    public static let desktopAppBundleIds: Set<String> =
+        Set(["com.anthropic.claudefordesktop", "com.openai.codex", vscodeBundleId]).union(terminalBundleIds)
+    /// Terminal applications an agent's session can be hosted in. A session in any other application is not listed,
+    /// because there would be no safe way to bring it forward.
+    public static let terminalBundleIds: Set<String> = [
+        "com.apple.Terminal", "com.googlecode.iterm2", "com.mitchellh.ghostty", "dev.warp.Warp-Stable",
+        "com.github.wez.wezterm", "net.kovidgoyal.kitty", "org.alacritty", "com.cmuxterm.app",
+    ]
     private static let webScheme = "https"
     private static let neverOpenedSchemes: Set<String> = ["file", "http", "javascript", "data"]
 

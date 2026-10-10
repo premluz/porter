@@ -108,6 +108,13 @@ Everything above is automated. This batch covers what automation cannot: appeara
 1. Expect a "Sample data" banner, Pinned and Open sections, status in words, a dashed marker for anything not live. Tap a row: details sheet with a note that the account on the phone may differ and no open button (sample links go nowhere).
 2. Settings, Accessibility, larger text at the maximum: expect no clipped rows. Rotate to landscape. Search for "release".
 
+**Q. Agents in terminals** (FACT-031).
+1. Turn on Claude Code status (batch H; it applies to every Claude Code session, terminal ones included) and rebuild and open the app.
+2. In Terminal, run `claude` in a project folder and send a prompt. Within a few seconds a route appears: `(logo) [Folder] Terminal · Working`, titled with the tab's title (or "Claude Code in <folder>"), in today's group. It goes Idle when the answer finishes, and Needs you with a notice if it asks for permission (batch P).
+3. Click it: Terminal should come to the front on that tab, in the right window, even with several windows and tabs. The first time macOS asks to let Porter control Terminal; allow it. Tell me whether the right tab is selected and what the list shows as the title.
+4. Repeat in iTerm if you use it, and in VS Code's integrated terminal (clicking brings the right window forward; the terminal panel itself is not focused). Other terminals (cmux, Ghostty, Warp) should be listed with their status but report "This can't be opened from here" on click; tell me which ones you use so the most common can be made to work.
+5. `porterctl sessions` lists these sessions too. Setup shows an **Agents in terminals** row with the count.
+
 **P. Needs you** (a chat waiting on you comes first, with a notice on this Mac; nothing is sent anywhere).
 1. Rebuild and open the app. In Setup, **Notifications → Allow notifications** and choose Allow in the system prompt (it only appears for the bundled app).
 2. With Claude Code status on (batch H), in a VS Code window whose chat Porter can tie to its tab, ask Claude Code to do something that needs permission (a command it must ask about). Within a few seconds that chat moves to a **Needs you** section at the top of the pane, the capsule's first dot shows the attention mark, and a notice "<Project> needs you / <chat title>" appears. Clicking the notice opens Porter's pane.

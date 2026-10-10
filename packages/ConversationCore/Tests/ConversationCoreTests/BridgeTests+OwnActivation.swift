@@ -65,4 +65,17 @@ struct OwnActivationRecencyTests {
         let found = Dictionary(uniqueKeysWithValues: harness.coordinator.rows().map { ($0.title, $0.source?.label) })
         #expect(found == ["a": "Browser", "Plan": "VS Code", "In app": "App"])
     }
+
+    @Test("an agent in a terminal says Terminal, and one hosted in VS Code's terminal says VS Code")
+    func terminalSource() {
+        var harness = BridgeHarness()
+        let app = BridgeHarness.Client(connection: ConnectionID(1), installationId: UUID(), epoch: "e", kind: .desktopApp)
+        harness.send(app, type: "hello", payload: #"{"installationId":"\#(app.installationId.uuidString)","connectorKind":"desktopApp","adapterVersions":{"claude-code":"0.1.0"}}"#)
+        func entry(_ id: String, _ bundle: String) -> String {
+            #"{"provider":"claude-code","providerConversationId":"\#(id)","title":"\#(id)","bundleId":"\#(bundle)","ordinal":0,"workspacePath":"/Users/example/Atlas"}"#
+        }
+        harness.send(app, type: "inventory.snapshot", payload: #"{"tabs":[],"appEntries":[\#(entry("in-terminal", "com.apple.Terminal")),\#(entry("in-code", "com.microsoft.VSCode"))]}"#)
+        let found = Dictionary(uniqueKeysWithValues: harness.coordinator.rows().map { ($0.title, $0.source?.label) })
+        #expect(found == ["in-terminal": "Terminal", "in-code": "VS Code"])
+    }
 }

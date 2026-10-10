@@ -45,6 +45,11 @@ extension RegistryService {
         coordinator.withLock { $0.agentStatuses(now: Date()) }
     }
 
+    /// Agents running in terminals, as their hooks have placed them.
+    public func terminalSessions() -> [TerminalSession] {
+        coordinator.withLock { $0.terminalSessions(now: Date()) }
+    }
+
     public func listing() -> RegistryListing {
         coordinator.withLock { RegistryListing(connectors: $0.connectorSummaries(), rows: $0.rows()) }
     }

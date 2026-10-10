@@ -11,6 +11,8 @@ public struct SetupInputs: Sendable, Equatable {
     public var chatgptApp: SourceHealth?
     /// Codex's own thread list, read from its local files; nil when Codex is not installed.
     public var codexThreads: SourceHealth?
+    /// How many agents running in terminals have reported through their hooks; nil when that is not being watched.
+    public var terminalAgents: Int?
     public var connectors: [ConnectorSummary]
     /// Names of VS Code-family editors installed on this Mac.
     public var installedEditors: [String]
@@ -25,7 +27,7 @@ public struct SetupInputs: Sendable, Equatable {
     public var notifications: NotificationState?
 
     public init(
-        chrome: SourceHealth? = nil, claudeApp: SourceHealth? = nil, chatgptApp: SourceHealth? = nil, codexThreads: SourceHealth? = nil,
+        chrome: SourceHealth? = nil, claudeApp: SourceHealth? = nil, chatgptApp: SourceHealth? = nil, codexThreads: SourceHealth? = nil, terminalAgents: Int? = nil,
         connectors: [ConnectorSummary] = [], installedEditors: [String] = [], claudeCodeHook: Bool? = nil,
         canInstallCompanion: Bool = false, canEnableClaudeCodeStatus: Bool = false, canSetUpChromeExtension: Bool = false,
         launchAtLogin: LoginItemState = .notAvailable, notifications: NotificationState? = nil
@@ -39,6 +41,7 @@ public struct SetupInputs: Sendable, Equatable {
         self.claudeApp = claudeApp
         self.chatgptApp = chatgptApp
         self.codexThreads = codexThreads
+        self.terminalAgents = terminalAgents
         self.connectors = connectors
         self.installedEditors = installedEditors
         self.claudeCodeHook = claudeCodeHook
@@ -94,7 +97,7 @@ public enum SetupChecklist {
             codexRow(inputs.codexThreads),
         ]
             .compactMap { $0 }
-        let extras = [extensionRow(inputs), editorsRow(inputs), hookRow(inputs), notificationsRow(inputs), loginRow(inputs)].compactMap { $0 }
+        let extras = [extensionRow(inputs), editorsRow(inputs), hookRow(inputs), terminalRow(inputs), notificationsRow(inputs), loginRow(inputs)].compactMap { $0 }
         return [
             SetupSection(id: "sources", title: "Reads on its own", rows: reads),
             SetupSection(id: "extras", title: "Optional, adds detail", rows: extras),
@@ -218,6 +221,14 @@ public enum SetupChecklist {
             "editors", "VS Code companion", detail, .optional,
             action: inputs.canInstallCompanion ? .installEditorCompanion : nil, actionTitle: inputs.canInstallCompanion ? "Install in \(names)" : nil
         )
+    }
+
+    private static func terminalRow(_ inputs: SetupInputs) -> SetupRow? {
+        guard let count = inputs.terminalAgents else { return nil }
+        if count > 0 {
+            return row("terminalAgents", "Agents in terminals", "\(count) agent\(count == 1 ? "" : "s") in terminals listed, with their status. Terminal and iTerm tabs can be brought forward.", .ready)
+        }
+        return row("terminalAgents", "Agents in terminals", "None have reported yet. Turn on Claude Code status above, then start Claude Code in a terminal.", .optional)
     }
 
     private static func notificationsRow(_ inputs: SetupInputs) -> SetupRow? {
