@@ -72,6 +72,8 @@ public struct SetupRow: Sendable, Equatable, Identifiable {
     public let state: SetupState
     public let action: SetupAction?
     public let actionTitle: String?
+    /// What this source reads, in plain words, so a permission is never a surprise.
+    public let reads: String?
 }
 
 public struct SetupSection: Sendable, Equatable, Identifiable {
@@ -108,8 +110,23 @@ public enum SetupChecklist {
         _ id: String, _ title: String, _ detail: String, _ state: SetupState,
         action: SetupAction? = nil, actionTitle: String? = nil
     ) -> SetupRow {
-        SetupRow(id: id, title: title, detail: detail, state: state, action: action, actionTitle: actionTitle)
+        SetupRow(id: id, title: title, detail: detail, state: state, action: action, actionTitle: actionTitle, reads: readsByRow[id])
     }
+
+    /// Shown under each source. The same limits as docs/SECURITY_PRIVACY.md, in the words a person would use.
+    static let readsByRow: [String: String] = [
+        "chrome": "Reads the titles and addresses of your Claude and ChatGPT tabs. Not the pages. Incognito windows are skipped.",
+        "claudeApp": "Reads the chat titles in the app's sidebar, in its left strip only. Not messages.",
+        "chatgptApp": "Reads the chat titles in the app's sidebar, in its left strip only. Not messages.",
+        "codexThreads": "Reads thread titles, last-update times and project folders from Codex's own list. Not messages.",
+        "chromeExtension": "Reads the same tab titles and addresses, one profile at a time. Not the pages.",
+        "editors": "Reads which Claude Code tabs are open in each window, by title and position. Not their contents.",
+        "claudeCodeStatus": "Reads when an agent starts, asks something or finishes (session, folder and event name). Never your prompts or its answers.",
+        "terminalAgents": "Reads the same start, ask and finish events from agents in terminals, and which terminal window they run in. Not what they print.",
+        "notifications": "Posts a notice on this Mac when a chat needs you. Nothing is sent anywhere.",
+    ]
+
+    public static let privacyStatement = "Nothing leaves this Mac. Porter has no account, no server and no analytics."
 
     private static func chromeRow(_ health: SourceHealth?) -> SetupRow? {
         guard let health else { return nil }

@@ -504,6 +504,13 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Verified: core 122 tests (3 new: restart, rename and end, pruning and summary), native-host 75 (2 new: saving and loading, bad file), Mac app tests. Not verified: on the real windows.
 - Next action: Prem restarts Porter and, when a chat's status is missing, runs `porterctl sessions`; the answer says whether the chat sends events at all or only lacks a tie.
 
+## LOG-20261010-002 — "What this reads" under each source, and the privacy statement (from the review of One)
+
+- Date: 2026-10-10.
+- Author: assistant; Prem asked to build the things recommended from the review of One's FAQ.
+- Changed: each source in the setup window carries one plain line on what it reads (tab titles and addresses, sidebar titles in the left strip, Codex's thread list, hook event names) and what it does not (pages, messages, prompts), written to match docs/SECURITY_PRIVACY.md; the window ends with "Nothing leaves this Mac. Porter has no account, no server and no analytics." Lines for terminal agents and notifications are written ahead of those rows.
+- Verified: Mac app 80 tests (every row has a line; no line claims more than the privacy doc). Not verified: the look.
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.

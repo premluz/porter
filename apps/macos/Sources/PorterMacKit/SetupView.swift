@@ -21,6 +21,7 @@ struct SetupView: View {
                     ForEach(section.rows) { row in SetupRowView(row: row, isBusy: model.isWorking, perform: model.perform) }
                 }
             }
+            Text(SetupChecklist.privacyStatement).font(.callout.weight(.medium))
             if model.canRestart {
                 HStack {
                     Text("Changed a permission? Porter only notices after it restarts.").font(.callout).foregroundStyle(Palette.textSecondary)
@@ -51,6 +52,9 @@ private struct SetupRowView: View {
             VStack(alignment: .leading, spacing: Tokens.Space.xs) {
                 Text(row.title).font(.headline)
                 Text(row.detail).font(.callout).foregroundStyle(Palette.textSecondary).fixedSize(horizontal: false, vertical: true)
+                if let reads = row.reads {
+                    Text(reads).font(.caption).foregroundStyle(Palette.textSecondary).fixedSize(horizontal: false, vertical: true)
+                }
             }
             Spacer(minLength: Tokens.Space.s)
             if let action = row.action, let title = row.actionTitle {

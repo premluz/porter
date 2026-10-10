@@ -140,3 +140,22 @@ struct CodexRowTests {
         #expect(SetupChecklist.summary(SetupChecklist.sections(for: SetupInputs(chrome: .ready, codexThreads: .ready))) == "All ready")
     }
 }
+
+@Suite("Each source says what it reads")
+struct ReadsLineTests {
+    @Test("every listed source carries a line saying what it reads, and the line promises no more than the privacy doc allows")
+    func everyRowHasALine() {
+        let inputs = SetupInputs(
+            chrome: .ready, claudeApp: .ready, chatgptApp: .ready, codexThreads: .ready, installedEditors: ["VS Code"],
+            claudeCodeHook: false
+        )
+        let rows = SetupChecklist.sections(for: inputs).flatMap(\.rows).filter { $0.id != "launchAtLogin" }
+        #expect(!rows.isEmpty && rows.allSatisfy { $0.reads?.hasPrefix("Reads") == true || $0.reads?.hasPrefix("Posts") == true })
+        #expect(rows.compactMap(\.reads).allSatisfy { !$0.lowercased().contains("message text") })
+    }
+
+    @Test("the statement says nothing leaves the Mac")
+    func statement() {
+        #expect(SetupChecklist.privacyStatement.hasPrefix("Nothing leaves this Mac"))
+    }
+}
