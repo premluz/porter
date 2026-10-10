@@ -30,9 +30,18 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
         self.controller = controller
         controller.show()
         registerHotKey(for: controller, notes: &notes)
+        let notifier = UserNotificationNotifier { [weak controller] in controller?.open() }
+        if mode == .live { setup.model.notifier = notifier }
+        Task { await notifier.refresh() }
         let setupModel = SetupModel(
-            performer: WorkspaceRecoveryPerformer(), confirm: Self.confirm, reveal: Self.reveal
-        ) { [source = setup.source] in source.setupInputs() }
+            performer: WorkspaceRecoveryPerformer(), confirm: Self.confirm, reveal: Self.reveal,
+            requestNotifications: { await notifier.requestAuthorization() }
+        ) { [source = setup.source] in
+            var inputs = source.setupInputs()
+            if inputs.chrome != nil { inputs.notifications = notifier.state }
+            Task { await notifier.refresh() }
+            return inputs
+        }
         let setupWindow = SetupWindowController(model: setupModel)
         self.setupWindow = setupWindow
         statusItem = StatusItemController(controller: controller, setup: setupWindow, notes: notes)

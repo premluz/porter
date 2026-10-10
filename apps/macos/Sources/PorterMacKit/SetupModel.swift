@@ -23,9 +23,11 @@ public final class SetupModel {
     private let reveal: @MainActor (_ folder: String) -> Void
     private let loginItem: any LoginItemControlling
     private let relaunch: @MainActor () -> Void
+    private let requestNotifications: @MainActor () async -> Void
 
     static let automationSettings = "x-apple.systempreferences:com.apple.preference.security?Privacy_Automation"
     static let loginItemsSettings = "x-apple.systempreferences:com.apple.LoginItems-Settings.extension"
+    static let notificationSettings = "x-apple.systempreferences:com.apple.Notifications-Settings.extension"
     static let accessibilitySettings = "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"
 
     public init(
@@ -35,6 +37,7 @@ public final class SetupModel {
         reveal: @escaping @MainActor (String) -> Void = { _ in },
         loginItem: any LoginItemControlling = LiveLoginItem(),
         relaunch: @escaping @MainActor () -> Void = SetupModel.relaunchThisApp,
+        requestNotifications: @escaping @MainActor () async -> Void = {},
         readInputs: @escaping @MainActor () -> SetupInputs
     ) {
         self.performer = performer
@@ -44,6 +47,7 @@ public final class SetupModel {
         self.reveal = reveal
         self.loginItem = loginItem
         self.relaunch = relaunch
+        self.requestNotifications = requestNotifications
         self.readInputs = readInputs
         refresh()
     }
@@ -100,6 +104,13 @@ public final class SetupModel {
             refresh()
         case .openLoginItemsSettings:
             open(Self.loginItemsSettings)
+        case .requestNotifications:
+            run { [self] in
+                await requestNotifications()
+                return "Asked. If a prompt appeared, choose Allow; Porter then posts a notice when a chat needs you."
+            }
+        case .openNotificationSettings:
+            open(Self.notificationSettings)
         case .setUpChromeExtension:
             let prepared = installer.prepareChromeExtension()
             message = prepared.message

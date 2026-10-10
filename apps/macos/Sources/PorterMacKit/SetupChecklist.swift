@@ -21,14 +21,17 @@ public struct SetupInputs: Sendable, Equatable {
     public var canEnableClaudeCodeStatus: Bool
     public var canSetUpChromeExtension: Bool
     public var launchAtLogin: LoginItemState
+    /// Whether Porter may post a notice when a chat needs you; nil when there are no sources to notify about.
+    public var notifications: NotificationState?
 
     public init(
         chrome: SourceHealth? = nil, claudeApp: SourceHealth? = nil, chatgptApp: SourceHealth? = nil, codexThreads: SourceHealth? = nil,
         connectors: [ConnectorSummary] = [], installedEditors: [String] = [], claudeCodeHook: Bool? = nil,
         canInstallCompanion: Bool = false, canEnableClaudeCodeStatus: Bool = false, canSetUpChromeExtension: Bool = false,
-        launchAtLogin: LoginItemState = .notAvailable
+        launchAtLogin: LoginItemState = .notAvailable, notifications: NotificationState? = nil
     ) {
         self.launchAtLogin = launchAtLogin
+        self.notifications = notifications
         self.canInstallCompanion = canInstallCompanion
         self.canEnableClaudeCodeStatus = canEnableClaudeCodeStatus
         self.canSetUpChromeExtension = canSetUpChromeExtension
@@ -63,6 +66,8 @@ public enum SetupAction: Sendable, Equatable {
     case setUpChromeExtension
     case setLaunchAtLogin(Bool)
     case openLoginItemsSettings
+    case requestNotifications
+    case openNotificationSettings
 }
 
 public struct SetupRow: Sendable, Equatable, Identifiable {
@@ -89,7 +94,7 @@ public enum SetupChecklist {
             codexRow(inputs.codexThreads),
         ]
             .compactMap { $0 }
-        let extras = [extensionRow(inputs), editorsRow(inputs), hookRow(inputs), loginRow(inputs)].compactMap { $0 }
+        let extras = [extensionRow(inputs), editorsRow(inputs), hookRow(inputs), notificationsRow(inputs), loginRow(inputs)].compactMap { $0 }
         return [
             SetupSection(id: "sources", title: "Reads on its own", rows: reads),
             SetupSection(id: "extras", title: "Optional, adds detail", rows: extras),
@@ -213,6 +218,19 @@ public enum SetupChecklist {
             "editors", "VS Code companion", detail, .optional,
             action: inputs.canInstallCompanion ? .installEditorCompanion : nil, actionTitle: inputs.canInstallCompanion ? "Install in \(names)" : nil
         )
+    }
+
+    private static func notificationsRow(_ inputs: SetupInputs) -> SetupRow? {
+        switch inputs.notifications {
+        case nil, .notAvailable?:
+            return nil
+        case .allowed?:
+            return row("notifications", "Notifications", "Porter tells you on this Mac when a chat needs you.", .ready)
+        case .notAsked?:
+            return row("notifications", "Notifications", "Off. Allow them and Porter will tell you when a chat needs you.", .optional, action: .requestNotifications, actionTitle: "Allow notifications")
+        case .denied?:
+            return row("notifications", "Notifications", "Blocked in System Settings, so a chat that needs you is only shown in the pane.", .optional, action: .openNotificationSettings, actionTitle: "Open Notifications settings")
+        }
     }
 
     private static func loginRow(_ inputs: SetupInputs) -> SetupRow? {

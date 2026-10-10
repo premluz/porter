@@ -9,10 +9,19 @@ extension PanelBuilder {
         let pinned = shown.filter(\.pinned).sorted { pinOrder($0, inputs) < pinOrder($1, inputs) }
         let open = order(shown.filter { !$0.pinned && $0.isOpenable }, frozen: inputs.frozenOrder)
         let hidden = visible.filter(\.hidden)
+        let (needing, pinnedRest, openRest) = splitNeedsYou(pinned: pinned, open: open)
         return PanelSnapshot(
-            pinned: pinned, open: open, hidden: hidden,
+            needsYou: needing, pinned: pinnedRest, open: openRest, hidden: hidden,
             emptyState: emptyState(shown: shown, allItems: allItems, inputs: inputs), unreadable: unreadable
         )
+    }
+
+    /// A chat waits on the person only on a fresh signal; a stale one is never promoted. Oldest wait first would bury the
+    /// newest question, so the most recent signal leads.
+    private static func splitNeedsYou(pinned: [PanelItem], open: [PanelItem]) -> ([PanelItem], [PanelItem], [PanelItem]) {
+        func waiting(_ item: PanelItem) -> Bool { item.status.freshness == .fresh && item.status.display == .needsUser && item.isOpenable }
+        let needing = (pinned + open).filter(waiting).sorted { ($0.lastActiveAt ?? .distantPast) > ($1.lastActiveAt ?? .distantPast) }
+        return (needing, pinned.filter { !waiting($0) }, open.filter { !waiting($0) })
     }
 
     private static func pinOrder(_ item: PanelItem, _ inputs: PanelInputs) -> Int {

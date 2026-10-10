@@ -14,6 +14,6 @@ extension PanelSnapshot {
     /// What arrow keys and selection can reach: the folded group only counts while it is shown.
     public func navigable(showingOlder: Bool, limit: Int = PanelSnapshot.recentLimit) -> [PanelItem] {
         let split = recentSplit(limit: limit)
-        return pinned + split.recent + (showingOlder ? split.older : [])
+        return needsYou + pinned + split.recent + (showingOlder ? split.older : [])
     }
 }

@@ -53,6 +53,11 @@ public final class AppModel {
     private var listing = RegistryListing(connectors: [], rows: [])
     private var records: [PreferenceRecord] = []
     private var frozenOrder: [String]?
+    /// Posts a notice when a chat starts waiting on the person; nil in tests and in sample-data mode.
+    public var notifier: (any NeedsYouNotifying)?
+    /// The chats already announced as waiting, so a refresh never announces the same one twice.
+    private var announcedWaiting: Set<String> = []
+    private var isPaneVisible = false
 
     public init(
         source: any DestinationSource, store: PreferenceStore, performer: any RecoveryPerformer,
@@ -93,6 +98,7 @@ public final class AppModel {
 
     /// While the pane is open, items already on screen keep their positions.
     public func paneVisibilityChanged(visible: Bool) {
+        isPaneVisible = visible
         frozenOrder = visible ? items.map(\.id) : nil
         // A status can have gone stale since the last event, and nothing announces that, so look again.
         if visible { rebuild() }
@@ -145,6 +151,17 @@ public final class AppModel {
         onContentChanged()
     }
 
+    /// A chat that starts waiting is announced once, unless the pane is open and the person is looking at it; one that
+    /// stops waiting has its notice taken down, and is announced again if it waits again later.
+    private func announceWaiting() {
+        let waiting = Dictionary(snapshot.needsYou.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        let started = Set(waiting.keys).subtracting(announcedWaiting)
+        let ended = announcedWaiting.subtracting(waiting.keys)
+        announcedWaiting = Set(waiting.keys)
+        if !isPaneVisible { for id in started.sorted() { if let item = waiting[id] { notifier?.notify(item) } } }
+        notifier?.withdraw(ids: ended)
+    }
+
     private func queryChanged() {
         feedback = nil
         routeChoice = nil
@@ -159,6 +176,7 @@ public final class AppModel {
             query: query, showHidden: showHidden, frozenOrder: frozenOrder, now: clock()
         ))
         selection.reconcile(with: items, previous: previous)
+        announceWaiting()
         onContentChanged()
     }
 

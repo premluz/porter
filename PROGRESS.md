@@ -511,6 +511,15 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Changed: each source in the setup window carries one plain line on what it reads (tab titles and addresses, sidebar titles in the left strip, Codex's thread list, hook event names) and what it does not (pages, messages, prompts), written to match docs/SECURITY_PRIVACY.md; the window ends with "Nothing leaves this Mac. Porter has no account, no server and no analytics." Lines for terminal agents and notifications are written ahead of those rows.
 - Verified: Mac app 80 tests (every row has a line; no line claims more than the privacy doc). Not verified: the look.
 
+## LOG-20261010-003 — Needs you section and notices on the Mac (from the review of One)
+
+- Date: 2026-10-10.
+- Author: assistant.
+- Changed: chats whose agent is waiting on the person (a fresh needs-you status, for now from Claude Code hook events) are listed in a "Needs you" section at the top of the pane, newest signal first, and not repeated among the pinned or open chats; they come first for keyboard selection and in the capsule. A notice "<Project> needs you / <chat title>" is posted on this Mac when a chat starts waiting (once per wait, none while the pane is open, taken down when it stops, posted again if it waits again); clicking it opens the pane. Setup gains a Notifications row (allow, or open the system settings when blocked); the permission is asked only from that button. Nothing is sent off the Mac.
+- A bug the new test caught: the announce call first landed in the wrong method (a text match hit `toggleOlder` instead of `rebuild`); fixed.
+- Verified: panel model 69 tests (3 new), Mac app 83 (3 new: notice lifecycle, quiet while open, setup row) and the self-test. Not verified: a real notice, which needs the bundled app, the permission and a waiting chat (batch P).
+- Limits: status exists only where Porter has hook events, so only Claude Code in VS Code (and, once built, terminals) can be waiting; browser and desktop-app chats cannot.
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.

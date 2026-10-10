@@ -108,6 +108,12 @@ Everything above is automated. This batch covers what automation cannot: appeara
 1. Expect a "Sample data" banner, Pinned and Open sections, status in words, a dashed marker for anything not live. Tap a row: details sheet with a note that the account on the phone may differ and no open button (sample links go nowhere).
 2. Settings, Accessibility, larger text at the maximum: expect no clipped rows. Rotate to landscape. Search for "release".
 
+**P. Needs you** (a chat waiting on you comes first, with a notice on this Mac; nothing is sent anywhere).
+1. Rebuild and open the app. In Setup, **Notifications → Allow notifications** and choose Allow in the system prompt (it only appears for the bundled app).
+2. With Claude Code status on (batch H), in a VS Code window whose chat Porter can tie to its tab, ask Claude Code to do something that needs permission (a command it must ask about). Within a few seconds that chat moves to a **Needs you** section at the top of the pane, the capsule's first dot shows the attention mark, and a notice "<Project> needs you / <chat title>" appears. Clicking the notice opens Porter's pane.
+3. Answer in VS Code: the chat leaves the section and the notice disappears. Ask something that needs you again: a new notice. Repeated refreshes never repeat a notice, and with the pane open you get no notice.
+4. Only a fresh signal counts: a chat that needed you half an hour ago and went quiet is not promoted. Status exists only where Porter has hook events (Claude Code in VS Code for now), so browser and desktop-app chats never appear here yet. Tell me what you see.
+
 **O. Collapsed capsule: label on hover, the hand, and the edge** (FACT-029).
 1. Rebuild and open the app. With the panel collapsed, move the pointer onto a dot: its label appears at once (a quick, soft grow out of the capsule's side), beside the capsule on the side facing the screen, level with the dot, with the chat's title and the same line a row has. Sweep down the dots: the one label glides to follow, and does not blink out between dots. Leave the last dot or the capsule: it eases away. It must never take the pointer or focus, and it must not appear while the pane is open.
 2. The dot under the pointer lights up and swells a little, and the cursor is the pointing hand over every dot and over the open button (the arrow elsewhere). Click a dot: it takes you to that chat.
