@@ -46,7 +46,7 @@ public enum SelfTest {
         check("capsule is a narrow shape, not full height", capsule.width == Tokens.Size.capsuleWidth && capsule.height < pane.height)
         controller.applyInstantly(expanded: true)
         check("window matches pane geometry (window \(controller.panel.frame), expected \(pane))", controller.panel.frame == pane)
-        let local = controller.presentation.capsule
+        let local = controller.presentation.rest.rect
         check("capsule keeps its screen position inside the pane window",
               local.minX + pane.minX == capsule.minX && pane.maxY - local.maxY == capsule.minY)
         check("presentation shows the pane when expanded", controller.presentation.isExpanded)

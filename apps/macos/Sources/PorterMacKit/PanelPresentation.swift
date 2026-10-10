@@ -28,15 +28,49 @@ public final class PanelPresentation {
     public var hoveredRow: String?
     /// Attached only by the animation probe, to see each frame of a move.
     @ObservationIgnored public var recorder: (@Sendable (CGRect) -> Void)?
-    /// Both rectangles in the window's top-left coordinates; the shape moves between them.
-    public private(set) var capsule = CGRect.zero
-    public private(set) var pane = CGRect.zero
+    /// The shape the panel rests in when it is not open, and the one it was moving from; the window's top-left coordinates.
+    public private(set) var rest = ShapeSpec(rect: .zero, corner: 0, edge: .right, kind: .capsule(.vertical))
+    public private(set) var restFrom = ShapeSpec(rect: .zero, corner: 0, edge: .right, kind: .capsule(.vertical))
+    /// Progress of the move from `restFrom` to `rest`: 1 when the panel is at rest.
+    public private(set) var restMotion = MotionState(curve: SpringCurve(duration: Tokens.Motion.springDuration, bounce: Tokens.Motion.springBounce))
+    public private(set) var isRestMoving = false
+    public private(set) var pane = ShapeSpec(rect: .zero, corner: 0, edge: .right, kind: .pane)
 
     public init() {}
 
-    public func layout(window: CGRect, capsuleFrame: CGRect, paneFrame: CGRect) {
-        capsule = EdgeGeometry.localRect(of: capsuleFrame, in: window)
-        pane = EdgeGeometry.localRect(of: paneFrame, in: window)
+    /// Sets the two shapes with no motion.
+    public func layout(rest newRest: ShapeSpec, pane newPane: ShapeSpec) {
+        rest = newRest
+        restFrom = newRest
+        restMotion.snap(to: 1)
+        isRestMoving = false
+        pane = newPane
+    }
+
+    /// The resting shape at a moment: on its way from where it was to where it rests.
+    public func restShape(at now: Date) -> ShapeSpec {
+        restFrom.blended(toward: rest, restMotion.progress(at: now))
+    }
+
+    /// The whole panel at a moment: its resting shape, opened towards the pane by the open and close motion.
+    public func shape(at now: Date) -> ShapeSpec {
+        restShape(at: now).blended(toward: pane, motion.progress(at: now))
+    }
+
+    /// Moves the resting shape from one to another, the new pane going with it.
+    public func beginRestMove(from: ShapeSpec, to: ShapeSpec, pane newPane: ShapeSpec, curve: SpringCurve, now: Date = Date()) {
+        restFrom = from
+        rest = to
+        pane = newPane
+        restMotion.snap(to: 0)
+        restMotion.start(toward: 1, at: now, curve: curve)
+        isRestMoving = true
+    }
+
+    public func endRestMove() {
+        restFrom = rest
+        restMotion.snap(to: 1)
+        isRestMoving = false
     }
 
     /// Starts heading for a state from wherever the shape is now, so reversing partway is continuous.
@@ -49,6 +83,9 @@ public final class PanelPresentation {
     public func endMove() {
         isMoving = false
     }
+
+    /// Whether anything is animating, so the view redraws every frame only while it must.
+    public var isAnimating: Bool { isMoving || isRestMoving }
 
     /// Goes straight to a state with no motion.
     public func snap(expanded: Bool) {

@@ -148,13 +148,28 @@ public final class PanelController {
         finishIfCollapsed()
     }
 
+    /// The two shapes in a window's own coordinates: where the panel rests and where it opens to.
+    private func specs(in window: CGRect) -> (rest: ShapeSpec, pane: ShapeSpec) {
+        (
+            ShapeSpec(
+                rect: EdgeGeometry.localRect(of: frame(expanded: false), in: window), corner: Tokens.Size.capsuleCorner,
+                edge: settings.edge, kind: .capsule(.vertical)
+            ),
+            ShapeSpec(
+                rect: EdgeGeometry.localRect(of: frame(expanded: true), in: window), corner: Tokens.Size.paneCorner,
+                edge: settings.edge, kind: .pane
+            )
+        )
+    }
+
     /// Positions the window and the shapes inside it without any animation, so nothing visibly moves.
     private func settle(window: CGRect) {
         var transaction = Transaction()
         transaction.disablesAnimations = true
         withTransaction(transaction) {
             panel.setFrame(window, display: true)
-            presentation.layout(window: window, capsuleFrame: frame(expanded: false), paneFrame: frame(expanded: true))
+            let shapes = specs(in: window)
+            presentation.layout(rest: shapes.rest, pane: shapes.pane)
         }
         host.layoutSubtreeIfNeeded()
     }
