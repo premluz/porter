@@ -25,6 +25,8 @@ public enum BridgeEvent: Sendable, Equatable {
     case inventoryChanged(connectorId: String)
     /// An agent's working state changed; the panel should recompute statuses.
     case statusChanged
+    /// A session was tied to, or released from, a tab; the app saves the ties so a restart keeps them.
+    case agentBindingsChanged
     case activation(ActivationResult)
     case protocolViolation(connection: ConnectionID, code: BridgeErrorCode, detail: String)
 }
@@ -111,6 +113,8 @@ public struct BridgeCoordinator: Sendable {
     /// Agent sessions by ID, from hook events. Only the few fields of AgentEvent are ever kept.
     var agentSessions: [String: AgentSession] = [:]
     var agentSequence = 0
+    /// Which tab each agent session belongs to, by session id.
+    var agentBindings: [String: AgentBinding] = [:]
 
     public init(
         deviceId: UUID, locatorPolicy: LocatorPolicy = LocatorPolicy(), activationTimeout: TimeInterval = 5

@@ -24,14 +24,17 @@ public final class RegistryService: Sendable {
     let prepareActivation: @Sendable (ActivationPreparation) -> String
     /// Gives a window time to become the front one after its folder is opened.
     let windowSettleDelay: TimeInterval
+    /// Where the ties between agent sessions and tabs are kept across restarts; nil keeps them in memory only.
+    let bindingsPath: String?
 
     public init(
         deviceId: UUID, activationTimeout: TimeInterval = 5,
         log: @escaping @Sendable (String) -> Void, focusApplication: @escaping @Sendable () -> String,
         onChange: @escaping @Sendable () -> Void = {},
         prepareActivation: @escaping @Sendable (ActivationPreparation) -> String = { EditorWindowFocus.openWorkspace($0) },
-        windowSettleDelay: TimeInterval = 0.8
+        windowSettleDelay: TimeInterval = 0.8, bindingsPath: String? = nil
     ) {
+        self.bindingsPath = bindingsPath
         self.prepareActivation = prepareActivation
         self.windowSettleDelay = windowSettleDelay
         self.coordinator = Mutex(BridgeCoordinator(deviceId: deviceId, activationTimeout: activationTimeout))
@@ -39,6 +42,7 @@ public final class RegistryService: Sendable {
         self.log = log
         self.focusApplication = focusApplication
         self.onChange = onChange
+        loadBindings()
     }
 
     /// Binds both sockets, then serves forever on background threads.
@@ -120,6 +124,8 @@ public final class RegistryService: Sendable {
         case .statusChanged:
             log("agent status changed")
             onChange()
+        case .agentBindingsChanged:
+            saveBindings()
         case .protocolViolation(let connection, let code, let detail): log("violation \(connection) \(code): \(detail)")
         case .activation(let result):
             log("activation \(result.requestId): \(result.outcome)")

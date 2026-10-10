@@ -196,6 +196,7 @@ Evidence classes: `user_requirement`, `source_documentation`, `verified_test`. P
 - Tags: area/identity, area/security, area/macos, phase/r1.
 - Review trigger: the manual batch H, or Claude Code exposing a session ID per tab, which would remove the one-tab-per-window limit.
 - Update (LOG-20261009-020): with several tabs in one window a session is now bound, at its first submitted prompt, to the tab that came to the front last in that window (the person typed there); the binding is kept for the session's life, and a tie, no times from the connector (a companion older than 0.2.0), or a start event alone bind nothing. Tested on synthetic windows only.
+- Update (LOG-20261010-001): the ties are kept by the tab's connector-derived id, not the registry's per-run route id, and saved to `agent-bindings.json` in Porter's support folder (mode 600, ties older than a week dropped), so a restart of Porter no longer loses which tab a running session belongs to. Before this, every restart left running chats unbound, and with several tabs in a window they showed Unknown until their next prompt. `porterctl sessions` lists the sessions the registry knows and the tab each is tied to.
 
 ## FACT-023 — Panel motion is measured from its own frames
 

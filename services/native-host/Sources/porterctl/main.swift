@@ -5,10 +5,11 @@ import Foundation
 
 // porterctl list [--json]
 // porterctl activate <destinationId> <revision>
+// porterctl sessions           (the agent sessions the registry knows, and which tab each is tied to)
 // porterctl hook               (run by Claude Code hooks: reads the hook input on stdin, prints nothing)
 // porterctl hook-config        (prints the settings snippet that registers the hook)
 
-private let usage = "usage: porterctl list [--json] | activate <destinationId> <revision> | hook | hook-config"
+private let usage = "usage: porterctl list [--json] | activate <destinationId> <revision> | sessions | hook | hook-config"
 
 private func die(_ message: String) -> Never {
     FileHandle.standardError.write(Data("porterctl: \(message)\n".utf8))
@@ -63,6 +64,13 @@ case "activate":
     guard response.ok, let outcome = response.outcome else { die(response.error ?? "activate failed") }
     print("outcome: \(outcome.rawValue)  app: \(response.appActivation ?? "n/a")")
     exit(outcome == .activated ? 0 : 3)
+case "sessions":
+    let response = roundTrip(ControlRequest(command: .sessions))
+    guard response.ok, let sessions = response.sessions else { die(response.error ?? "sessions failed (is the Porter app up to date?)") }
+    for session in sessions {
+        print("\(session.shortId)  \(session.folder)  \(session.activity)  \(session.ageSeconds)s ago  tab: \(session.boundTitle ?? "not tied to a tab")")
+    }
+    if sessions.isEmpty { print("no agent sessions (no hook event has arrived since Porter started)") }
 case "hook":
     Hook.run()
 case "hook-config":

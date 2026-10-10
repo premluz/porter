@@ -48,7 +48,7 @@ public final class LiveRegistrySource: DestinationSource {
         self.log = log
         service = RegistryService(
             deviceId: UUID(), log: log, focusApplication: { ChromeFocus.requestForeground() },
-            onChange: { relay.fire() }
+            onChange: { relay.fire() }, bindingsPath: PorterPaths.supportDirectory() + "/agent-bindings.json"
         )
     }
 

@@ -3,7 +3,7 @@ import Foundation
 
 /// Stand-in for the Mac pane until it exists: the same operations the pane will perform.
 public struct ControlRequest: Codable, Sendable, Equatable {
-    public enum Command: String, Codable, Sendable { case list, activate, agentEvent }
+    public enum Command: String, Codable, Sendable { case list, activate, agentEvent, sessions }
 
     public let command: Command
     public let destinationId: UUID?
@@ -27,21 +27,27 @@ public struct ControlResponse: Codable, Sendable, Equatable {
     public let outcome: ActivationOutcome?
     /// Whether the Chrome application itself was asked to come forward, separately from the tab.
     public let appActivation: String?
+    /// The agent sessions the registry knows about, for diagnosing a status that does not show.
+    public let sessions: [AgentSessionSummary]?
+
+    public static func sessionList(_ sessions: [AgentSessionSummary]) -> ControlResponse {
+        ControlResponse(ok: true, error: nil, connectors: nil, rows: nil, outcome: nil, appActivation: nil, sessions: sessions)
+    }
 
     public static func failure(_ message: String) -> ControlResponse {
-        ControlResponse(ok: false, error: message, connectors: nil, rows: nil, outcome: nil, appActivation: nil)
+        ControlResponse(ok: false, error: message, connectors: nil, rows: nil, outcome: nil, appActivation: nil, sessions: nil)
     }
 
     public static func accepted() -> ControlResponse {
-        ControlResponse(ok: true, error: nil, connectors: nil, rows: nil, outcome: nil, appActivation: nil)
+        ControlResponse(ok: true, error: nil, connectors: nil, rows: nil, outcome: nil, appActivation: nil, sessions: nil)
     }
 
     public static func listing(_ connectors: [ConnectorSummary], _ rows: [DestinationRow]) -> ControlResponse {
-        ControlResponse(ok: true, error: nil, connectors: connectors, rows: rows, outcome: nil, appActivation: nil)
+        ControlResponse(ok: true, error: nil, connectors: connectors, rows: rows, outcome: nil, appActivation: nil, sessions: nil)
     }
 
     public static func activation(_ outcome: ActivationOutcome, appActivation: String?) -> ControlResponse {
-        ControlResponse(ok: true, error: nil, connectors: nil, rows: nil, outcome: outcome, appActivation: appActivation)
+        ControlResponse(ok: true, error: nil, connectors: nil, rows: nil, outcome: outcome, appActivation: appActivation, sessions: nil)
     }
 }
 

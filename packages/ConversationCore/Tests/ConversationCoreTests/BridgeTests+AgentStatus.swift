@@ -269,4 +269,42 @@ struct AgentBindingTests {
         snapshot(&harness, client, [("aaaa1111", "One", 0, early), ("cccc3333", "Three", 1, late)])
         #expect(statuses(harness).isEmpty)
     }
+
+    @Test("ties survive Porter restarting: a fresh registry given the saved ties shows the right tab from the next event, with no new prompt")
+    func survivesRestart() {
+        var (before, _) = window([("aaaa1111", "Merlin folder", 0, early), ("bbbb2222", "Header hover", 1, late)])
+        let bound = before.coordinator.recordAgentEvent(event("UserPromptSubmit", session: "s1"), now: before.now)
+        #expect(bound.events.contains(.agentBindingsChanged))
+        let saved = before.coordinator.exportedAgentBindings()
+
+        // A new run: the tabs get new route ids, and the registry has seen no events yet.
+        var (after, _) = window([("aaaa1111", "Merlin folder", 0, nil), ("bbbb2222", "Header hover", 1, nil)])
+        after.coordinator.restoreAgentBindings(saved, now: after.now)
+        _ = after.coordinator.recordAgentEvent(event("PreToolUse", session: "s1"), now: after.now)
+        #expect(statuses(after) == ["Header hover": .working])
+    }
+
+    @Test("a tie ends with its session, and a tab that was renamed (so has a new id) is not claimed by the old tie")
+    func endsAndRenames() {
+        var (harness, client) = window([("aaaa1111", "Merlin folder", 0, early), ("bbbb2222", "Header hover", 1, late)])
+        _ = harness.coordinator.recordAgentEvent(event("UserPromptSubmit", session: "s1"), now: harness.now)
+        #expect(harness.coordinator.exportedAgentBindings().count == 1)
+        snapshot(&harness, client, [("aaaa1111", "Merlin folder", 0, early), ("cccc3333", "Renamed", 1, late)])
+        _ = harness.coordinator.recordAgentEvent(event("PreToolUse", session: "s1"), now: harness.now)
+        #expect(statuses(harness).isEmpty)
+        let ended = harness.coordinator.recordAgentEvent(event("SessionEnd", session: "s1"), now: harness.now)
+        #expect(ended.events.contains(.agentBindingsChanged) && harness.coordinator.exportedAgentBindings().isEmpty)
+    }
+
+    @Test("old ties are dropped when restored, and the diagnostic summary names the tab a session is tied to")
+    func pruneAndSummary() {
+        var (harness, _) = window([("aaaa1111", "Merlin folder", 0, early), ("bbbb2222", "Header hover", 1, late)])
+        _ = harness.coordinator.recordAgentEvent(event("UserPromptSubmit", session: "session-one-long-id"), now: harness.now)
+        let summary = harness.coordinator.agentSessionSummaries(now: harness.now.addingTimeInterval(30))
+        #expect(summary.count == 1 && summary[0].shortId == "session-" && summary[0].boundTitle == "Header hover")
+        #expect(summary[0].folder == "Bastion" && summary[0].ageSeconds == 30)
+        let stale = harness.coordinator.exportedAgentBindings()
+        harness.coordinator.restoreAgentBindings(stale, now: harness.now.addingTimeInterval(BridgeCoordinator.agentBindingLifetime + 60))
+        #expect(harness.coordinator.exportedAgentBindings().isEmpty)
+    }
 }

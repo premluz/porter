@@ -495,6 +495,15 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Changed: the backing is applied once under the whole pane (search field, feedback, list, footer) and removed from the list and the feedback box so nothing is darkened twice.
 - Verified: Mac app tests and the self-test. Not verified: the look.
 
+## LOG-20261010-001 — Status ties survive a restart; a way to see why a status is missing
+
+- Date: 2026-10-10.
+- Author: assistant; Prem showed the Amble window (several Claude Code tabs, one visibly working) with no status in Porter, while this chat's window shows one.
+- Finding: the Amble window runs companion 0.2.0 and its tabs have times, so the tie rule can work there. What I could establish is a weakness: ties lived in memory, so every restart of Porter (which I ask for after each rebuild) left running chats with hook events but no tie, and with several tabs in a window such a chat shows Unknown until its next prompt. What I could not establish is whether the Amble chat sends hook events at all (a session that started before the hooks were turned on never does); the registry gave no way to tell.
+- Changed: ties are kept by the tab's connector-derived id (stable across runs) and saved to `agent-bindings.json` (mode 600, a week's life, 200 at most; unreadable files are logged and ignored); the registry restores them at start. A tie ends with its session, and a renamed tab (new id) is not claimed by the old tie. New `porterctl sessions` lists each session the registry knows (short id, folder, state, age, tab tied to). The diagnostic needs the app restarted once to speak the new command.
+- Verified: core 122 tests (3 new: restart, rename and end, pruning and summary), native-host 75 (2 new: saving and loading, bad file), Mac app tests. Not verified: on the real windows.
+- Next action: Prem restarts Porter and, when a chat's status is missing, runs `porterctl sessions`; the answer says whether the chat sends events at all or only lacks a tie.
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.

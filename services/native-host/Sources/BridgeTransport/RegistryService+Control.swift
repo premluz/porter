@@ -106,6 +106,8 @@ extension RegistryService {
             return coordinator.withLock { .listing($0.connectorSummaries(), $0.rows()) }
         case .agentEvent:
             return accept(request.agent)
+        case .sessions:
+            return coordinator.withLock { .sessionList($0.agentSessionSummaries(now: Date())) }
         case .activate:
             guard let destinationId = request.destinationId, let revision = request.revision else {
                 return .failure("activate needs destinationId and revision")
