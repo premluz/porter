@@ -5,6 +5,8 @@ import Observation
 /// What SwiftUI draws: where the one glass shape sits inside the window, and how far along its move it
 /// is. The window is sized once per move; the shape's progress comes from a spring computed from the
 /// clock (see PanelMotion), so each frame of the move is known and testable.
+public enum DragPhase: Sendable { case changed, ended }
+
 @MainActor
 @Observable
 public final class PanelPresentation {
@@ -26,6 +28,11 @@ public final class PanelPresentation {
     @ObservationIgnored public var listFrame = CGRect.zero
     /// The row under the pointer in the open pane, for its hover look.
     public var hoveredRow: String?
+    /// Told when the person drags the capsule; the controller moves the window, since only it knows the screen.
+    @ObservationIgnored public var onDrag: ((DragPhase) -> Void)?
+    /// A drag ends with the pointer still over a dot, and releasing it would press that dot; for a moment after a
+    /// drag, presses are ignored.
+    @ObservationIgnored public var clicksIgnoredUntil = Date.distantPast
     /// Attached only by the animation probe, to see each frame of a move.
     @ObservationIgnored public var recorder: (@Sendable (CGRect) -> Void)?
     /// The shape the panel rests in when it is not open, and the one it was moving from; the window's top-left coordinates.
@@ -34,6 +41,13 @@ public final class PanelPresentation {
     /// Progress of the move from `restFrom` to `rest`: 1 when the panel is at rest.
     public private(set) var restMotion = MotionState(curve: SpringCurve(duration: Tokens.Motion.springDuration, bounce: Tokens.Motion.springBounce))
     public private(set) var isRestMoving = false
+
+    /// Which way the capsule lies, from whichever of the two resting shapes is a capsule.
+    public var capsuleOrientation: PanelOrientation {
+        if case .capsule(let orientation) = rest.kind { return orientation }
+        if case .capsule(let orientation) = restFrom.kind { return orientation }
+        return .vertical
+    }
     public private(set) var pane = ShapeSpec(rect: .zero, corner: 0, edge: .right, kind: .pane)
 
     public init() {}
@@ -65,6 +79,14 @@ public final class PanelPresentation {
         restMotion.snap(to: 0)
         restMotion.start(toward: 1, at: now, curve: curve)
         isRestMoving = true
+    }
+
+    /// Replaces the resting shape with no motion, for when the panel is open and nothing of it shows.
+    public func replaceRest(_ spec: ShapeSpec) {
+        rest = spec
+        restFrom = spec
+        restMotion.snap(to: 1)
+        isRestMoving = false
     }
 
     public func endRestMove() {

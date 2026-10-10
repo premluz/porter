@@ -108,6 +108,17 @@ Everything above is automated. This batch covers what automation cannot: appeara
 1. Expect a "Sample data" banner, Pinned and Open sections, status in words, a dashed marker for anything not live. Tap a row: details sheet with a note that the account on the phone may differ and no open button (sample links go nowhere).
 2. Settings, Accessibility, larger text at the maximum: expect no clipped rows. Rotate to landscape. Search for "release".
 
+**R. Moving the panel: docked, floating, open** (FACT-032; PLAN-003).
+1. Rebuild and restart Porter. It starts as it was: a capsule at the edge you had. Hover it: nothing changes yet if it is a capsule (only a docked tab peeks).
+2. Drag the capsule by a dot towards the middle of the screen: it follows the pointer at once. Release in open space: it stays there as a floating capsule. Quit and reopen: it is still there.
+3. Drag it toward the right edge. Within about 100 pt it should lean towards the edge, and releasing within about 56 pt of the edge should fold it into a small tab flush with the edge, flaring into it with concave curves, in one liquid motion (no jump, no second window). Do the same on the left. The tab shows up to three marks: a needs-you mark first, then a working spinner, then idle dots.
+4. Hover the tab: the capsule grows out of it. Move away: after about half a second it folds back. Moving from the tab to the capsule must not make it fold in between. Click a dot while peeking: that chat opens as before.
+5. Drag a docked tab (or the peek capsule) away from the edge: it detaches as a standing capsule under the pointer. A small drag that never leaves the edge should not move it.
+6. Drag a floating capsule near the top or bottom of the screen: the dots lie down into a row. Drag it back to the middle: they stand up again. Try it with a few chats and with many (the row is longer). It must not flicker between the two when you hold it near the limit.
+7. Open the pane from each place (docked tab click, peek, floating capsule): the pane opens at the edge from a docked one and at the capsule's place from a floating one, kept on the screen, and closing returns to where it was. Esc and clicking elsewhere still close it.
+8. A click straight after a drag must not open a chat. Menu bar item, Left edge or Right edge: docks it there.
+9. Tell me which of these looks or feels wrong: the thresholds (pull, snap, grace) are guesses, the flare shape and the morph have never been seen.
+
 **Q. Agents in terminals** (FACT-031).
 1. Turn on Claude Code status (batch H; it applies to every Claude Code session, terminal ones included) and rebuild and open the app.
 2. In Terminal, run `claude` in a project folder and send a prompt. Within a few seconds a route appears: `(logo) [Folder] Terminal · Working`, titled with the tab's title (or "Claude Code in <folder>"), in today's group. It goes Idle when the answer finishes, and Needs you with a notice if it asks for permission (batch P).

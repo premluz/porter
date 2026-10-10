@@ -97,25 +97,17 @@ struct MoveTests {
 
 @Suite("What follows the move")
 struct PhaseTests {
-    private let capsule = CGRect(x: 320, y: 100, width: 40, height: 244)
-    private let pane = CGRect(x: 0, y: 24, width: 360, height: 464)
-
-    @Test("the shape sits on the capsule at 0, the pane at 1, and goes past the pane on the bounce but never negative")
-    func lerpEndsAndOvershoot() {
-        #expect(PanelPhases.lerp(capsule, pane, 0) == capsule)
-        #expect(PanelPhases.lerp(capsule, pane, 1) == pane)
-        #expect(PanelPhases.lerp(capsule, pane, 1.05).width > pane.width)
-        #expect(PanelPhases.lerp(capsule, pane, -0.5).width >= 0 && PanelPhases.lerp(capsule, pane, -50).height >= 0)
-        let middle = PanelPhases.lerp(capsule, pane, 0.5)
-        #expect(middle.width == 200 && middle.height == 354)
-    }
-
-    @Test("corners grow with the move and stay within their two values even on the bounce")
-    func corners() {
-        #expect(PanelPhases.cornerRadius(progress: 0) == Tokens.Size.capsuleCorner)
-        #expect(PanelPhases.cornerRadius(progress: 1) == Tokens.Size.paneCorner)
-        #expect(PanelPhases.cornerRadius(progress: 1.2) == Tokens.Size.paneCorner)
-        #expect(PanelPhases.cornerRadius(progress: -0.2) == Tokens.Size.capsuleCorner)
+    @Test("the resting content is the tab's or the capsule's, or a blend of the two while the panel moves between them")
+    func restBlend() {
+        #expect(PanelPhases.restBlend(fromTab: true, toTab: true, progress: 0.5) == (tab: 1, capsule: 0))
+        #expect(PanelPhases.restBlend(fromTab: false, toTab: false, progress: 0.5) == (tab: 0, capsule: 1))
+        let start = PanelPhases.restBlend(fromTab: true, toTab: false, progress: 0)
+        let end = PanelPhases.restBlend(fromTab: true, toTab: false, progress: 1)
+        #expect(start.tab == 1 && end.tab == 0 && end.capsule == 1)
+        let reverse = PanelPhases.restBlend(fromTab: false, toTab: true, progress: 1)
+        #expect(reverse.tab == 1 && reverse.capsule == 0)
+        let halfway = PanelPhases.restBlend(fromTab: false, toTab: true, progress: 0.5)
+        #expect(halfway.tab > 0 && halfway.tab < 1 && abs(halfway.tab + halfway.capsule - 1) < 1e-9)
     }
 
     @Test("dots fade out early and content fades in late, so text is never drawn on a narrow shape")

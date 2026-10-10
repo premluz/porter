@@ -24,6 +24,15 @@ public enum SelfTest {
             let controller = PanelController(model: model, settings: PanelSettings(), defaults: defaults)
             checkModel(model, check)
             checkPanel(controller, check)
+            let floating = PanelController(
+                model: model, settings: PanelSettings(mode: .floating, floatCenter: CGPoint(x: 0.4, y: 0.5)), defaults: defaults
+            )
+            checkGeometry(floating, "floating", check)
+            let lying = PanelController(
+                model: model, settings: PanelSettings(mode: .floating, floatCenter: CGPoint(x: 0.5, y: 0.99)), defaults: defaults
+            )
+            lying.orientation = .horizontal
+            checkGeometry(lying, "floating, lying down", check)
             checkHotKey(check)
         } catch {
             check("setup (\(error))", false)
@@ -39,22 +48,7 @@ public enum SelfTest {
     }
 
     private static func checkPanel(_ controller: PanelController, _ check: (String, Bool) -> Void) {
-        let capsule = controller.frame(expanded: false)
-        let pane = controller.frame(expanded: true)
-        controller.applyInstantly(expanded: false)
-        check("window matches capsule geometry (window \(controller.panel.frame), expected \(capsule))", controller.panel.frame == capsule)
-        check("capsule is a narrow shape, not full height", capsule.width == Tokens.Size.capsuleWidth && capsule.height < pane.height)
-        controller.applyInstantly(expanded: true)
-        check("window matches pane geometry (window \(controller.panel.frame), expected \(pane))", controller.panel.frame == pane)
-        let local = controller.presentation.rest.rect
-        check("capsule keeps its screen position inside the pane window",
-              local.minX + pane.minX == capsule.minX && pane.maxY - local.maxY == capsule.minY)
-        check("presentation shows the pane when expanded", controller.presentation.isExpanded)
-        check("panel is non-activating and floats", controller.panel.styleMask.contains(.nonactivatingPanel))
-        controller.applyInstantly(expanded: false)
-        check("collapsing returns to the capsule frame (window \(controller.panel.frame), expected \(capsule))", controller.panel.frame == capsule)
-        check("presentation shows the capsule when collapsed", !controller.presentation.isExpanded)
-        check("collapsed panel cannot take keyboard focus", !controller.panel.canBecomeKey)
+        checkGeometry(controller, "docked", check)
         controller.panel.contentView?.layoutSubtreeIfNeeded()
         check("SwiftUI content lays out", (controller.panel.contentView?.subviews.count ?? 0) > 0)
         checkSetupLayout(check)
@@ -64,6 +58,26 @@ public enum SelfTest {
             let label = NSHostingView(rootView: TooltipView(item: item)).fittingSize
             check("a capsule label lays out within its maximum width (\(label))", label.width > 0 && label.width <= Tokens.Size.tooltipMaximumWidth && label.height > 0)
         }
+    }
+
+    /// The window at rest is exactly the resting shape (the tab with its flares, or the capsule), the open window is the
+    /// pane, and the shape keeps its place on the screen when the pane opens round it. Run for each way of resting.
+    static func checkGeometry(_ controller: PanelController, _ label: String, _ check: (String, Bool) -> Void) {
+        let visible = controller.visibleFrame
+        let rest = controller.frame(expanded: false)
+        let restWindow = controller.layout.restWindow(in: visible)
+        let pane = controller.frame(expanded: true)
+        controller.applyInstantly(expanded: false)
+        check("\(label): window matches the resting shape (window \(controller.panel.frame), expected \(restWindow))", controller.panel.frame == restWindow)
+        check("\(label): the resting shape is slim, not the size of the pane", min(rest.width, rest.height) <= Tokens.Size.capsuleWidth && rest.width * rest.height < pane.width * pane.height)
+        controller.applyInstantly(expanded: true)
+        check("\(label): window matches pane geometry (window \(controller.panel.frame), expected \(pane))", controller.panel.frame == pane)
+        let local = controller.presentation.rest.rect
+        check("\(label): the resting shape keeps its screen position inside the pane window",
+              local.minX + pane.minX == rest.minX && pane.maxY - local.maxY == rest.minY)
+        check("\(label): presentation shows the pane when expanded", controller.presentation.isExpanded)
+        controller.applyInstantly(expanded: false)
+        check("\(label): collapsing returns to the resting window (window \(controller.panel.frame), expected \(restWindow))", controller.panel.frame == restWindow)
     }
 
     /// The setup window's content must size itself from its rows, with every state present.

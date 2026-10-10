@@ -31,6 +31,8 @@ public enum Tokens {
         public static let setupWidth: CGFloat = 520
         public static let providerLogo: CGFloat = 14
         public static let edgeLine: CGFloat = 1
+        /// How far the pointer travels before a press on the capsule becomes a drag.
+        public static let dragStart: CGFloat = 4
         public static let dotHoverScale: CGFloat = 1.08
         public static let tooltipMaximumWidth: CGFloat = 280
         public static let pillMaximumWidth: CGFloat = 120
@@ -49,6 +51,7 @@ public enum Tokens {
         public static let markSize: CGFloat = 10
         public static let markGap: CGFloat = 8
         public static let maximumMarks = 3
+        public static let tabCorner: CGFloat = 11
         /// The concave curve where the tab meets the edge, running out along it.
         public static let flareRadius: CGFloat = 14
         /// Released this close to an edge, the capsule docks; from this far it starts to be pulled in.
@@ -89,6 +92,9 @@ public enum Tokens {
         public static let tooltipFade: TimeInterval = 0.06
         public static let dotHover: TimeInterval = 0.1
         public static let tooltipEntryScale: CGFloat = 0.9
+        /// How long a peeking capsule stays out after the pointer has left it, and how long presses are ignored after a drag.
+        public static let peekGrace: Duration = .milliseconds(450)
+        public static let clickGuard: TimeInterval = 0.25
         /// Extra window around the pane while it opens, so the overshoot of the bounce is not clipped.
         public static let overshootMargin: CGFloat = 24
     }

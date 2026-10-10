@@ -24,18 +24,31 @@ struct PanelRootView: View {
         let progress = presentation.motion.progress(at: date)
         let content = presentation.motion.contentProgress(at: date)
         let anchor: Alignment = spec.edge == .right ? .trailing : .leading
+        let restAmounts = PanelPhases.restBlend(
+            fromTab: presentation.restFrom.kind == .tab, toTab: presentation.rest.kind == .tab,
+            progress: presentation.restMotion.progress(at: date)
+        )
+        let capsuleOrientation = presentation.capsuleOrientation
         // Lets the animation probe see every frame; nothing happens unless it attached a recorder.
         let _ = presentation.recorder?(spec.rect)
         ZStack(alignment: .topLeading) {
             surface
             ZStack(alignment: anchor) {
-                if progress < 0.999 {
+                if restAmounts.capsule > 0.001, progress < 0.999 {
                     CapsuleView(
-                        model: model, expand: expand, reportDot: { id, frame in presentation.dotFrames[id] = frame },
-                        hovered: presentation.hoveredDot
+                        model: model, orientation: capsuleOrientation, opensFrom: spec.edge, expand: expand,
+                        reportDot: { id, frame in presentation.dotFrames[id] = frame }, hovered: presentation.hoveredDot,
+                        pressAllowed: { Date() >= presentation.clicksIgnoredUntil }, drag: { presentation.onDrag?($0) }
                     )
-                    .opacity(PanelPhases.capsuleOpacity(progress: progress))
-                    .allowsHitTesting(progress < 0.1)
+                    .opacity(PanelPhases.capsuleOpacity(progress: progress) * restAmounts.capsule)
+                    .allowsHitTesting(progress < 0.1 && restAmounts.capsule > 0.5)
+                }
+                if restAmounts.tab > 0.001, progress < 0.999 {
+                    TabView(
+                        marks: model.tabMarks, opensFrom: spec.edge, expand: expand, pressAllowed: { Date() >= presentation.clicksIgnoredUntil }
+                    )
+                    .opacity(PanelPhases.capsuleOpacity(progress: progress) * restAmounts.tab)
+                    .allowsHitTesting(progress < 0.1 && restAmounts.tab > 0.5)
                 }
                 // Always built, so opening only has to fade it in: creating it at the first frame of the move
                 // cost about 75 ms and showed as a stutter. Hidden from touch and VoiceOver while collapsed.

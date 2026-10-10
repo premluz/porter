@@ -1,28 +1,34 @@
 import AppKit
 import SwiftUI
 
-/// Owns the one panel window. The window is sized once per move, to the pane while it is open or
-/// closing and to the capsule when settled, and a spring animates the glass shape inside it. The
-/// window is therefore never resized frame by frame, which was the cause of visible jitter.
+/// Owns the one panel window. The window is sized once per move, to cover the shapes the move goes between, and a
+/// spring animates the one shape inside it; at rest the window is exactly the shape, so no transparent area swallows
+/// clicks meant for what is underneath. The window is never resized frame by frame, which was the cause of jitter.
+/// The panel rests as a docked tab on a screen edge, as a capsule floating where it was left, or opens as the pane.
 @MainActor
 public final class PanelController {
-    public private(set) var settings: PanelSettings
+    public internal(set) var settings: PanelSettings
     private(set) var machine = PanelStateMachine()
     let panel = PanelWindow()
     let model: AppModel
     let presentation = PanelPresentation()
-    private let defaults: UserDefaults
-    private let host: TrackingHostingView<PanelRootView>
-    private let tooltips = TooltipController()
-    private var showingHand = false
-    private var screen: NSScreen?
+    let defaults: UserDefaults
+    let host: TrackingHostingView<PanelRootView>
+    let tooltips = TooltipController()
+    var showingHand = false
+    var screen: NSScreen?
+    /// A docked tab that has grown into the capsule because the pointer is on it.
+    var peeking = false
+    var orientation = PanelOrientation.vertical
+    var restGeneration = 0
+    var drag: DragState?
+    var peekEnd: Task<Void, Never>?
     private var resignObserver: (any NSObjectProtocol)?
 
     public init(model: AppModel, settings: PanelSettings, defaults: UserDefaults = .standard) {
         self.model = model
         self.settings = settings
         self.defaults = defaults
-        presentation.edge = settings.edge
         host = TrackingHostingView(rootView: PanelRootView(model: model, presentation: presentation, expand: {}, close: {}))
         host.sizingOptions = []
         panel.contentView = host
@@ -30,6 +36,7 @@ public final class PanelController {
         panel.acceptsMouseMovedEvents = true
         host.onPointer = { [weak self] point in self?.pointerMoved(to: point) }
         host.cursorAt = { [weak self] point in self?.cursor(at: point) }
+        presentation.onDrag = { [weak self] phase in self?.dragEvent(phase) }
         host.rootView = PanelRootView(
             model: model, presentation: presentation, expand: { [weak self] in self?.open() }, close: { [weak self] in self?.close() }
         )
@@ -40,9 +47,53 @@ public final class PanelController {
         ) { [weak self] _ in Task { @MainActor in self?.close() } }
     }
 
-    /// Shows the capsule without activating anything or taking focus.
+    // MARK: Layout
+
+    var visibleFrame: CGRect {
+        (screen ?? NSScreen.main)?.visibleFrame ?? CGRect(x: 0, y: 0, width: 1440, height: 900)
+    }
+
+    /// Everything that decides where the shapes are, from the settings and what the panel is showing.
+    var layout: PanelLayout {
+        let items = model.items
+        let split = model.snapshot.recentSplit()
+        let sections = [model.snapshot.needsYou, model.snapshot.pinned, split.older].filter { !$0.isEmpty }.count + model.recentGroups.count
+        return PanelLayout(
+            mode: settings.mode, edge: settings.edge, anchor: settings.anchor, floatCenter: settings.floatCenter,
+            orientation: orientation, peeking: peeking, dotCount: items.count, hasOverflow: items.count > Tokens.Capsule.maximumDots,
+            markCount: model.tabMarks.count, rowCount: items.isEmpty ? 3 : items.count, sectionCount: sections
+        )
+    }
+
+    /// Frame for either shape on the current screen. Exposed so tests can compare real windows to geometry.
+    func frame(expanded: Bool) -> CGRect {
+        expanded ? layout.paneFrame(in: visibleFrame) : layout.restFrame(in: visibleFrame)
+    }
+
+    /// The window while the panel is open or opening: the pane and the resting shape it grows from, with room for the bounce.
+    private func operatingWindow(_ layout: PanelLayout) -> CGRect {
+        let visible = visibleFrame
+        return EdgeGeometry.inflated(layout.paneFrame(in: visible).union(layout.restWindow(in: visible)), by: Tokens.Motion.overshootMargin)
+    }
+
+    /// Positions the window and the shapes inside it without any animation, so nothing visibly moves.
+    func settle(window: CGRect) {
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+            panel.setFrame(window, display: true)
+            let l = layout, visible = visibleFrame
+            presentation.layout(rest: l.restSpec(in: window, screen: visible), pane: l.paneSpec(in: window, screen: visible))
+        }
+        host.layoutSubtreeIfNeeded()
+    }
+
+    // MARK: Showing, opening and closing
+
+    /// Shows the panel at rest without activating anything or taking focus.
     public func show() {
-        settle(window: frame(expanded: false))
+        screen = screenUnderPointer()
+        settle(window: layout.restWindow(in: visibleFrame))
         panel.orderFrontRegardless()
     }
 
@@ -50,59 +101,14 @@ public final class PanelController {
         if machine.isExpandedOrOpening { close() } else { open() }
     }
 
-    /// What is under the pointer: in the collapsed capsule a dot or the open button, in the open pane a row of the list.
-    private func clickable(at point: CGPoint) -> String? {
-        switch machine.phase {
-        case .collapsed:
-            return CapsuleHover.item(at: point, frames: presentation.dotFrames)
-        case .expanded:
-            // Rows scrolled under the search field or the footer are still laid out, so only the visible list counts.
-            guard presentation.listFrame.contains(point) else { return nil }
-            return CapsuleHover.item(at: point, frames: presentation.rowFrames, horizontalReach: 0, verticalReach: 0)
-        default:
-            return nil
-        }
-    }
-
-    /// A dot, the open button and a row take a click, so they show the pointing hand. Collapsed, everything else is the
-    /// arrow; open, the arrow is restored once on leaving a row and otherwise the views underneath choose.
-    private func cursor(at point: CGPoint) -> NSCursor? {
-        if clickable(at: point) != nil {
-            showingHand = true
-            return .pointingHand
-        }
-        defer { showingHand = false }
-        return machine.phase == .collapsed || showingHand ? .arrow : nil
-    }
-
-    /// Collapsed, the dot under the pointer is lit and its label shown at once; the label glides to the next dot and
-    /// leaves only when the pointer leaves the dots altogether.
-    private func pointerMoved(to point: CGPoint?) {
-        let hit = point.flatMap(clickable(at:))
-        let collapsed = machine.phase == .collapsed
-        let dot = collapsed ? hit : nil
-        let row = collapsed ? nil : hit
-        if presentation.hoveredDot != dot { presentation.hoveredDot = dot }
-        if presentation.hoveredRow != row { presentation.hoveredRow = row }
-        guard collapsed, let hit, let item = model.items.first(where: { $0.id == hit }), let frame = presentation.dotFrames[hit] else {
-            tooltips.hide()
-            return
-        }
-        let visible = (screen ?? NSScreen.main)?.visibleFrame ?? panel.frame
-        tooltips.show(
-            item, anchor: CapsuleHover.screenRect(of: frame, inWindow: panel.frame), window: panel.frame,
-            edge: settings.edge, visible: visible
-        )
-    }
-
     public func open() {
         tooltips.hide()
+        peekEnd?.cancel()
         presentation.hoveredDot = nil
         guard let animation = machine.open() else { return }
         screen = screenUnderPointer()
         panel.allowsKey = true
-        // Room around the pane for the bounce to overshoot into; trimmed back once it has settled.
-        settle(window: EdgeGeometry.inflated(frame(expanded: true), by: Tokens.Motion.overshootMargin))
+        settle(window: operatingWindow(layout))
         panel.makeKeyAndOrderFront(nil)
         model.paneVisibilityChanged(visible: true)
         animate(to: true, animation)
@@ -112,101 +118,61 @@ public final class PanelController {
         presentation.hoveredRow = nil
         guard let animation = machine.close() else { return }
         model.paneVisibilityChanged(visible: false)
-        animate(to: false, animation)
-    }
-
-    public func setEdge(_ edge: PanelEdge) {
-        guard edge != settings.edge else { return }
-        settings.edge = edge
-        settings.save(to: defaults)
-        presentation.edge = edge
-        settle(window: frame(expanded: machine.isExpandedOrOpening))
-    }
-
-    /// Frame for either shape on the current screen. Exposed so tests can compare real windows to geometry.
-    func frame(expanded: Bool) -> CGRect {
-        let visible = (screen ?? NSScreen.main)?.visibleFrame ?? CGRect(x: 0, y: 0, width: 1440, height: 900)
-        let items = model.items
-        if expanded {
-            let split = model.snapshot.recentSplit()
-            let sections = [model.snapshot.needsYou, model.snapshot.pinned, split.older].filter { !$0.isEmpty }.count + model.recentGroups.count
-            let rows = items.isEmpty ? 3 : items.count
-            return EdgeGeometry.paneFrame(in: visible, edge: settings.edge, anchor: settings.anchor, rowCount: rows, sectionCount: sections)
+        // A docked tab that peeked to be opened goes back to being a tab, so closing folds the pane into the tab.
+        if peeking {
+            peeking = false
+            let l = layout, visible = visibleFrame
+            presentation.replaceRest(l.restSpec(in: panel.frame, screen: visible))
         }
-        return EdgeGeometry.capsuleFrame(
-            in: visible, edge: settings.edge, anchor: settings.anchor,
-            dotCount: items.count, hasOverflow: items.count > Tokens.Capsule.maximumDots
-        )
+        animate(to: false, animation)
     }
 
     /// Jumps straight to a state with no animation; used in the self test.
     func applyInstantly(expanded: Bool) {
         let animation = expanded ? machine.open() : machine.close()
-        settle(window: frame(expanded: expanded))
+        settle(window: expanded ? layout.paneFrame(in: visibleFrame) : layout.restWindow(in: visibleFrame))
         presentation.snap(expanded: expanded)
         if let animation { machine.finished(animation) }
         finishIfCollapsed()
     }
 
-    /// The two shapes in a window's own coordinates: where the panel rests and where it opens to.
-    private func specs(in window: CGRect) -> (rest: ShapeSpec, pane: ShapeSpec) {
-        (
-            ShapeSpec(
-                rect: EdgeGeometry.localRect(of: frame(expanded: false), in: window), corner: Tokens.Size.capsuleCorner,
-                edge: settings.edge, kind: .capsule(.vertical)
-            ),
-            ShapeSpec(
-                rect: EdgeGeometry.localRect(of: frame(expanded: true), in: window), corner: Tokens.Size.paneCorner,
-                edge: settings.edge, kind: .pane
-            )
-        )
-    }
-
-    /// Positions the window and the shapes inside it without any animation, so nothing visibly moves.
-    private func settle(window: CGRect) {
-        var transaction = Transaction()
-        transaction.disablesAnimations = true
-        withTransaction(transaction) {
-            panel.setFrame(window, display: true)
-            let shapes = specs(in: window)
-            presentation.layout(rest: shapes.rest, pane: shapes.pane)
-        }
-        host.layoutSubtreeIfNeeded()
-    }
-
     private func animate(to expanded: Bool, _ animation: PanelAnimation) {
-        let curve = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
-            ? SpringCurve(duration: Tokens.Motion.reducedDuration, bounce: 0)
-            : SpringCurve(duration: Tokens.Motion.springDuration, bounce: Tokens.Motion.springBounce)
-        presentation.beginMove(expanded: expanded, curve: curve)
+        presentation.beginMove(expanded: expanded, curve: motionCurve)
         // A reversal starts a new move and a new generation, so this move's completion is then ignored.
+        let curve = motionCurve
         Task { @MainActor [weak self] in
             try? await Task.sleep(for: .seconds(curve.settlingTime))
             self?.complete(animation)
         }
     }
 
+    var motionCurve: SpringCurve {
+        NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+            ? SpringCurve(duration: Tokens.Motion.reducedDuration, bounce: 0)
+            : SpringCurve(duration: Tokens.Motion.springDuration, bounce: Tokens.Motion.springBounce)
+    }
+
     private func complete(_ animation: PanelAnimation) {
         guard machine.finished(animation) else { return }
         presentation.endMove()
-        if machine.phase == .expanded { settle(window: frame(expanded: true)) }
+        if machine.phase == .expanded { settle(window: layout.paneFrame(in: visibleFrame)) }
         finishIfCollapsed()
     }
 
-    /// Once fully collapsed the window shrinks to the capsule, so no transparent area remains.
+    /// Once fully collapsed the window shrinks to the resting shape, so no transparent area remains.
     private func finishIfCollapsed() {
         guard machine.phase == .collapsed else { return }
-        settle(window: frame(expanded: false))
+        settle(window: layout.restWindow(in: visibleFrame))
         panel.allowsKey = false
         panel.resignKey()
     }
 
     private func contentChanged() {
-        guard machine.phase == .collapsed else { return }
-        settle(window: frame(expanded: false))
+        guard machine.phase == .collapsed, drag == nil, !presentation.isRestMoving else { return }
+        settle(window: layout.restWindow(in: visibleFrame))
     }
 
-    private func screenUnderPointer() -> NSScreen? {
+    func screenUnderPointer() -> NSScreen? {
         let pointer = NSEvent.mouseLocation
         return NSScreen.screens.first { NSMouseInRect(pointer, $0.frame, false) } ?? NSScreen.main
     }

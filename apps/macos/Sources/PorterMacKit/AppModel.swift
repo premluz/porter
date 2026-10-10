@@ -75,6 +75,13 @@ public final class AppModel {
     /// The most recent open conversations under the day each was last used (Today, Yesterday, 2 days ago, …).
     public var recentGroups: [ItemGroup] { DayGrouping.groups(snapshot.recentSplit().recent, now: clock()) }
 
+    /// What the docked tab shows: the chats that are waiting on the person or working, the waiting ones first.
+    public var tabMarks: [PanelItem] {
+        let fresh = items.filter { $0.status.freshness == .fresh }
+        let marks = fresh.filter { $0.status.display == .needsUser } + fresh.filter { $0.status.display == .working }
+        return Array(marks.prefix(Tokens.Dock.maximumMarks))
+    }
+
     public var items: [PanelItem] { snapshot.navigable(showingOlder: showsOlder) }
 
     public var selectedItem: PanelItem? { items.first { $0.id == selection.selectedId } }

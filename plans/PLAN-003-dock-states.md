@@ -32,6 +32,10 @@ Three states. **Docked**: a small tab on the screen edge that shows a few marks 
 5. Horizontal reflow near the top or bottom.
 6. Remembering the resting state, menu items to dock or float, the settings and the validation notes.
 
+## Progress
+
+Steps 1 to 6 are built, tested and committed (LOG-20261010-005). Left out on purpose: docking to the top or bottom, a menu item to float, dragging by the pane. The thresholds are guesses until batch R in docs/VALIDATION_RELEASE.md has been run by a person.
+
 ## Not verifiable here
 
 The feel of the drag, the pull and the liquid shape need a pointer and eyes. Each step has tests for the geometry and a headless check; the rest goes to the validation batch.

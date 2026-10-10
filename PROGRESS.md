@@ -528,6 +528,15 @@ Append checkpoints in date order. Each event uses a unique LOG ID, author, task 
 - Verified: core 127 tests (5 new: listing, keeping the place, validation, status on the session's route, source label), native-host 86 (4 probe tests incl. the real process table; 7 connector tests on a fake runner), Mac app 84. Not verified: anything on a real terminal session (batch Q): the AppleScript for Terminal and iTerm has not been run, and no terminal session existed to try.
 - Not done: bringing a tab forward in cmux, Ghostty, Warp, WezTerm, kitty or Alacritty; the activation feedback text still says "VS Code window" for these routes.
 
+## LOG-20261010-005 — Dock states: tab, capsule you can drag, open pane (PLAN-003 steps 3 to 6)
+
+- Date: 2026-10-10.
+- Author: assistant.
+- Changed: the panel now rests in one of two places and opens into the pane from either. **Docked**: a small tab flush with the left or right edge, flaring into it, showing up to three marks (a needs-you mark first, then working). Hovering it grows the capsule out of it ("peek") and leaving returns it after a short grace. **Floating**: the capsule anywhere on the screen. Dragging a floating capsule, or a docked tab or peek capsule pulled clear of its edge, moves it; near a left or right edge it is pulled towards that edge, and releasing within snap distance docks it, the capsule folding into the tab as one morphing shape. Near the top or bottom, where a standing capsule would not fit, the dots lie down in a row (with a little hysteresis so it does not flicker). Where it rests (mode, edge and height, or floating position) is remembered. The menu's Left and Right edge items dock it there. The drag decision is a pure function (`DockGeometry.dragStep`), so the controller only applies it.
+- Files: `DockModel`, `PanelShape`, `PanelLayout`, `PanelPresentation`, `PanelController` (+`Rest`, +`Pointer`), `CapsuleView` (+ `TabView`), `PanelSettings`, `PanelMotion`, `EdgeGeometry`, `SelfTest`.
+- Verified: Mac app 103 tests (dock geometry 9, shape, layout 4, drag step 4, motion) and the self-test, which checks that collapsing returns to the resting window when docked, floating and lying down; the animation probe still grows through 23 distinct sizes and settles at the pane width. Not verified: anything seen or felt (batch R): the drag, the pull, the flares, the liquid morph, the peek timing, the horizontal reflow and the tab's marks. This environment cannot capture the screen or drive the pointer.
+- Not done: docking to the top or bottom edge (by design, see PLAN-003); a menu item to float it; dragging by the pane's own surface.
+
 ## Checkpoint format
 
 Use the log template in [record templates](templates/RECORDS.md). Keep logs concise; link detailed test evidence instead of pasting terminal transcripts. Rotate older entries into dated files after approximately 150 entries or 64 KiB, preserving all LOG IDs and updating the index.

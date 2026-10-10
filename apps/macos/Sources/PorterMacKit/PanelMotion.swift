@@ -90,26 +90,18 @@ public struct MotionState: Sendable, Equatable {
 
 /// How each part of the panel follows the progress of the move. All are 0...1 and pure.
 public enum PanelPhases {
-    /// Corner radius and the visible surface follow the raw progress, overshoot included.
-    public static func lerp(_ start: CGRect, _ end: CGRect, _ progress: Double) -> CGRect {
-        let amount = CGFloat(progress)
-        return CGRect(
-            x: start.minX + (end.minX - start.minX) * amount, y: start.minY + (end.minY - start.minY) * amount,
-            width: max(start.width + (end.width - start.width) * amount, 0),
-            height: max(start.height + (end.height - start.height) * amount, 0)
-        )
-    }
-
-    public static func cornerRadius(progress: Double) -> CGFloat {
-        let clamped = CGFloat(min(max(progress, 0), 1))
-        return Tokens.Size.capsuleCorner + (Tokens.Size.paneCorner - Tokens.Size.capsuleCorner) * clamped
-    }
-
     private static func clamp(_ value: Double) -> Double { min(max(value, 0), 1) }
 
     private static func smooth(_ value: Double) -> Double {
         let t = clamp(value)
         return t * t * (3 - 2 * t)
+    }
+
+    /// How much of the resting content is the tab's and how much the capsule's, while the panel moves between them.
+    public static func restBlend(fromTab: Bool, toTab: Bool, progress: Double) -> (tab: Double, capsule: Double) {
+        let amount = smooth(progress)
+        let tab = fromTab == toTab ? (toTab ? 1 : 0) : (toTab ? amount : 1 - amount)
+        return (tab, 1 - tab)
     }
 
     /// The capsule's dots fade out early in the move, before the shape is wide enough to stretch them.

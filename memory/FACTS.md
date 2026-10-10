@@ -281,6 +281,14 @@ Evidence classes: `user_requirement`, `source_documentation`, `verified_test`. P
 - Tags: area/macos, area/browser, phase/r1.
 - Review trigger: the first terminal session on a real Mac; any terminal added to the list.
 
+## FACT-032 — The panel's resting states are decided by pure functions; their feel is not established
+
+- Class: verified_test for the geometry and the drag decisions (`DockModelTests`, `DockDragTests`, `PanelLayoutTests`, the self-test windows); unverified for how it looks and feels.
+- Statement: where the panel rests (docked tab or floating capsule, standing or lying down), the pull towards an edge while dragging, when a drag detaches a docked tab, when a release docks, and the window that always contains both the resting shape and its flares are computed by pure functions of the screen, the pointer and the dot count, and the same numbers drive the self-test's window checks. The thresholds (snap 56 pt, pull 96 pt, detach 28 pt, reflow slack 24 pt, peek grace 450 ms, click guard 0.25 s) are tokens chosen by reasoning, not by trying them.
+- Not established: whether those thresholds feel right with a real pointer, how the flared tab reads on light and dark backdrops, whether a click right after a drag is reliably ignored, whether the pointer tracking that opens the peek behaves across Spaces and displays, and what a screen change (display unplugged) does to a remembered floating position beyond keeping it on the visible frame.
+- Tags: area/macos, area/ux, phase/r1.
+- Review trigger: batch R in docs/VALIDATION_RELEASE.md; any change to a dock token.
+
 ## Adding a fact
 
 Include statement, evidence class, source/test reference, observed date, tags, and review trigger if volatile. A failed experiment can be a fact when its exact environment and outcome are recorded. Do not transform a plausible architectural assumption into a tested capability.

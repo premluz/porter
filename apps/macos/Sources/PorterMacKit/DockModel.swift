@@ -60,8 +60,9 @@ public enum DockGeometry {
     /// The capsule peeking out of a docked tab, or the capsule at an edge: the same place the panel has always had.
     public static func edgeCapsuleFrame(edge: PanelEdge, anchor: CGFloat, size: CGSize, in screen: CGRect) -> CGRect {
         let margin = Tokens.Size.edgeMargin
+        let height = min(size.height, screen.height - 2 * margin).rounded(.down)
         let x = (edge == .right ? screen.maxX - size.width - margin : screen.minX + margin).rounded(.down)
-        return CGRect(origin: CGPoint(x: x, y: verticalOrigin(height: size.height, anchor: anchor, in: screen, clearance: margin)), size: size)
+        return CGRect(x: x, y: verticalOrigin(height: height, anchor: anchor, in: screen, clearance: margin), width: size.width, height: height)
     }
 
     /// The floating capsule: centred where it was left, but never off the screen. The orientation is chosen from the
@@ -135,6 +136,36 @@ public enum DockGeometry {
     public static func hasDetached(dragCenter point: CGPoint, edge: PanelEdge, in screen: CGRect) -> Bool {
         let distance = edge == .right ? screen.maxX - point.x : point.x - screen.minX
         return distance > Tokens.Dock.detachDistance + Tokens.Size.capsuleWidth / 2
+    }
+
+    /// What one move of a drag does to the resting state, from where the capsule's centre would be with no help.
+    public struct DragStep: Sendable, Equatable {
+        public var mode: RestMode
+        public var floatCenter: CGPoint
+        public var orientation: PanelOrientation
+        /// A docked tab that has not been pulled clear of its edge does not move at all.
+        public var moved: Bool
+    }
+
+    public static func dragStep(
+        raw: CGPoint, mode: RestMode, edge: PanelEdge, floatCenter: CGPoint, orientation: PanelOrientation,
+        dotCount: Int, hasOverflow: Bool, restingCenterX: (PanelEdge) -> CGFloat, in screen: CGRect
+    ) -> DragStep {
+        var mode = mode
+        var orientation = orientation
+        if mode == .docked {
+            guard hasDetached(dragCenter: raw, edge: edge, in: screen) else {
+                return DragStep(mode: .docked, floatCenter: floatCenter, orientation: orientation, moved: false)
+            }
+            mode = .floating
+            orientation = .vertical
+        }
+        let pulled = magnet(dragCenter: raw, restingCenterX: restingCenterX, in: screen).center
+        let center = CGPoint(
+            x: min(max((pulled.x - screen.minX) / screen.width, 0), 1), y: fraction(fromTop: pulled.y, in: screen)
+        )
+        orientation = Self.orientation(center: center, current: orientation, dotCount: dotCount, hasOverflow: hasOverflow, in: screen)
+        return DragStep(mode: mode, floatCenter: center, orientation: orientation, moved: true)
     }
 
     // MARK: Helpers

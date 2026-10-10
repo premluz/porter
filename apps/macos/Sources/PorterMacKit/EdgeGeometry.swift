@@ -8,15 +8,13 @@ public enum PanelEdge: String, Sendable, CaseIterable, Equatable {
 /// Where the panel sits. Pure geometry: the window is always exactly the visible shape, so there
 /// are no transparent regions that could swallow desktop clicks.
 public enum EdgeGeometry {
+    /// The capsule standing at an edge. The rest of the capsule's geometry is in `DockGeometry`.
     public static func capsuleFrame(
         in screen: CGRect, edge: PanelEdge, anchor: CGFloat, dotCount: Int, hasOverflow: Bool
     ) -> CGRect {
-        let dots = min(max(dotCount, 0), Tokens.Capsule.maximumDots)
-        let dotColumn = CGFloat(dots) * Tokens.Size.capsuleDot + CGFloat(max(dots - 1, 0)) * Tokens.Space.xs
-        let overflow = hasOverflow ? Tokens.Size.capsuleDot : 0
-        let height = Tokens.Space.m * 2 + Tokens.Size.expandButton + Tokens.Space.s
-            + dotColumn + (dots > 0 ? Tokens.Space.s : 0) + overflow
-        return frame(width: Tokens.Size.capsuleWidth, height: height, in: screen, edge: edge, anchor: anchor)
+        DockGeometry.edgeCapsuleFrame(
+            edge: edge, anchor: anchor, size: DockGeometry.capsuleSize(orientation: .vertical, dotCount: dotCount, hasOverflow: hasOverflow), in: screen
+        )
     }
 
     public static func paneFrame(in screen: CGRect, edge: PanelEdge, anchor: CGFloat, rowCount: Int, sectionCount: Int) -> CGRect {
