@@ -41,6 +41,25 @@ public enum Tokens {
         public static let maximumDots = 6
     }
 
+    /// The docked tab and the dragging that moves the capsule to and from it.
+    public enum Dock {
+        /// How far the tab stands out from the screen edge, and the room around its marks.
+        public static let tabDepth: CGFloat = 22
+        public static let tabPadding: CGFloat = 14
+        public static let markSize: CGFloat = 10
+        public static let markGap: CGFloat = 8
+        public static let maximumMarks = 3
+        /// The concave curve where the tab meets the edge, running out along it.
+        public static let flareRadius: CGFloat = 14
+        /// Released this close to an edge, the capsule docks; from this far it starts to be pulled in.
+        public static let snapDistance: CGFloat = 56
+        public static let pullDistance: CGFloat = 96
+        /// A docked tab dragged this far from its edge comes away as a capsule.
+        public static let detachDistance: CGFloat = 28
+        /// Extra room a horizontal capsule needs before it turns upright again.
+        public static let reflowSlack: CGFloat = 24
+    }
+
     public enum Surface {
         /// The material under the capsule, the pane and the label: what a native menu is made of.
         static let material = NSVisualEffectView.Material.menu
