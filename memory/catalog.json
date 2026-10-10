@@ -302,7 +302,7 @@
       "type": "index",
       "title": "Generated project memory index",
       "status": "active",
-      "updated": "2026-10-09",
+      "updated": "2026-10-10",
       "owner": "project-maintainer",
       "tags": [
         "area/memory",
@@ -314,8 +314,8 @@
         "DOC-MEMORY"
       ],
       "path": "memory/INDEX.md",
-      "revision": "sha256:d4c922c56ef3fc12847bbb9a43719f13c21bac58cd3b214f5ebdbbb3d082d4e7",
-      "line_count": 50
+      "revision": "sha256:eff6a9efa69c31ef99ad16a8c79b6e16246ce604a3e23163c5ec71758f06bca5",
+      "line_count": 51
     },
     {
       "id": "DOC-MEMORY",
@@ -548,8 +548,8 @@
         "DOC-VALIDATION"
       ],
       "path": "TASKS.md",
-      "revision": "sha256:7eb5b312dde4092e5cf77bcbfdc88f03d61d3a8b37297e56d824bb2525ccd88c",
-      "line_count": 61
+      "revision": "sha256:c2a7e1c6e83653abfc4831d6c33830ec4d8d12e34d0aacdf886f5267ea646f01",
+      "line_count": 62
     },
     {
       "id": "DOC-TEMPLATES",
@@ -670,6 +670,28 @@
       "path": "plans/PLAN-002-v1-app-package.md",
       "revision": "sha256:823ce9831080f5ff99573fb8d5848ac2c12b11a1c25830666ed546572bf88d84",
       "line_count": 39
+    },
+    {
+      "id": "PLAN-003",
+      "type": "plan",
+      "title": "Docked, floating and open: moving the panel and snapping it to the edge",
+      "status": "active",
+      "updated": "2026-10-10",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/macos",
+        "area/ux",
+        "phase/r1"
+      ],
+      "summary": "Three panel states (docked tab, floating capsule, open pane), dragging with a magnetic pull to the edge, reflow to a horizontal strip near the top or bottom, and hover to peek.",
+      "related": [
+        "DOC-PLAN",
+        "DOC-UX",
+        "PLAN-002"
+      ],
+      "path": "plans/PLAN-003-dock-states.md",
+      "revision": "sha256:e384c277851c5031e9a7f3481f9a831b214f703daa58f217e365469feb199bbb",
+      "line_count": 37
     }
   ]
 }

@@ -3,7 +3,7 @@ id: "DOC-INDEX"
 type: "index"
 title: "Generated project memory index"
 status: "active"
-updated: "2026-10-09"
+updated: "2026-10-10"
 owner: "project-maintainer"
 tags: ["area/memory", "phase/foundation"]
 summary: "Generated entry points and topic map; rebuild with the local utility."
@@ -46,5 +46,6 @@ Start with [current state](../PROJECT_STATE.md) and [handoff](HANDOFF.md). Use [
 | DOC-VALIDATION | [Validation and release plan](../docs/VALIDATION_RELEASE.md) | draft | area/quality, area/macos, area/browser, area/ios, phase/r1, phase/r2 | Evidence requirements, test matrix, and release procedures. |
 | PLAN-001 | [Prove the Mac conversation-switcher foundations](../plans/PLAN-001-feasibility.md) | active | area/macos, area/browser, area/identity, area/quality, phase/r0 | Executable first milestone with platform experiments and evidence gates. |
 | PLAN-002 | [v1: one installable app that reads every source](../plans/PLAN-002-v1-app-package.md) | active | area/macos, area/browser, area/release, phase/r1 | Native-first source adapters, feasibility spikes, and the single app package with a setup assistant. |
+| PLAN-003 | [Docked, floating and open: moving the panel and snapping it to the edge](../plans/PLAN-003-dock-states.md) | active | area/macos, area/ux, phase/r1 | Three panel states (docked tab, floating capsule, open pane), dragging with a magnetic pull to the edge, reflow to a horizontal strip near the top or bottom, and hover to peek. |
 
 The JSON catalog also records content hashes and line counts. Neither index is a replacement for current source files. The MCP interface is proposed, not installed.

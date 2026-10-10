@@ -1,0 +1,37 @@
+---
+id: "PLAN-003"
+type: "plan"
+title: "Docked, floating and open: moving the panel and snapping it to the edge"
+status: "active"
+updated: "2026-10-10"
+owner: "project-maintainer"
+tags: ["area/macos", "area/ux", "phase/r1"]
+summary: "Three panel states (docked tab, floating capsule, open pane), dragging with a magnetic pull to the edge, reflow to a horizontal strip near the top or bottom, and hover to peek."
+related: ["DOC-PLAN", "DOC-UX", "PLAN-002"]
+---
+
+# PLAN-003 — Dock states
+
+## What Prem asked for (2026-10-10, with a sketch)
+
+Three states. **Docked**: a small tab on the screen edge that shows a few marks (the sketch shows a needs-you dot and a working spinner) and flares into the edge with concave curves. **Minimised, detached**: the capsule, free to move anywhere. **Maximised**: the open pane. The capsule can be dragged; near the edge it is pulled in magnetically and morphs into the docked tab with a liquid animation. Near the top or bottom of the screen the dots reflow into a horizontal strip, depending on the room available. Hovering a docked tab expands it to the capsule.
+
+## Assumptions (stated, not asked)
+
+- Docking is on the left and right edges only (the existing two edges). The top and bottom are for reflow, not docking.
+- Hover peek: pointer enters the docked tab, the capsule grows out of it; leaving returns to the tab after a short delay. A peek capsule can be dragged away, which detaches it.
+- The open pane from a docked or peeking capsule opens at its edge, as now; from a floating capsule it opens at the capsule's place, kept on screen, and closes back to it.
+- Where it rests (docked edge and height, or floating position) is remembered across launches, as the edge and height are now.
+
+## Order (each step committed with its tests; the app stays usable between steps)
+
+1. A pure model: rest states, frames for each (docked tab with its flare, peek capsule, floating capsule in either orientation), orientation from the room available, the snap decision and the magnetic pull while dragging. Tests only.
+2. One shape that can be a capsule, a docked tab with flares, or the pane, and a motion between any two of them, replacing the fixed capsule-to-pane morph. Existing open and close behave as before.
+3. Floating and dragging: drag the capsule anywhere, the pull towards the edge, release to dock; drag a docked tab or peek capsule away to detach.
+4. The docked tab and hover peek, with the marks it shows.
+5. Horizontal reflow near the top or bottom.
+6. Remembering the resting state, menu items to dock or float, the settings and the validation notes.
+
+## Not verifiable here
+
+The feel of the drag, the pull and the liquid shape need a pointer and eyes. Each step has tests for the geometry and a headless check; the rest goes to the validation batch.
