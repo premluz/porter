@@ -104,7 +104,9 @@ public enum PanelBuilder {
         let age = newest.map { max(0, Int(inputs.now.timeIntervalSince($0.receivedAt))) }
         let freshness: Freshness = known.contains { $0.freshness == .fresh } ? .fresh : (newest == nil ? .unknown : .stale)
         let lastKnown = newest.map(StatusProjection.displayStatus(of:))
-        return ItemStatus(display: display, freshness: freshness, ageSeconds: age, lastKnown: lastKnown)
+        let end = known.filter { $0.freshness == .fresh && $0.reachability == .connected }
+            .compactMap(\.turnEnd).max { $0.at < $1.at }
+        return ItemStatus(display: display, freshness: freshness, ageSeconds: age, lastKnown: lastKnown, turnEnd: end)
     }
 
     private static func markSharedTitles(_ items: [PanelItem]) -> [PanelItem] {
@@ -119,7 +121,8 @@ public enum PanelBuilder {
         }
     }
 
-    private static func matches(_ item: PanelItem, query: String) -> Bool {
+    /// Voice navigation and the panel share the same all-terms search, including project/profile and provider.
+    public static func matches(_ item: PanelItem, query: String) -> Bool {
         let terms = query.lowercased().split(whereSeparator: \.isWhitespace)
         let haystack = [item.title, item.provider, item.profileAlias ?? ""].joined(separator: " ").lowercased()
         return terms.allSatisfy { haystack.contains($0) }

@@ -1,6 +1,7 @@
 import AppKit
 import ConversationCore
 import Foundation
+import OSLog
 
 /// Opens a link with the system. A protocol so the connector can be tested without opening anything.
 public protocol URLOpening: Sendable {
@@ -12,8 +13,8 @@ public struct WorkspaceURLOpener: URLOpening {
 
     public func open(_ url: URL) async -> Bool {
         await withCheckedContinuation { continuation in
-            NSWorkspace.shared.open(url, configuration: NSWorkspace.OpenConfiguration()) { _, error in
-                continuation.resume(returning: error == nil)
+            NSWorkspace.shared.open(url, configuration: NSWorkspace.OpenConfiguration()) { app, error in
+                continuation.resume(returning: app != nil && error == nil)
             }
         }
     }
@@ -27,6 +28,9 @@ public final class CodexThreadsConnector: HostConnector {
     static let adapterVersion = "0.1.0"
     /// How far back threads are listed.
     static let window: TimeInterval = 7 * 86_400
+    /// While a turn is open the same report is repeated this often, so the registry's claim of work does not lapse.
+    static let workingRepeat: TimeInterval = 15
+    private static let logger = Logger(subsystem: "app.porter", category: "CodexThreadsConnector")
 
     public let kind = ConnectorKind.desktopApp
     public let installationId: UUID
@@ -52,12 +56,16 @@ public final class CodexThreadsConnector: HostConnector {
     public var isAvailable: Bool { index.isAvailable }
 
     public func snapshot() async throws -> InventorySnapshotPayload {
-        let threads = index.recentThreads(now: now(), window: Self.window)
+        let moment = now()
+        let threads = index.recentThreads(now: moment, window: Self.window)
+        let reports = try index.turnReports(among: threads, now: moment)
         let entries = threads.enumerated().map { position, thread in
             AppEntryReport(
                 provider: Self.provider, providerConversationId: thread.id, title: thread.title,
                 bundleId: Self.bundleId(for: thread), ordinal: 0, lastActiveAt: thread.updatedAt, position: position,
-                workspacePath: thread.workspacePath.flatMap { $0.hasPrefix("/") ? $0 : nil }
+                workspacePath: thread.workspacePath.flatMap { $0.hasPrefix("/") ? $0 : nil },
+                working: reports[thread.id]?.working == true ? true : nil,
+                lastTurnEndedAt: reports[thread.id]?.end?.at, lastTurnEndKind: reports[thread.id]?.end?.kind
             )
         }
         return InventorySnapshotPayload(tabs: [], appEntries: entries)
@@ -66,10 +74,10 @@ public final class CodexThreadsConnector: HostConnector {
     public func changes() -> AsyncStream<Void> {
         AsyncStream { continuation in
             let poller = Task { [self] in
-                var seen = index.fingerprint()
+                var seen = signature()
                 while !Task.isCancelled {
                     try? await Task.sleep(for: pollInterval)
-                    let current = index.fingerprint()
+                    let current = signature()
                     if current != seen {
                         seen = current
                         continuation.yield()
@@ -77,6 +85,23 @@ public final class CodexThreadsConnector: HostConnector {
                 }
             }
             continuation.onTermination = { _ in poller.cancel() }
+        }
+    }
+
+    /// What the list and the turns in it look like now. It changes when Codex records a thread, when a turn starts or
+    /// ends, and every `workingRepeat` seconds while one is open.
+    private func signature() -> String {
+        let moment = now()
+        do {
+            let reports = try index.turnReports(among: index.recentThreads(now: moment, window: Self.window), now: moment)
+            let markers = reports.sorted { $0.key < $1.key }.map { id, report in
+                "\(id):\(report.working):\(report.end?.at.timeIntervalSince1970 ?? 0):\(report.end?.kind.rawValue ?? "unknown")"
+            }
+            let repeatKey = reports.values.contains { $0.working } ? Int(moment.timeIntervalSince1970 / Self.workingRepeat) : 0
+            return "\(index.fingerprint())|\(markers)|\(repeatKey)"
+        } catch {
+            Self.logger.error("Could not poll Codex turn boundaries: \(error.localizedDescription, privacy: .public)")
+            return "unavailable:\(index.fingerprint())"
         }
     }
 
@@ -94,9 +119,9 @@ public final class CodexThreadsConnector: HostConnector {
         thread.startedInVSCode ? LocatorPolicy.vscodeBundleId : "com.openai.codex"
     }
 
-    /// The extension's own link handler navigates to `/local/<id>`, and the app takes the same route under its scheme.
+    /// The extension uses `/local/<id>`; the installed app exposes `/threads/<id>` under its own scheme.
     static func link(for thread: CodexThread) -> URL? {
         guard thread.id.wholeMatch(of: /[A-Za-z0-9-]{8,64}/) != nil else { return nil }
-        return thread.startedInVSCode ? URL(string: "vscode://openai.chatgpt/local/\(thread.id)") : URL(string: "codex://local/\(thread.id)")
+        return thread.startedInVSCode ? URL(string: "vscode://openai.chatgpt/local/\(thread.id)") : URL(string: "codex://threads/\(thread.id)")
     }
 }

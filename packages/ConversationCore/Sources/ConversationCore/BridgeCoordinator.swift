@@ -1,78 +1,5 @@
 import Foundation
 
-/// Opaque handle the I/O layer assigns to one connector connection.
-public struct ConnectionID: Hashable, Sendable, CustomStringConvertible {
-    public let value: UInt64
-
-    public init(_ value: UInt64) { self.value = value }
-
-    public var description: String { "connection-\(value)" }
-}
-
-public enum OutboundAction: Sendable, Equatable {
-    case send(Data)
-    case close
-}
-
-public struct Outbound: Sendable, Equatable {
-    public let connection: ConnectionID
-    public let action: OutboundAction
-}
-
-public enum BridgeEvent: Sendable, Equatable {
-    case connectorConnected(connectorId: String)
-    case connectorDisconnected(connectorId: String)
-    case inventoryChanged(connectorId: String)
-    /// An agent's working state changed; the panel should recompute statuses.
-    case statusChanged
-    /// A session was tied to, or released from, a tab; the app saves the ties so a restart keeps them.
-    case agentBindingsChanged
-    case activation(ActivationResult)
-    case protocolViolation(connection: ConnectionID, code: BridgeErrorCode, detail: String)
-}
-
-public struct BridgeResult: Sendable, Equatable {
-    public var outbound: [Outbound] = []
-    public var events: [BridgeEvent] = []
-
-    public init(outbound: [Outbound] = [], events: [BridgeEvent] = []) {
-        self.outbound = outbound
-        self.events = events
-    }
-
-    static func + (lhs: BridgeResult, rhs: BridgeResult) -> BridgeResult {
-        BridgeResult(outbound: lhs.outbound + rhs.outbound, events: lhs.events + rhs.events)
-    }
-}
-
-struct Binding: Sendable {
-    let connectorId: String
-    let kind: ConnectorKind
-    let installationId: UUID
-    let epoch: String
-    var outboundSequence = 0
-}
-
-/// A tab and the chat it showed. Tab IDs are unique within a browser session, so a returning tab
-/// showing the same chat is the same route; a different chat in the same tab never is.
-struct RouteKey: Hashable, Sendable {
-    let connectorId: String
-    let tabId: Int
-    let providerConversationId: String
-}
-
-struct RememberedRoute: Sendable {
-    let destinationId: UUID
-    let revision: Int
-}
-
-struct PendingActivation: Sendable {
-    let connection: ConnectionID
-    let destinationId: UUID
-    let destinationRevision: Int
-    let deadline: Date
-}
-
 /// All bridge decisions as a pure state machine: bytes in, bytes and events out. Sockets live
 /// elsewhere, so identity, authorization and ordering rules are testable without a browser.
 public struct BridgeCoordinator: Sendable {
@@ -103,6 +30,10 @@ public struct BridgeCoordinator: Sendable {
     var appDestinations: [String: [String: UUID]] = [:]
     /// Where an app lists each route, for ordering routes that have no time. Never compared across connectors.
     var listRank: [UUID: Int] = [:]
+    /// When a connector last reported a turn in progress for a route. Only ever positive evidence; a report without
+    /// it removes the route here, and the status that comes from it expires if the reports stop.
+    var appWorking: [UUID: Date] = [:]
+    var appTurnEnds: [UUID: TurnEnd] = [:]
     /// The few seconds around a click in Porter, per route. Bringing a chat forward makes its connector report it as
     /// just used, which would lift every chat to the top the moment it is opened; times inside this span are ignored.
     var ownActivations: [UUID: ClosedRange<Date>] = [:]

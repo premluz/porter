@@ -17,14 +17,13 @@ public struct PanelLayout: Sendable, Equatable {
     public var peeking: Bool
     public var dotCount: Int
     public var hasOverflow: Bool
-    public var markCount: Int
     public var rowCount: Int
     public var sectionCount: Int
 
     public init(
         mode: RestMode = .docked, edge: PanelEdge = .right, anchor: CGFloat = 0.5, floatCenter: CGPoint = CGPoint(x: 0.5, y: 0.5),
         orientation: PanelOrientation = .vertical, peeking: Bool = false, dotCount: Int = 0, hasOverflow: Bool = false,
-        markCount: Int = 1, rowCount: Int = 3, sectionCount: Int = 1
+        rowCount: Int = 3, sectionCount: Int = 1
     ) {
         self.mode = mode
         self.edge = edge
@@ -34,7 +33,6 @@ public struct PanelLayout: Sendable, Equatable {
         self.peeking = peeking
         self.dotCount = dotCount
         self.hasOverflow = hasOverflow
-        self.markCount = markCount
         self.rowCount = rowCount
         self.sectionCount = sectionCount
     }
@@ -44,7 +42,7 @@ public struct PanelLayout: Sendable, Equatable {
 
     /// The resting shape's rectangle on screen.
     public func restFrame(in screen: CGRect) -> CGRect {
-        if restIsTab { return DockGeometry.tabFrame(edge: edge, anchor: anchor, markCount: markCount, in: screen) }
+        if restIsTab { return DockGeometry.tabFrame(edge: edge, anchor: anchor, in: screen) }
         let size = DockGeometry.capsuleSize(orientation: mode == .docked ? .vertical : orientation, dotCount: dotCount, hasOverflow: hasOverflow)
         if mode == .docked { return DockGeometry.edgeCapsuleFrame(edge: edge, anchor: anchor, size: size, in: screen) }
         return DockGeometry.floatingFrame(center: floatCenter, orientation: orientation, dotCount: dotCount, hasOverflow: hasOverflow, in: screen)
@@ -73,7 +71,9 @@ public struct PanelLayout: Sendable, Equatable {
     public func restSpec(in window: CGRect, screen: CGRect) -> ShapeSpec {
         let local = EdgeGeometry.localRect(of: restFrame(in: screen), in: window)
         if restIsTab {
-            return ShapeSpec(rect: local, corner: Tokens.Dock.tabCorner, flare: Tokens.Dock.flareRadius, edge: edge, kind: .tab)
+            let edgeX = (edge == .right ? screen.maxX : screen.minX) - window.minX
+            let fusion = EdgeFusion(edge: edge, x: edgeX, reach: Tokens.Dock.flareRadius)
+            return ShapeSpec(rect: local, corner: Tokens.Dock.tabCorner, fusion: fusion, edge: edge, kind: .tab)
         }
         let kind: PanelOrientation = mode == .docked ? .vertical : orientation
         return ShapeSpec(rect: local, corner: Tokens.Size.capsuleCorner, edge: mode == .docked ? edge : paneEdge(in: screen), kind: .capsule(kind))

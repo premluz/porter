@@ -9,13 +9,9 @@ extension BridgeCoordinator {
         if let refusal = refusal(forProviders: entries.map(\.provider), binding: binding, connection: connection) {
             return refusal
         }
-        var changed = false
-        let reported = Set(entries.map(\.providerConversationId))
-        for (key, destinationId) in appDestinations[binding.connectorId] ?? [:] where !reported.contains(key) {
-            registry.remove(destinationId)
-            appDestinations[binding.connectorId]?[key] = nil
-            changed = true
-        }
+        let removed = removeMissingAppEntries(Set(entries.map(\.providerConversationId)), connectorId: binding.connectorId)
+        var changed = removed.inventory
+        var statusChanged = removed.status
         var result = BridgeResult()
         for entry in entries {
             switch storeAppEntry(entry, binding: binding, now: now) {
@@ -23,10 +19,30 @@ extension BridgeCoordinator {
             case .changed: changed = true
             case .rejected(let reason): result = result + violation(connection, .malformed, reason, close: false)
             }
+            if let id = appDestinations[binding.connectorId]?[entry.providerConversationId], setWorking(id, entry.working, now: now) {
+                statusChanged = true
+            }
+            if let id = appDestinations[binding.connectorId]?[entry.providerConversationId], setTurnEnd(id, entry: entry) {
+                statusChanged = true
+            }
         }
         pruneRecency()
         if changed { result.events.append(.inventoryChanged(connectorId: binding.connectorId)) }
+        if statusChanged { result.events.append(.statusChanged) }
         return result
+    }
+
+    private mutating func removeMissingAppEntries(_ reported: Set<String>, connectorId: String) -> (inventory: Bool, status: Bool) {
+        var inventory = false
+        var status = false
+        for (key, id) in appDestinations[connectorId] ?? [:] where !reported.contains(key) {
+            registry.remove(id)
+            appDestinations[connectorId]?[key] = nil
+            if appWorking.removeValue(forKey: id) != nil { status = true }
+            if appTurnEnds.removeValue(forKey: id) != nil { status = true }
+            inventory = true
+        }
+        return (inventory, status)
     }
 
     private enum StoreOutcome {

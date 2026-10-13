@@ -110,6 +110,14 @@ struct PhaseTests {
         #expect(halfway.tab > 0 && halfway.tab < 1 && abs(halfway.tab + halfway.capsule - 1) < 1e-9)
     }
 
+    @Test("the surface is black while the tab rests and turns to glass as the pane opens out of it")
+    func notch() {
+        #expect(PanelPhases.notch(tab: 1, progress: 0) == 1 && PanelPhases.notch(tab: 1, progress: 1) == 0)
+        #expect(PanelPhases.notch(tab: 0, progress: 0) == 0 && PanelPhases.notch(tab: 0, progress: 0.5) == 0)
+        let halfway = PanelPhases.notch(tab: 1, progress: 0.5)
+        #expect(halfway > 0 && halfway < 1)
+    }
+
     @Test("dots fade out early and content fades in late, so text is never drawn on a narrow shape")
     func contentTiming() {
         #expect(PanelPhases.capsuleOpacity(progress: 0) == 1 && PanelPhases.capsuleOpacity(progress: 1) == 0)

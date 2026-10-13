@@ -22,6 +22,9 @@ let package = Package(
                 .product(name: "NativeSources", package: "native-host"),
             ]
         ),
+        // The live mascot's character spec and animation rules, ported from Rios Brand (PLAN-005); no UI.
+        .target(name: "PorterMascot", resources: [.copy("Resources/mascot-spec.v1.json")]),
+        .testTarget(name: "PorterMascotTests", dependencies: ["PorterMascot"], resources: [.copy("Fixtures/mascot-parity.v1.json")]),
         .executableTarget(name: "Porter", dependencies: ["PorterMacKit"]),
         .testTarget(
             name: "PorterMacKitTests",

@@ -9,7 +9,7 @@ struct PanelLayoutTests {
 
     @Test("docked, the resting shape is the tab and the window is the tab with its flares; peeking, it is the edge capsule")
     func docked() {
-        var layout = PanelLayout(mode: .docked, edge: .right, dotCount: 4, markCount: 2)
+        var layout = PanelLayout(mode: .docked, edge: .right, dotCount: 4)
         let tab = layout.restFrame(in: screen)
         #expect(layout.restIsTab && tab.width == Tokens.Dock.tabDepth && tab.maxX == screen.maxX)
         #expect(layout.restWindow(in: screen) == DockGeometry.tabWindowFrame(tab))
@@ -39,16 +39,17 @@ struct PanelLayoutTests {
         #expect(PanelLayout(mode: .floating, floatCenter: CGPoint(x: 0.1, y: 0.5), dotCount: 4).paneEdge(in: screen) == .left)
     }
 
-    @Test("the shape specs are in the window's own coordinates and carry the flare only for the tab")
+    @Test("the shape specs are in the window's own coordinates and are fused with the screen edge only for the tab, at that edge")
     func specs() {
-        let layout = PanelLayout(mode: .docked, edge: .right, dotCount: 4, markCount: 2)
+        let layout = PanelLayout(mode: .docked, edge: .right, dotCount: 4)
         let window = layout.restWindow(in: screen)
         let rest = layout.restSpec(in: window, screen: screen)
-        #expect(rest.kind == .tab && rest.flare == Tokens.Dock.flareRadius && rest.rect.minY == Tokens.Dock.flareRadius)
+        #expect(rest.kind == .tab && rest.fusion?.reach == Tokens.Dock.flareRadius && rest.rect.minY == Tokens.Dock.flareRadius)
+        #expect(rest.fusion?.x == window.width && rest.rect.maxX == window.width)
         var peek = layout
         peek.peeking = true
         let capsule = peek.restSpec(in: peek.restWindow(in: screen), screen: screen)
-        #expect(capsule.kind == .capsule(.vertical) && capsule.flare == 0 && capsule.rect.origin == .zero)
+        #expect(capsule.kind == .capsule(.vertical) && capsule.fusion == nil && capsule.rect.origin == .zero)
         #expect(layout.paneSpec(in: layout.paneFrame(in: screen), screen: screen).rect.origin == .zero)
     }
 }

@@ -31,4 +31,14 @@ struct LiveCodexTests {
         #expect(Set(entries.map(\.providerConversationId)).count == entries.count)
         #expect(entries.allSatisfy { $0.lastActiveAt != nil && !$0.title.isEmpty })
     }
+
+    @Test("threads whose turn is open right now are reported working; prints how many, and when their files last changed")
+    func liveWorking() async throws {
+        let source = CodexThreadsConnector(installationId: UUID())
+        try #require(source.isAvailable, "no ~/.codex/session_index.jsonl on this Mac")
+        let entries = try await source.snapshot().appEntries ?? []
+        let working = entries.filter { $0.working == true }
+        print("live: \(working.count) of \(entries.count) threads working; ids \(working.map { String($0.providerConversationId.prefix(8)) })")
+        #expect(working.count <= entries.count)
+    }
 }

@@ -42,7 +42,10 @@ public struct ActivationReport: Sendable, Equatable {
 extension RegistryService {
     /// Statuses the registry can vouch for, by route. Anything it cannot attribute is simply absent.
     public func statuses() -> [UUID: DestinationStatus] {
-        coordinator.withLock { $0.agentStatuses(now: Date()) }
+        coordinator.withLock {
+            let now = Date()
+            return $0.agentStatuses(now: now).merging($0.appStatuses(now: now)) { hook, _ in hook }
+        }
     }
 
     /// Agents running in terminals, as their hooks have placed them.

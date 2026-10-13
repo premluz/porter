@@ -3,7 +3,7 @@ id: "DOC-QUESTIONS"
 type: "questions"
 title: "Open questions and risks"
 status: "active"
-updated: "2026-10-08"
+updated: "2026-10-10"
 owner: "project-maintainer"
 tags: ["area/memory", "area/identity", "area/security", "area/sync", "phase/r0"]
 summary: "Unresolved choices and experiments that can settle them."
@@ -40,6 +40,9 @@ Open questions are not automatic blockers to unrelated work. Proceed with docume
 | Q-023 | How can working state be shown for claude.ai and chatgpt.com chats and for Codex? | Not shown; Unknown | No documented signal exists for claude.ai or chatgpt.com. Reading the page for a "stop" control would be page scraping, which the project avoids as a foundation; decide whether to allow it as an optional, clearly marked adapter. Codex's documented `notify` setting reports finished turns only |
 | Q-024 | Can several Claude Code tabs in one window each get their own status? | Yes where the prompt is sent after Porter and a 0.2+ companion are running: a session is bound to the front tab at its first prompt (LOG-20261009-020). Unproven on real windows | Needs a session ID per tab from the extension or a different attribution mechanism |
 | Q-015 | Where are suite context links stored, and what ID formats do Manager and Atlas use? | Store in the product where the user created the link; opaque string IDs | ADR-004 validation round trip |
+| Q-025 | How should voice commands be started by default: push to talk, a listening window after each announcement, or a wake phrase? | Push to talk first, reply window as an option, wake phrase only after the TASK-093 spike | 2026-10-10: stated default applied to Prem's "execute"; ADR-008, PLAN-004. Push-to-talk path built provisionally; live recognition evidence owed |
+| Q-026 | Which phrasing for spoken completions, and English only at first? | "Claude has completed a task" / "Chat GPT has completed a task"; English first | 2026-10-10: Prem revised the earlier title/project template default. Source-specific speech and notice title built; system default voice follows the Mac |
+| Q-027 | Should "completed" also be announced for interrupted turns? | Yes, said differently ("{title} was interrupted"), and not as a notice | 2026-10-10: stated default applied to Prem's "execute"; ADR-008. Interrupted events speak separately and never emit completion notices |
 
 ## Risks
 

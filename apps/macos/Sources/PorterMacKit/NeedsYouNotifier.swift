@@ -21,8 +21,11 @@ public enum NotificationState: Sendable, Equatable {
 /// The system's notifications for a bundled app. It asks for permission only when the person presses the button in the
 /// setup window, and posts nothing without it.
 @MainActor
-public final class UserNotificationNotifier: NSObject, NeedsYouNotifying, UNUserNotificationCenterDelegate {
+public final class UserNotificationNotifier: NSObject, NeedsYouNotifying, Announcing, UNUserNotificationCenterDelegate {
     private let onOpen: () -> Void
+    private let onOpenCompletions: ([String]) -> Void
+    private nonisolated static let completionIdsKey = "completionIds"
+    private static let completionPrefix = "porter.completed."
     public private(set) var state: NotificationState = .notAvailable
 
     private var center: UNUserNotificationCenter? {
@@ -30,8 +33,9 @@ public final class UserNotificationNotifier: NSObject, NeedsYouNotifying, UNUser
     }
 
     /// `onOpen` runs when the person clicks a notice, so Porter's pane opens on what is waiting.
-    public init(onOpen: @escaping () -> Void) {
+    public init(onOpenCompletions: @escaping ([String]) -> Void = { _ in }, onOpen: @escaping () -> Void) {
         self.onOpen = onOpen
+        self.onOpenCompletions = onOpenCompletions
         super.init()
         center?.delegate = self
     }
@@ -73,6 +77,23 @@ public final class UserNotificationNotifier: NSObject, NeedsYouNotifying, UNUser
         center.removeDeliveredNotifications(withIdentifiers: Array(ids))
     }
 
+    public func announce(_ batch: CompletionBatch) {
+        guard batch.kind == .completed, !batch.completions.isEmpty, state == .allowed, let center else { return }
+        let content = UNMutableNotificationContent()
+        if batch.completions.count == 1, let event = batch.completions.first {
+            content.title = SpeechTemplates.text(for: batch) ?? "Task completed"
+            content.body = [event.projectName, event.title].compactMap { $0 }.joined(separator: " · ")
+        } else {
+            content.title = SpeechTemplates.text(for: batch) ?? "Tasks completed"
+        }
+        content.sound = .default
+        content.userInfo = [Self.completionIdsKey: batch.completions.map(\.id)]
+        let identifier = Self.completionPrefix + UUID().uuidString
+        center.add(UNNotificationRequest(identifier: identifier, content: content, trigger: nil)) { error in
+            if let error { NSLog("Porter could not post a completion notice: \(error)") }
+        }
+    }
+
     // A notice for a chat that needs you is shown even while Porter is the front app.
     nonisolated public func userNotificationCenter(
         _ center: UNUserNotificationCenter, willPresent notification: UNNotification
@@ -81,6 +102,9 @@ public final class UserNotificationNotifier: NSObject, NeedsYouNotifying, UNUser
     nonisolated public func userNotificationCenter(
         _ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse
     ) async {
-        await MainActor.run { onOpen() }
+        let ids = response.notification.request.content.userInfo[Self.completionIdsKey] as? [String]
+        await MainActor.run {
+            if let ids { onOpenCompletions(ids) } else { onOpen() }
+        }
     }
 }

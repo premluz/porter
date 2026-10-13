@@ -1,0 +1,143 @@
+{
+  "version": 1,
+  "palettes": {
+    "coral": {
+      "body": "#FF9FA5",
+      "limb": "#FA8C96",
+      "ink": "#080A09",
+      "white": "#FFFEFC"
+    },
+    "lavender": {
+      "body": "#BEB6EC",
+      "limb": "#A49AD9",
+      "ink": "#242328",
+      "white": "#FFFDFC"
+    },
+    "mist": {
+      "body": "#ADD2CC",
+      "limb": "#88B9B1",
+      "ink": "#242328",
+      "white": "#FFFDFC"
+    }
+  },
+  "body": {
+    "rx": 122,
+    "ry": 112,
+    "rz": 113
+  },
+  "eyes": {
+    "style": "capsule",
+    "x": 28,
+    "y": 34,
+    "rx": 10,
+    "ry": 22,
+    "gazeTravel": 30
+  },
+  "expressions": {
+    "neutral": {
+      "openingLeft": 1,
+      "openingRight": 1,
+      "brow": 0,
+      "browAngle": 0,
+      "gazeX": 0,
+      "gazeY": 0,
+      "tilt": 0
+    },
+    "happy": {
+      "openingLeft": 0.75,
+      "openingRight": 0.75,
+      "brow": 0,
+      "browAngle": 0,
+      "gazeX": 0,
+      "gazeY": -0.15,
+      "tilt": -4
+    },
+    "curious": {
+      "openingLeft": 0.78,
+      "openingRight": 1,
+      "brow": 1,
+      "browAngle": -8,
+      "gazeX": 0.55,
+      "gazeY": -0.35,
+      "tilt": 9
+    },
+    "surprised": {
+      "openingLeft": 1,
+      "openingRight": 1,
+      "brow": 1,
+      "browAngle": 0,
+      "gazeX": 0,
+      "gazeY": -0.3,
+      "tilt": 0
+    },
+    "sleepy": {
+      "openingLeft": 0.35,
+      "openingRight": 0.35,
+      "brow": 0,
+      "browAngle": 0,
+      "gazeX": 0,
+      "gazeY": 0.55,
+      "tilt": -8
+    },
+    "concerned": {
+      "openingLeft": 0.85,
+      "openingRight": 0.85,
+      "brow": 1,
+      "browAngle": 16,
+      "gazeX": -0.4,
+      "gazeY": 0.25,
+      "tilt": 4
+    },
+    "angry": {
+      "openingLeft": 1,
+      "openingRight": 1,
+      "brow": 1,
+      "browAngle": 24,
+      "gazeX": 0,
+      "gazeY": 0,
+      "tilt": 0
+    }
+  },
+  "motion": {
+    "gazeResponse": 0.18,
+    "gazeDamping": 1,
+    "saccadeInterval": {
+      "min": 0.6,
+      "max": 1.8
+    },
+    "saccadeSize": 0.08,
+    "returnDelay": 2.5,
+    "blinkInterval": {
+      "min": 2.5,
+      "max": 6
+    },
+    "blinkDuration": 0.14,
+    "doubleBlinkChance": 0.15,
+    "expressionBlend": 0.25,
+    "changeSquash": 0.06,
+    "breathPeriod": 4,
+    "breathDepth": 0.02
+  },
+  "liquid": {
+    "fusion": 0.55,
+    "splitDistance": 2.5,
+    "neckTime": 0.6,
+    "maximumAgents": 3,
+    "agentScale": [
+      1,
+      0.78,
+      0.66
+    ]
+  },
+  "light": {
+    "x": -1.2,
+    "y": 1.8,
+    "z": 2.2,
+    "shadow": 0.2,
+    "edge": 0.1,
+    "edgeFocus": 2,
+    "highlight": "#FFF6E9",
+    "highlightStrength": 0.7,
+    "highlightFocus": 10
+  }
+}

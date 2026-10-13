@@ -7,20 +7,46 @@ public enum ShapeKind: Sendable, Equatable {
     case pane
 }
 
+/// Where a shape is fused with the screen edge: which edge, where it is in the window's coordinates, and how far the
+/// fillet runs along the edge where the shape meets it. A shape with no fusion is a plain rounded rectangle.
+public struct EdgeFusion: Sendable, Equatable {
+    public var edge: PanelEdge
+    public var x: CGFloat
+    public var reach: CGFloat
+
+    public init(edge: PanelEdge, x: CGFloat, reach: CGFloat) {
+        self.edge = edge
+        self.x = x
+        self.reach = reach
+    }
+
+    /// Part of the way from one fusion to another; a missing one is the other with no reach. Between two edges, the
+    /// first lets go before the second takes hold.
+    static func mix(_ a: EdgeFusion?, _ b: EdgeFusion?, _ amount: CGFloat) -> EdgeFusion? {
+        guard let a else { return b.map { EdgeFusion(edge: $0.edge, x: $0.x, reach: max($0.reach * amount, 0)) } }
+        guard let b else { return EdgeFusion(edge: a.edge, x: a.x, reach: max(a.reach * (1 - amount), 0)) }
+        guard a.edge == b.edge else {
+            return amount < 0.5
+                ? EdgeFusion(edge: a.edge, x: a.x, reach: max(a.reach * (1 - 2 * amount), 0))
+                : EdgeFusion(edge: b.edge, x: b.x, reach: max(b.reach * (2 * amount - 1), 0))
+        }
+        return EdgeFusion(edge: a.edge, x: a.x + (b.x - a.x) * amount, reach: max(a.reach + (b.reach - a.reach) * amount, 0))
+    }
+}
+
 /// One shape the panel can be: where it is in the window (top-left coordinates), how round, and, for the docked tab,
-/// how far it flares out along the screen edge. The panel is always a single shape moving between these.
+/// how it is fused with the screen edge. The panel is always a single shape moving between these.
 public struct ShapeSpec: Sendable, Equatable {
     public var rect: CGRect
     public var corner: CGFloat
-    /// The radius of the concave curve on each side of the tab where it meets the edge; 0 for everything else.
-    public var flare: CGFloat
+    public var fusion: EdgeFusion?
     public var edge: PanelEdge
     public var kind: ShapeKind
 
-    public init(rect: CGRect, corner: CGFloat, flare: CGFloat = 0, edge: PanelEdge, kind: ShapeKind) {
+    public init(rect: CGRect, corner: CGFloat, fusion: EdgeFusion? = nil, edge: PanelEdge, kind: ShapeKind) {
         self.rect = rect
         self.corner = corner
-        self.flare = flare
+        self.fusion = fusion
         self.edge = edge
         self.kind = kind
     }
@@ -34,43 +60,38 @@ public struct ShapeSpec: Sendable, Equatable {
                 x: mix(rect.minX, other.rect.minX), y: mix(rect.minY, other.rect.minY),
                 width: max(mix(rect.width, other.rect.width), 0), height: max(mix(rect.height, other.rect.height), 0)
             ),
-            corner: max(mix(corner, other.corner), 0), flare: max(mix(flare, other.flare), 0),
+            corner: max(mix(corner, other.corner), 0), fusion: EdgeFusion.mix(fusion, other.fusion, amount),
             edge: progress < 0.5 ? edge : other.edge, kind: progress < 0.5 ? kind : other.kind
         )
     }
 }
 
-/// The panel's outline: a rounded rectangle, and where the spec has a flare, a concave curve on each side of it that
-/// runs out along the screen edge, so a docked tab seems to grow out of the edge.
+/// The panel's outline: a rounded rectangle, or, where it is fused with the screen edge, the liquid outline of that
+/// rectangle joined to the edge (`LiquidField`), traced fresh for each frame.
 struct PanelShape: Shape {
     var spec: ShapeSpec
 
     func path(in bounds: CGRect) -> Path {
-        let body = RoundedRectangle(cornerRadius: spec.corner, style: .continuous).path(in: spec.rect)
-        guard spec.flare > 0.5 else { return body }
-        var path = body
-        let f = min(spec.flare, spec.rect.height / 2)
-        let k = f * Self.circleControl
-        let rect = spec.rect
-        // The side of the tab that lies on the screen edge, and the direction the flares open away from the tab.
-        let base = spec.edge == .right ? rect.maxX : rect.minX
-        let inward: CGFloat = spec.edge == .right ? -1 : 1
-        for (y, outward) in [(rect.minY, CGFloat(-1)), (rect.maxY, CGFloat(1))] {
-            var curve = Path()
-            curve.move(to: CGPoint(x: base, y: y + outward * f))
-            curve.addLine(to: CGPoint(x: base, y: y))
-            curve.addLine(to: CGPoint(x: base + inward * f, y: y))
-            curve.addCurve(
-                to: CGPoint(x: base, y: y + outward * f),
-                control1: CGPoint(x: base + inward * (f - k), y: y), control2: CGPoint(x: base, y: y + outward * (f - k))
-            )
-            curve.closeSubpath()
-            // Joined into one outline, so the seams between the flares and the body are not part of the edge.
-            path = path.union(curve)
+        guard let fusion = spec.fusion, fusion.reach > Tokens.Liquid.minimumReach else {
+            return RoundedRectangle(cornerRadius: spec.corner, style: .continuous).path(in: spec.rect)
         }
-        return path
+        // As it fuses, the box reaches past the edge by its corner, so its corners on that side go off screen and the
+        // edge meets its straight sides, where the fillets form.
+        let past = spec.corner * min(fusion.reach / Tokens.Dock.flareRadius, 1)
+        var box = spec.rect
+        box.size.width += past
+        if fusion.edge == .left { box.origin.x -= past }
+        // The union reaches half its `k` where the box's sides meet the edge at a right angle.
+        let k = fusion.reach * 2
+        let pad = k * 1.25 + Tokens.Liquid.step * 2
+        var region = box.insetBy(dx: -pad, dy: -pad)
+        region = region.union(CGRect(x: fusion.x - pad, y: region.minY, width: pad * 2, height: region.height))
+        let step = max(Tokens.Liquid.step, (region.width * region.height / Tokens.Liquid.maximumCells).squareRoot())
+        let corner = spec.corner
+        return ContourTracer.path(region: region, step: step) { p in
+            LiquidField.union(
+                LiquidField.beyondEdge(p, x: fusion.x, edge: fusion.edge), LiquidField.roundedBox(p, box, corner: corner), k: k
+            ).distance
+        }
     }
-
-    /// The control distance that makes a cubic curve follow a quarter circle.
-    private static let circleControl: CGFloat = 0.5523
 }

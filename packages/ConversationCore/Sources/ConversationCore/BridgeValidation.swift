@@ -65,6 +65,9 @@ enum BridgeValidation {
         guard LocatorPolicy.desktopAppBundleIds.contains(entry.bundleId) else { throw .malformed("unsupported app") }
         guard (0..<BridgeLimits.maximumTabsPerSnapshot).contains(entry.ordinal) else { throw .malformed("entry ordinal") }
         if let path = entry.workspacePath, !isWorkspacePath(path) { throw .malformed("workspace path") }
+        guard (entry.lastTurnEndedAt == nil) == (entry.lastTurnEndKind == nil) else {
+            throw .malformed("turn end needs both timestamp and kind")
+        }
     }
 
     static func validate(_ snapshot: InventorySnapshotPayload) throws(EnvelopeRejection) {

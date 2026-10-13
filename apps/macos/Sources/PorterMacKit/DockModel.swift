@@ -35,19 +35,15 @@ public enum DockGeometry {
         }
     }
 
-    /// The docked tab's body: it shows up to a few marks, one at least so it is never an empty bump.
-    public static func tabSize(markCount: Int) -> CGSize {
-        let marks = min(max(markCount, 1), Tokens.Dock.maximumMarks)
-        let height = Tokens.Dock.tabPadding * 2 + CGFloat(marks) * Tokens.Dock.markSize + CGFloat(marks - 1) * Tokens.Dock.markGap
-        return CGSize(width: Tokens.Dock.tabDepth, height: height.rounded(.up))
-    }
+    /// The docked tab's body: room for its one mark, or its face.
+    public static let tabSize = CGSize(width: Tokens.Dock.tabDepth, height: (Tokens.Dock.tabPadding * 2 + Tokens.Dock.markSize).rounded(.up))
 
     // MARK: Frames
 
     /// The docked tab: flush with the screen edge, centred on the anchor and kept clear of the screen's top and bottom
     /// by its own flare, which curves out along the edge on both sides.
-    public static func tabFrame(edge: PanelEdge, anchor: CGFloat, markCount: Int, in screen: CGRect) -> CGRect {
-        let size = tabSize(markCount: markCount)
+    public static func tabFrame(edge: PanelEdge, anchor: CGFloat, in screen: CGRect) -> CGRect {
+        let size = tabSize
         let x = edge == .right ? screen.maxX - size.width : screen.minX
         return CGRect(origin: CGPoint(x: x, y: verticalOrigin(height: size.height, anchor: anchor, in: screen, clearance: Tokens.Dock.flareRadius)), size: size)
     }

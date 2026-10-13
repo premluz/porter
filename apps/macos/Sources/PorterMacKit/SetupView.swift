@@ -6,6 +6,13 @@ struct SetupView: View {
     let model: SetupModel
 
     var body: some View {
+        ScrollView {
+            content
+        }
+        .frame(width: Tokens.Size.setupWidth, height: Tokens.Size.setupHeight)
+    }
+
+    private var content: some View {
         VStack(alignment: .leading, spacing: Tokens.Space.l) {
             VStack(alignment: .leading, spacing: Tokens.Space.xs) {
                 Text("Porter").font(.title2.bold())
@@ -14,13 +21,8 @@ struct SetupView: View {
             if model.sections.isEmpty {
                 Text("Porter is showing sample data, so there is nothing to set up.").foregroundStyle(Palette.textSecondary)
             }
-            ForEach(model.sections) { section in
-                VStack(alignment: .leading, spacing: Tokens.Space.s) {
-                    Text(section.title).font(.caption).textCase(.uppercase).foregroundStyle(Palette.textSecondary)
-                        .accessibilityAddTraits(.isHeader)
-                    ForEach(section.rows) { row in SetupRowView(row: row, isBusy: model.isWorking, perform: model.perform) }
-                }
-            }
+            sourceSections
+            VoiceSettingsView(model: model)
             Text(SetupChecklist.privacyStatement).font(.callout.weight(.medium))
             if model.canRestart {
                 HStack {
@@ -33,14 +35,25 @@ struct SetupView: View {
                 Text(message).font(.callout).fixedSize(horizontal: false, vertical: true)
                     .accessibilityLabel("Result: \(message)")
             }
-            Spacer(minLength: 0)
         }
         .padding(Tokens.Space.xl)
-        .frame(width: Tokens.Size.setupWidth, alignment: .topLeading)
+        .frame(maxWidth: .infinity, alignment: .topLeading)
+    }
+
+    private var sourceSections: some View {
+        ForEach(model.sections) { section in
+            VStack(alignment: .leading, spacing: Tokens.Space.s) {
+                Text(section.title).font(.caption).textCase(.uppercase).foregroundStyle(Palette.textSecondary)
+                    .accessibilityAddTraits(.isHeader)
+                ForEach(section.rows.filter { $0.id != VoiceSettingsView.notificationRowId }) { row in
+                    SetupRowView(row: row, isBusy: model.isWorking, perform: model.perform)
+                }
+            }
+        }
     }
 }
 
-private struct SetupRowView: View {
+struct SetupRowView: View {
     let row: SetupRow
     let isBusy: Bool
     let perform: (SetupAction) -> Void

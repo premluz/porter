@@ -25,12 +25,19 @@ public struct DestinationStatus: Equatable, Sendable {
     public let reachability: Reachability
     /// Kept so detail views can show what was last seen and its age; never shown as current.
     public let lastKnown: StatusObservation?
+    public let turnEnd: TurnEnd?
+    public var turnEndedAt: Date? { turnEnd?.at }
 
-    public init(display: DisplayStatus, freshness: Freshness, reachability: Reachability, lastKnown: StatusObservation?) {
+    public init(display: DisplayStatus, freshness: Freshness, reachability: Reachability, lastKnown: StatusObservation?, turnEnd: TurnEnd? = nil) {
         self.display = display
         self.freshness = freshness
         self.reachability = reachability
         self.lastKnown = lastKnown
+        self.turnEnd = turnEnd
+    }
+
+    func withTurnEnd(_ end: TurnEnd?) -> DestinationStatus {
+        DestinationStatus(display: display, freshness: freshness, reachability: reachability, lastKnown: lastKnown, turnEnd: end)
     }
 }
 

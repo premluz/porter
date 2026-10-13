@@ -34,7 +34,9 @@ Three states. **Docked**: a small tab on the screen edge that shows a few marks 
 
 ## Progress
 
-Steps 1 to 6 are built, tested and committed (LOG-20261010-005). Left out on purpose: docking to the top or bottom, a menu item to float, dragging by the pane. The thresholds are guesses until batch R in docs/VALIDATION_RELEASE.md has been run by a person.
+Steps 1 to 6 are built, tested and committed (LOG-20261010-005). Left out on purpose: docking to the top or bottom, a menu item to float, dragging by the pane. The step 2 outline (rounded rectangle plus stitched flares) was replaced by a liquid outline, a rounded box fused with the screen edge by a smooth minimum and traced each frame (ADR-007, LOG-20261010-008). Still not done from the demo: a neck while dragging near the edge, the velocity stretch, and the spatial blend from black to glass. The thresholds are guesses until batch R in docs/VALIDATION_RELEASE.md has been run by a person.
+
+The docked tab shows one mark for all the chats together (a waiting question over work in progress), or its face; this replaced the first design of up to three marks on Prem's instruction (LOG-20261010-009).
 
 ## Not verifiable here
 

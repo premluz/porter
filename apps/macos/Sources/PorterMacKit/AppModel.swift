@@ -20,8 +20,8 @@ public struct RouteChoice: Equatable, Sendable {
 @MainActor
 @Observable
 public final class AppModel {
-    public private(set) var snapshot: PanelSnapshot
-    public private(set) var selection = PanelSelection()
+    public internal(set) var snapshot: PanelSnapshot
+    public internal(set) var selection = PanelSelection()
     public internal(set) var feedback: ShownFeedback?
     public internal(set) var routeChoice: RouteChoice?
     public internal(set) var problem: String?
@@ -50,14 +50,24 @@ public final class AppModel {
     let store: PreferenceStore
     let performer: any RecoveryPerformer
     let clock: @Sendable () -> Date
-    private var listing = RegistryListing(connectors: [], rows: [])
-    private var records: [PreferenceRecord] = []
-    private var frozenOrder: [String]?
+    var listing = RegistryListing(connectors: [], rows: [])
+    var records: [PreferenceRecord] = []
+    var frozenOrder: [String]?
     /// Posts a notice when a chat starts waiting on the person; nil in tests and in sample-data mode.
     public var notifier: (any NeedsYouNotifying)?
+    public var completionAnnouncer: (any Announcing)?
+    public var speechAnnouncer: SpeechAnnouncer?
+    public var voiceSettings: VoiceSettings?
+    public internal(set) var isSpeaking = false
+    public internal(set) var isListening = false
+    public internal(set) var observedItems: [PanelItem] = []
+    public internal(set) var lastCompletion: Completion?
+    var completionDetector = CompletionDetector()
+    var completionCoalescer = CompletionCoalescer()
+    var completionTimer: Task<Void, Never>?
     /// The chats already announced as waiting, so a refresh never announces the same one twice.
-    private var announcedWaiting: Set<String> = []
-    private var isPaneVisible = false
+    var announcedWaiting: Set<String> = []
+    var isPaneVisible = false
 
     public init(
         source: any DestinationSource, store: PreferenceStore, performer: any RecoveryPerformer,
@@ -75,11 +85,11 @@ public final class AppModel {
     /// The most recent open conversations under the day each was last used (Today, Yesterday, 2 days ago, …).
     public var recentGroups: [ItemGroup] { DayGrouping.groups(snapshot.recentSplit().recent, now: clock()) }
 
-    /// What the docked tab shows: the chats that are waiting on the person or working, the waiting ones first.
-    public var tabMarks: [PanelItem] {
-        let fresh = items.filter { $0.status.freshness == .fresh }
-        let marks = fresh.filter { $0.status.display == .needsUser } + fresh.filter { $0.status.display == .working }
-        return Array(marks.prefix(Tokens.Dock.maximumMarks))
+    /// What the docked tab shows, as one mark for all the chats together: a question to answer outranks work in
+    /// progress. With neither, nothing: the tab shows its face, and claims nothing about the rest.
+    public var tabStatus: ItemStatus? {
+        let fresh = items.map(\.status).filter { $0.freshness == .fresh }
+        return fresh.first { $0.display == .needsUser } ?? fresh.first { $0.display == .working }
     }
 
     public var items: [PanelItem] { snapshot.navigable(showingOlder: showsOlder) }
@@ -106,6 +116,7 @@ public final class AppModel {
     /// While the pane is open, items already on screen keep their positions.
     public func paneVisibilityChanged(visible: Bool) {
         isPaneVisible = visible
+        speechAnnouncer?.setPaneVisible(visible)
         frozenOrder = visible ? items.map(\.id) : nil
         // A status can have gone stale since the last event, and nothing announces that, so look again.
         if visible { rebuild() }
@@ -158,41 +169,7 @@ public final class AppModel {
         onContentChanged()
     }
 
-    /// A chat that starts waiting is announced once, unless the pane is open and the person is looking at it; one that
-    /// stops waiting has its notice taken down, and is announced again if it waits again later.
-    private func announceWaiting() {
-        let waiting = Dictionary(snapshot.needsYou.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
-        let started = Set(waiting.keys).subtracting(announcedWaiting)
-        let ended = announcedWaiting.subtracting(waiting.keys)
-        announcedWaiting = Set(waiting.keys)
-        if !isPaneVisible { for id in started.sorted() { if let item = waiting[id] { notifier?.notify(item) } } }
-        notifier?.withdraw(ids: ended)
-    }
 
-    private func queryChanged() {
-        feedback = nil
-        routeChoice = nil
-        rebuild()
-        selection.reset(to: items)
-    }
-
-    func rebuild() {
-        let previous = items
-        snapshot = PanelBuilder.build(PanelInputs(
-            rows: listing.rows, connectors: listing.connectors, records: records, statuses: source.statuses(),
-            query: query, showHidden: showHidden, frozenOrder: frozenOrder, now: clock()
-        ))
-        selection.reconcile(with: items, previous: previous)
-        announceWaiting()
-        onContentChanged()
-    }
-
-    private func refreshStoredMetadata() async throws(StoreError) {
-        for item in snapshot.pinned where item.isOpenable {
-            try await store.refresh(item.snapshot, at: clock())
-        }
-        records = try await store.all()
-    }
 }
 
 extension PanelItem {

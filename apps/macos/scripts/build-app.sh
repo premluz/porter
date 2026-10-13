@@ -90,6 +90,10 @@ cat > "$app/Contents/Info.plist" <<PLIST
     <key>NSHighResolutionCapable</key><true/>
     <key>NSAppleEventsUsageDescription</key>
     <string>Porter asks Chrome and Safari which of your Claude and ChatGPT tabs are open, and brings the one you choose forward. It reads no page content.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Porter listens only while you hold its voice command shortcut.</string>
+    <key>NSSpeechRecognitionUsageDescription</key>
+    <string>Porter recognizes on-device navigation commands while you hold its voice command shortcut.</string>
 </dict>
 </plist>
 PLIST

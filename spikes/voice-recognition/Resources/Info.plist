@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+    <key>CFBundleIdentifier</key><string>com.porter.VoiceRecognitionSpike</string>
+    <key>CFBundleName</key><string>VoiceSpike</string>
+    <key>CFBundleExecutable</key><string>VoiceSpike</string>
+    <key>CFBundlePackageType</key><string>APPL</string>
+    <key>CFBundleVersion</key><string>1</string>
+    <key>LSMinimumSystemVersion</key><string>26.0</string>
+    <key>NSSpeechRecognitionUsageDescription</key><string>Compare Apple's on-device recognition of project and chat names. No transcripts are saved.</string>
+    <key>NSMicrophoneUsageDescription</key><string>Check the permission needed for opt-in Porter voice commands. This permission probe does not record audio.</string>
+</dict></plist>

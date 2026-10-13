@@ -104,6 +104,11 @@ public enum PanelPhases {
         return (tab, 1 - tab)
     }
 
+    /// How black the surface is: all of it while the tab rests, none once the pane has opened out of it.
+    public static func notch(tab: Double, progress: Double) -> Double {
+        tab * (1 - smooth(progress))
+    }
+
     /// The capsule's dots fade out early in the move, before the shape is wide enough to stretch them.
     public static func capsuleOpacity(progress: Double) -> Double {
         1 - smooth(progress / Tokens.Motion.capsuleFadeEnd)

@@ -6,7 +6,7 @@ import Testing
 
 /// A synthetic ~/.codex with the shape the real one has: an index, and one dated session file per thread whose first
 /// line is a session_meta record. Titles and folders are placeholders.
-private struct FakeCodexHome {
+struct FakeCodexHome {
     let path: String
 
     init() throws {
@@ -15,6 +15,9 @@ private struct FakeCodexHome {
     }
 
     func remove() { try? FileManager.default.removeItem(atPath: path) }
+
+    /// The session file `thread` wrote for this id.
+    func session(_ id: String) -> String { path + "/sessions/2026/10/09/rollout-2026-10-09T10-00-00-\(id).jsonl" }
 
     func thread(
         _ id: String, title: String, updated: String, cwd: String? = "/Users/example/Atlas", originator: String = "codex_vscode",
@@ -37,7 +40,7 @@ private struct FakeCodexHome {
         let record = try JSONSerialization.data(withJSONObject: ["type": "session_meta", "payload": payload])
         var file = record
         file.append(Data("\n{\"type\":\"message\",\"payload\":{\"text\":\"must never be read\"}}\n".utf8))
-        try file.write(to: URL(fileURLWithPath: path + "/sessions/2026/10/09/rollout-2026-10-09T10-00-00-\(id).jsonl"))
+        try file.write(to: URL(fileURLWithPath: session(id)))
     }
 }
 
@@ -149,7 +152,7 @@ struct CodexThreadsConnectorTests {
         let source = connector(home, opener: opener)
         #expect(await source.activate(try request(a, title: "In VS Code")) == .activated)
         #expect(await source.activate(try request(b, title: "In the app")) == .activated)
-        #expect(opener.opened.map(\.absoluteString) == ["vscode://openai.chatgpt/local/\(a)", "codex://local/\(b)"])
+        #expect(opener.opened.map(\.absoluteString) == ["vscode://openai.chatgpt/local/\(a)", "codex://threads/\(b)"])
         #expect(await source.activate(try request(a, title: "Renamed")) == .targetChanged)
         #expect(await source.activate(try request(c, title: "Gone")) == .targetGone)
         #expect(opener.opened.count == 2)

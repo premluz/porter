@@ -16,6 +16,9 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: StatusItemController?
     private var setupWindow: SetupWindowController?
     private var hotKey: GlobalHotKey?
+    var voiceHotKey: GlobalHotKey?
+    var voiceListener: VoiceListener?
+    private var screenLockMonitor: ScreenLockMonitor?
 
     public init(mode: LaunchMode) {
         self.mode = mode
@@ -30,18 +33,8 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
         self.controller = controller
         controller.show()
         registerHotKey(for: controller, notes: &notes)
-        let notifier = UserNotificationNotifier { [weak controller] in controller?.open() }
-        if mode == .live { setup.model.notifier = notifier }
-        Task { await notifier.refresh() }
-        let setupModel = SetupModel(
-            performer: WorkspaceRecoveryPerformer(), confirm: Self.confirm, reveal: Self.reveal,
-            requestNotifications: { await notifier.requestAuthorization() }
-        ) { [source = setup.source] in
-            var inputs = source.setupInputs()
-            if inputs.chrome != nil { inputs.notifications = notifier.state }
-            Task { await notifier.refresh() }
-            return inputs
-        }
+        let setupModel = configureAnnouncements(setup, controller: controller)
+        if mode == .live { registerVoiceHotKey(settings: setupModel.voiceSettings, notes: &notes) }
         let setupWindow = SetupWindowController(model: setupModel)
         self.setupWindow = setupWindow
         statusItem = StatusItemController(controller: controller, setup: setupWindow, notes: notes)
@@ -51,6 +44,38 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
             await setup.prepare()
             await setup.model.refresh()
         }
+    }
+
+    private func configureAnnouncements(_ setup: Setup, controller: PanelController) -> SetupModel {
+        let settings = VoiceSettings()
+        let speech = SpeechAnnouncer(settings: settings)
+        speech.onSpeakingChanged = { [weak model = setup.model] speaking in model?.isSpeaking = speaking }
+        speech.onError = { [weak model = setup.model] message in model?.reportProblem(message) }
+        screenLockMonitor = ScreenLockMonitor { [weak speech] locked in speech?.setLocked(locked) }
+        let notifier = UserNotificationNotifier(onOpenCompletions: { [weak controller, weak model = setup.model] ids in
+            controller?.open()
+            Task { await model?.openCompletion(ids: ids) }
+        }) { [weak controller] in controller?.open() }
+        if mode == .live {
+            setup.model.notifier = notifier
+            setup.model.completionAnnouncer = notifier
+            setup.model.speechAnnouncer = speech
+        }
+        setup.model.voiceSettings = settings
+        Task { await notifier.refresh() }
+        let model = SetupModel(
+            performer: WorkspaceRecoveryPerformer(), confirm: Self.confirm, reveal: Self.reveal,
+            requestNotifications: { await notifier.requestAuthorization() }, voiceSettings: settings
+        ) { [source = setup.source] in
+            var inputs = source.setupInputs()
+            if inputs.chrome != nil { inputs.notifications = notifier.state }
+            Task { await notifier.refresh() }
+            return inputs
+        }
+        model.previewVoice = { speech.setLocked(false); speech.preview() }
+        model.voiceInteraction = { speech.setLocked(false) }
+        configureVoiceCommands(appModel: setup.model, controller: controller, speech: speech, settings: settings, setupModel: model)
+        return model
     }
 
     private struct Setup {

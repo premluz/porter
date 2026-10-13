@@ -85,30 +85,33 @@ struct CapsuleView: View {
     }
 }
 
-/// The docked tab: the few chats that are waiting on you or working, as marks, or a single quiet mark when there are none.
+/// The docked tab: one face for the chats together, orange when a question is waiting, green when work is in progress,
+/// gray otherwise.
 struct TabView: View {
-    let marks: [PanelItem]
+    let status: ItemStatus?
+    var speaking = false
+    var listening = false
     let opensFrom: PanelEdge
     let expand: () -> Void
     let pressAllowed: () -> Bool
 
     var body: some View {
         Button { if pressAllowed() { expand() } } label: {
-            VStack(spacing: Tokens.Dock.markGap) {
-                if marks.isEmpty {
-                    Image(systemName: opensFrom == .right ? "chevron.left" : "chevron.right")
-                        .font(.system(size: Tokens.Dock.markSize, weight: .semibold)).foregroundStyle(Palette.textSecondary)
-                        .frame(width: Tokens.Dock.markSize, height: Tokens.Dock.markSize)
-                } else {
-                    ForEach(marks) { item in
-                        StatusDotView(status: item.status).frame(width: Tokens.Dock.markSize, height: Tokens.Dock.markSize)
-                    }
-                }
-            }
+            MascotView(tone: MascotTone(status), opensFrom: opensFrom, speaking: speaking, listening: listening)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(marks.isEmpty ? "Open Porter" : "Open Porter, \(marks.count) need attention or are working")
+        .accessibilityLabel(label)
+    }
+
+    private var label: String {
+        if listening { return "Open Porter, listening for a voice command" }
+        if speaking { return "Open Porter, speaking an announcement" }
+        return switch status?.display {
+        case .needsUser: "Open Porter, a chat needs you"
+        case .working: "Open Porter, a chat is working"
+        default: "Open Porter"
+        }
     }
 }

@@ -3,7 +3,7 @@ id: "DOC-STATE"
 type: "state"
 title: "Current project state"
 status: "active"
-updated: "2026-10-08"
+updated: "2026-10-10"
 owner: "project-maintainer"
 tags: ["area/memory", "area/product", "phase/foundation"]
 summary: "Short current checkpoint and exact next action."
@@ -12,7 +12,7 @@ related: ["PLAN-001", "DOC-TASKS", "DOC-QUESTIONS"]
 
 # Current project state
 
-As of 2026-10-08. Refresh after a meaningful milestone; this file is a snapshot, not the historical log.
+As of 2026-10-10. Refresh after a meaningful milestone; this file is a snapshot, not the historical log.
 
 ## Exists
 
@@ -31,7 +31,18 @@ As of 2026-10-08. Refresh after a meaningful milestone; this file is a snapshot,
 
 ## Does not exist yet
 
-No sync backend, remote composer, status adapter, signed installer or deployed service has been created. The Mac app is a development executable, not a signed bundle. The repository is not under git. Platform feasibility (bridge, panel, deep links) remains unverified.
+No sync backend, remote composer or deployed service has been created. The Mac
+development executable and ad-hoc bundle exist; Developer ID distribution and
+release acceptance remain unverified. Desktop-chat completion awaits batch T.
+
+PLAN-004 checkpoint: turn-end evidence, completion detection/coalescing/notices,
+local speech and deterministic command parsing are implemented. New completion
+notices and speech are opt-in. The recognition comparison harness is built;
+push-to-talk listening and voice routing are provisional; wake phrase is not implemented. Start/stop cues and partial-result retention are built (LOG-20261010-019); audible sound,
+live recognition, notification clicks and lock behavior await batch U. Earlier implementation
+counts above are historical; TASKS.md and PROGRESS.md own current evidence.
+The scripted gate passes: core 238, native-host 101, Mac 126 and spike 4 tests,
+contracts, release build, off-screen self-test and memory checks (LOG-20261010-015).
 
 ## Product baseline
 
@@ -43,7 +54,13 @@ SwiftUI/AppKit, Chrome Manifest V3, TypeScript adapters, and a small native mess
 
 ## Next action
 
-Direction set 2026-10-09 (ADR-006, PLAN-002): v1 is one app package that reads Chrome, VS Code, the ChatGPT app, the Claude app and other sources natively, with the browser extension and VS Code companion as optional enhancers. Next build step is TASK-080 (adapter boundary), then the spikes TASK-081 to TASK-083. Manual test batches below are still owed.
+Current chosen slice is PLAN-004 (ADR-008): push-to-talk recognition and command
+routing are built provisionally with en-US on-device recognition. Complete
+TASK-093's real 30-name audio, permission and live cost measurements, then
+validate TASK-095 and decide whether to retain that recognizer. The reply window
+and TASK-092's sound review await human batch U; TASK-096 stays deferred until
+continuous-listening evidence supports a go. The earlier native-first direction
+(ADR-006, PLAN-002) and manual review gates remain in force.
 
 Run the manual test batch in [docs/VALIDATION_RELEASE.md](docs/VALIDATION_RELEASE.md) (appearance and feel of the Mac panel, the live app with real Chrome, the Claude desktop link, packet review, the phone app, the ChatGPT adapter). Everything it covers is built and passes its automated checks but has never been looked at by a person. After that: provider status signals (TASK-013), a runnable signed app bundle and installer (TASK-027), and CloudKit sync (TASK-030). Record the ADR-002 and ADR-005 decisions once the panel is judged and the signed helper exists. Distribution assumption to record before TASK-027: Developer ID with notarization, because the Chrome native-host manifest must be installed outside an App Store sandbox. In parallel only if explicitly requested, other contributors can work on isolated tasks under the coordination rules.
 

@@ -3,7 +3,7 @@ id: "DOC-TASKS"
 type: "tasks"
 title: "Canonical task ledger"
 status: "active"
-updated: "2026-10-08"
+updated: "2026-10-10"
 owner: "project-maintainer"
 tags: ["area/product", "area/memory", "area/quality", "phase/foundation"]
 summary: "Single task-status source with dependencies and completion evidence."
@@ -40,8 +40,22 @@ Statuses: `todo`, `in_progress`, `blocked`, `done`, `deferred`, `cancelled`. A d
 | TASK-085 | P0 | M3 | in_progress | assistant | TASK-081 | Native Chrome connector (`chromeScripting`): contracts, core kind, extension-wins rule, connector (script, parsing, polling, activation re-check, incognito excluded) and app wiring done and tested with a fake runner and once against the real Chrome (LOG-20261009-006, -007). Outstanding: batch I run by a person; the permission explanation in the setup screen (TASK-084) |
 | TASK-086 | P0 | M3 | in_progress | assistant | TASK-085, TASK-082 | Native connector for the Claude and ChatGPT desktop apps through Accessibility: contracts, core, adapters, connector, app wiring and the app's own ordering built and tested on synthetic trees (LOG-20261009-008, -009). Outstanding: batch J run by a person against the real apps (the adapters rest on one observed layout each); unread marker as status; the permission explanation in the setup screen (TASK-084) |
 | TASK-087 | P1 | M3 | todo | unassigned | TASK-085 | Safari native connector through Apple Events |
-| TASK-088 | P1 | M3 | in_progress | assistant | TASK-086 | Codex threads from Codex's own list (VS Code and app), opened through their owners' links: reader, connector, contracts, panel and setup built and tested; the live read works (LOG-20261009-018). Outstanding: batch N, a person trying each kind of link |
+| TASK-088 | P1 | M3 | in_progress | assistant | TASK-086 | Codex threads from Codex's own list (VS Code and app), opened through their owners' links, with working status read from the session file (LOG-20261010-010, batch S): reader, connector, contracts, panel and setup built and tested; the live read works (LOG-20261009-018). App route corrected to `codex://threads/<id>` after user's failed click; installed app code and connector test support it (LOG-20261010-018). Outstanding: live app click in batch N |
 | TASK-089 | P1 | M3 | in_progress | assistant | TASK-023 | Panel states per PLAN-003: docked tab, floating capsule you can drag with a magnetic pull to the edge, open pane; horizontal reflow near the top or bottom; hover peek. Steps 1 to 6 built and tested (LOG-20261010-005); feel and look unverified, batch R |
+| TASK-090 | P1 | M3 | done | assistant | — | Structural turn-end evidence, contract fields/fixtures and status exposure verified by full core/native gates and real headers from different datasets (FACT-035). Independent start per PLAN-004; TASK-088 link review separate |
+| TASK-091 | P1 | M3 | done | assistant | TASK-090 | Detector/coalescer, Announcing, completion notices, opt-in settings and exact click routing verified; unfiltered inventory and multi-route stale-end regression covered; LOG-20261010-015 |
+| TASK-092 | P2 | M3 | in_progress | assistant | TASK-091 | Source-specific Claude/Chat GPT completion wording in speech and notice titles, queue, quiet rules, voice/rate/preview and speaking face implemented; human batch U owed |
+| TASK-093 | P1 | M3 | blocked | assistant | — | Recognition comparison harness built/tested; FACT-036. Needs 30 real names/recordings, human permission observations and live cost evidence before recognizer selection; wake phrase no-go pending evidence |
+| TASK-094 | P1 | M3 | done | assistant | — | Deterministic grammar and matcher reuse panel search; 6 targeted tests pass across different datasets, ambiguous names require selection |
+| TASK-095 | P2 | M3 | in_progress | assistant | TASK-093, TASK-094 | Provisional on-device en-US listener, held ⌃⌥V push to talk, separate permission buttons, parser/router and listening face built; permission callback fixed (LOG-20261010-018), distinct start/stop cues and partial-result retention added (LOG-20261010-019). Reply window, real-name recognition and live batch U still owed |
+| TASK-096 | P3 | M3 | deferred | unassigned | TASK-095 | Wake phrase awaits TASK-095 and measured continuous-listening go; no always-on listening implemented |
+| TASK-097 | P2 | M3 | done | assistant | — | PLAN-005 (Rios Brand): character spec v1 generated from the mascot definition, strict reader, `pnpm spec:export`, drift test; Rios commit `9224adb` (LOG-20261013-002) |
+| TASK-098 | P2 | M3 | done | assistant | TASK-097 | PLAN-005 (Rios Brand): animation core in TypeScript (gaze spring, saccades, blink, expression blend, breath, agent split and merge), seeded; 7 behaviour tests and `spec/mascot-parity.v1.json` (LOG-20261013-003) |
+| TASK-099 | P2 | M3 | done | assistant | TASK-097 | PLAN-005 (Rios Brand): liquid field (agent ellipse blobs, smooth union, capsule eyes on each blob, glow shading, light added to spec v1), field samples in the parity file; 4 tests (LOG-20261013-004) |
+| TASK-100 | P2 | M3 | done | assistant | TASK-098, TASK-099 | PLAN-005 (Rios Brand): `#mascot/live` with a fragment shader, cursor following, agents/expression/palette controls, reduce motion, four tuning sliders; unit and browser tests; Rios `8f07511` (LOG-20261013-005) |
+| TASK-101 | P2 | M3 | todo | unassigned | TASK-098 | PLAN-005 (Porter): Swift animation core passing every parity fixture |
+| TASK-102 | P2 | M3 | todo | unassigned | TASK-101, TASK-099 | PLAN-005 (Porter): live docked face from the spec (liquid blobs, capsule eyes, cursor gaze, state mapping, split by agent count, idle when settled); render tests, batch V |
+| TASK-103 | P3 | M3 | todo | unassigned | TASK-100 | PLAN-005 (Rios Brand): keyframed mascot track in Motion Studio |
 | TASK-084 | P0 | M3 | in_progress | assistant | TASK-081, TASK-082, TASK-083 | Setup window: a checklist of sources with state, permission buttons and optional enhancer rows is built and tested (LOG-20261009-010; batch K). The window now installs the optional pieces from the bundled app (LOG-20261009-011). Outstanding: per-source on/off; seen by a person (batches K and L) |
 | TASK-029 | P0 | M3 | todo | unassigned | TASK-028 | Personal-use beta review and R1 acceptance evidence |
 | TASK-030 | P0 | M4 | todo | unassigned | TASK-029 | Validate CloudKit proposal, enrollment, freshness, deletion, sign-out; decide ADR-003 |

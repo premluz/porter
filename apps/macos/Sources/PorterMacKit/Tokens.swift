@@ -29,6 +29,7 @@ public enum Tokens {
         public static let edgeMargin: CGFloat = 8
         public static let minimumPaneHeight: CGFloat = 160
         public static let setupWidth: CGFloat = 520
+        public static let setupHeight: CGFloat = 640
         public static let providerLogo: CGFloat = 14
         public static let edgeLine: CGFloat = 1
         /// How far the pointer travels before a press on the capsule becomes a drag.
@@ -49,8 +50,6 @@ public enum Tokens {
         public static let tabDepth: CGFloat = 22
         public static let tabPadding: CGFloat = 14
         public static let markSize: CGFloat = 10
-        public static let markGap: CGFloat = 8
-        public static let maximumMarks = 3
         public static let tabCorner: CGFloat = 11
         /// The concave curve where the tab meets the edge, running out along it.
         public static let flareRadius: CGFloat = 14
@@ -61,6 +60,29 @@ public enum Tokens {
         public static let detachDistance: CGFloat = 28
         /// Extra room a horizontal capsule needs before it turns upright again.
         public static let reflowSlack: CGFloat = 24
+    }
+
+    /// Tracing the liquid outline: the finest grid spacing, the most grid cells per frame (a large shape is traced
+    /// more coarsely), and the fusion below which the shape is just its rounded rectangle.
+    public enum Liquid {
+        static let step: CGFloat = 1
+        static let maximumCells: CGFloat = 24_000
+        static let minimumReach: CGFloat = 0.25
+    }
+
+    /// The face shown on a docked tab when no chat is waiting or working: a plain round body with two eyes.
+    public enum Mascot {
+        static let size: CGFloat = 16
+        static let eyeWidth: CGFloat = 3
+        static let eyeHeight: CGFloat = 4.5
+        static let eyeGap: CGFloat = 2.5
+        static let mouthWidth: CGFloat = 4
+        static let mouthHeight: CGFloat = 2
+        static let mouthInset: CGFloat = 2
+        static let listeningSize: CGFloat = 20
+        /// How far the eyes sit above the body's centre, and how far they turn towards the middle of the screen.
+        static let eyeLift: CGFloat = 1
+        static let gaze: CGFloat = 1.5
     }
 
     public enum Surface {

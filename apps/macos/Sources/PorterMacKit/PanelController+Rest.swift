@@ -20,6 +20,7 @@ extension PanelController {
         }
         let current = presentation.restShape(at: Date())
         let from = screenRect(of: current.rect, in: panel.frame)
+        let oldWindow = panel.frame
         change()
         restGeneration += 1
         let mine = restGeneration
@@ -30,6 +31,7 @@ extension PanelController {
         withTransaction(transaction) { panel.setFrame(union, display: true) }
         var start = current
         start.rect = EdgeGeometry.localRect(of: from, in: union)
+        start.fusion?.x += oldWindow.minX - union.minX
         let curve = motionCurve
         presentation.beginRestMove(
             from: start, to: l.restSpec(in: union, screen: visible), pane: l.paneSpec(in: union, screen: visible), curve: curve

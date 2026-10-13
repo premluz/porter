@@ -26,7 +26,8 @@
       "bundleId": "com.microsoft.VSCode",
       "ordinal": 0,
       "workspacePath": "/Users/example/Atlas",
-      "lastActiveAt": "2026-10-09T07:00:09.250Z"
+      "lastActiveAt": "2026-10-09T07:00:09.250Z",
+      "working": true
     }
   ]
 }

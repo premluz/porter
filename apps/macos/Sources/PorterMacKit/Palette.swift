@@ -18,4 +18,8 @@ enum Palette {
     static let statusAttention = Color.orange
     static let statusUnread = Color.accentColor
     static let statusWorking = Color.green
+    /// A docked tab is solid black like a camera cut-out, in both appearances, so what is drawn on it is light.
+    static let dockedSurface = Color.black
+    static let mascotQuiet = Color.white.opacity(0.55)
+    static let mascotEye = dockedSurface
 }

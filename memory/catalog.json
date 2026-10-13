@@ -141,6 +141,49 @@
       "line_count": 41
     },
     {
+      "id": "ADR-007",
+      "type": "decision",
+      "title": "The panel outline is a traced distance field, fused with the screen edge",
+      "status": "accepted",
+      "updated": "2026-10-10",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/macos",
+        "area/ux",
+        "phase/r1"
+      ],
+      "summary": "The docked tab, the capsule and the pane are one rounded box fused with the screen edge by a gradient-aware smooth minimum, traced into a path on the CPU each frame, so the native material, the clip and the edge line keep working and no move ever shows a seam.",
+      "related": [
+        "PLAN-003"
+      ],
+      "path": "decisions/ADR-007-liquid-outline.md",
+      "revision": "sha256:0763c68cc643d68d93790dca13cca7d384afe029b950bc72507c0e1297a27ff6",
+      "line_count": 37
+    },
+    {
+      "id": "ADR-008",
+      "type": "decision",
+      "title": "Opt-in local speech and evidence-based completion notices",
+      "status": "accepted",
+      "updated": "2026-10-10",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/macos",
+        "area/ux",
+        "area/security",
+        "phase/r1"
+      ],
+      "summary": "Apply PLAN-004 defaults: structural completion evidence, metadata-only local speech, push to talk first, and distinct interruptions.",
+      "related": [
+        "PLAN-004",
+        "DOC-CONSTITUTION",
+        "DOC-QUESTIONS"
+      ],
+      "path": "decisions/ADR-008-voice.md",
+      "revision": "sha256:3eadf88e48f606499652637f07d517da2dce3436713fe167be55597503a9619b",
+      "line_count": 46
+    },
+    {
       "id": "DOC-AGENTS",
       "type": "instructions",
       "title": "Shared agent instructions",
@@ -258,7 +301,7 @@
       "type": "memory",
       "title": "Durable project facts",
       "status": "active",
-      "updated": "2026-10-08",
+      "updated": "2026-10-10",
       "owner": "project-maintainer",
       "tags": [
         "area/memory",
@@ -272,15 +315,34 @@
         "DOC-QUESTIONS"
       ],
       "path": "memory/FACTS.md",
-      "revision": "sha256:e4aebfa6fbf76e4421bb838904329dd9b2e88c2f3c01b51dad3dc883caa19ca8",
-      "line_count": 294
+      "revision": "sha256:2452a1896b0dd3e5e80394927aac1e4d3d55bc979a07702ef8dc41e6ca9390ce",
+      "line_count": 177
+    },
+    {
+      "id": "DOC-FACTS-FOUNDATION",
+      "type": "memory",
+      "title": "Foundation facts FACT-001 to FACT-020",
+      "status": "archived",
+      "updated": "2026-10-10",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/memory",
+        "phase/r1"
+      ],
+      "summary": "Preserved records split to keep documents under 200 lines.",
+      "related": [
+        "DOC-STATE"
+      ],
+      "path": "memory/facts/FOUNDATION.md",
+      "revision": "sha256:6acbe3f3fd55b82a0fb80c5a6f8bd0e0a209a4f4f548f89c157966845b80fc76",
+      "line_count": 180
     },
     {
       "id": "DOC-HANDOFF",
       "type": "handoff",
       "title": "Current handoff",
       "status": "active",
-      "updated": "2026-10-08",
+      "updated": "2026-10-10",
       "owner": "project-maintainer",
       "tags": [
         "area/memory",
@@ -294,15 +356,15 @@
         "DOC-PROGRESS"
       ],
       "path": "memory/HANDOFF.md",
-      "revision": "sha256:d39ecc95054244d8abeff53b52852ef8660e14bdeba3baa0ba1eb56149e2091d",
-      "line_count": 31
+      "revision": "sha256:cf73b92622c078364693d2fa788999c66f84d32da200c51cf07594c66076643e",
+      "line_count": 48
     },
     {
       "id": "DOC-INDEX",
       "type": "index",
       "title": "Generated project memory index",
       "status": "active",
-      "updated": "2026-10-10",
+      "updated": "2026-10-13",
       "owner": "project-maintainer",
       "tags": [
         "area/memory",
@@ -314,8 +376,104 @@
         "DOC-MEMORY"
       ],
       "path": "memory/INDEX.md",
-      "revision": "sha256:eff6a9efa69c31ef99ad16a8c79b6e16246ce604a3e23163c5ec71758f06bca5",
+      "revision": "sha256:1b860c0e30182e896bd26235dfdf8effe21180a9976e092aff3d8c56ca6a13b3",
+      "line_count": 63
+    },
+    {
+      "id": "DOC-LOG-20261008-1",
+      "type": "log",
+      "title": "Progress 20261008, part 1",
+      "status": "archived",
+      "updated": "2026-10-10",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/memory",
+        "phase/r1"
+      ],
+      "summary": "Preserved records split to keep documents under 200 lines.",
+      "related": [
+        "DOC-STATE"
+      ],
+      "path": "memory/progress/2026-10-08-1.md",
+      "revision": "sha256:cb0ff4db64d91f4503daa1172cbd482b5617b2cbb9d0a39740fc9de1ba366de9",
+      "line_count": 194
+    },
+    {
+      "id": "DOC-LOG-20261008-2",
+      "type": "log",
+      "title": "Progress 20261008, part 2",
+      "status": "archived",
+      "updated": "2026-10-10",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/memory",
+        "phase/r1"
+      ],
+      "summary": "Preserved records split to keep documents under 200 lines.",
+      "related": [
+        "DOC-STATE"
+      ],
+      "path": "memory/progress/2026-10-08-2.md",
+      "revision": "sha256:a1bc1c3d07a15073b5089ed77b59db2b543f3ded435de1ad33e351ae464d54a6",
       "line_count": 51
+    },
+    {
+      "id": "DOC-LOG-20261009-1",
+      "type": "log",
+      "title": "Progress 20261009, part 1",
+      "status": "archived",
+      "updated": "2026-10-10",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/memory",
+        "phase/r1"
+      ],
+      "summary": "Preserved records split to keep documents under 200 lines.",
+      "related": [
+        "DOC-STATE"
+      ],
+      "path": "memory/progress/2026-10-09-1.md",
+      "revision": "sha256:9db28233138c2145f19de1db8116a1d0379961e1b7df7e635189613715e48a4f",
+      "line_count": 187
+    },
+    {
+      "id": "DOC-LOG-20261009-2",
+      "type": "log",
+      "title": "Progress 20261009, part 2",
+      "status": "archived",
+      "updated": "2026-10-10",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/memory",
+        "phase/r1"
+      ],
+      "summary": "Preserved records split to keep documents under 200 lines.",
+      "related": [
+        "DOC-STATE"
+      ],
+      "path": "memory/progress/2026-10-09-2.md",
+      "revision": "sha256:1cb2e3a67f7206a72d4c8f28558f2725819f2bfe4ab7e8fde7e59e82c070ced2",
+      "line_count": 105
+    },
+    {
+      "id": "DOC-LOG-20261010-VOICE-CUES",
+      "type": "log",
+      "title": "Voice cue and recognition checkpoint",
+      "status": "active",
+      "updated": "2026-10-10",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/macos",
+        "phase/r1"
+      ],
+      "summary": "Push-to-talk start/stop cues and partial recognition retention.",
+      "related": [
+        "DOC-PROGRESS",
+        "PLAN-004"
+      ],
+      "path": "memory/progress/2026-10-10-voice-cues.md",
+      "revision": "sha256:bf35ecbfc2811d12bb45bb74f1872c355614810dbae6406ffa81b75f4590271f",
+      "line_count": 20
     },
     {
       "id": "DOC-MEMORY",
@@ -371,7 +529,7 @@
       "type": "log",
       "title": "Project progress log",
       "status": "active",
-      "updated": "2026-10-08",
+      "updated": "2026-10-10",
       "owner": "project-maintainer",
       "tags": [
         "area/memory",
@@ -383,15 +541,15 @@
         "DOC-TEMPLATES"
       ],
       "path": "PROGRESS.md",
-      "revision": "sha256:fe4ba2b3f550cc21ecfd243a8c5aac39b1a8c792634b7832de84263b55cb7ec0",
-      "line_count": 542
+      "revision": "sha256:77ea359afd981b662fe388b2eba2806f01c0e86b10aeff119e1c4f038eb42fc1",
+      "line_count": 241
     },
     {
       "id": "DOC-QUESTIONS",
       "type": "questions",
       "title": "Open questions and risks",
       "status": "active",
-      "updated": "2026-10-08",
+      "updated": "2026-10-10",
       "owner": "project-maintainer",
       "tags": [
         "area/memory",
@@ -407,8 +565,8 @@
         "ADR-003"
       ],
       "path": "memory/QUESTIONS.md",
-      "revision": "sha256:53c71752032d771e1dc6e4dcce204c31736d9cb6c8598358bb984425a95149d4",
-      "line_count": 61
+      "revision": "sha256:3b43bfe03c246ab6732ee864a0ef60060edc7f2bc27eefb740bc8906f763175b",
+      "line_count": 64
     },
     {
       "id": "DOC-README",
@@ -511,7 +669,7 @@
       "type": "state",
       "title": "Current project state",
       "status": "active",
-      "updated": "2026-10-08",
+      "updated": "2026-10-10",
       "owner": "project-maintainer",
       "tags": [
         "area/memory",
@@ -525,15 +683,15 @@
         "DOC-QUESTIONS"
       ],
       "path": "PROJECT_STATE.md",
-      "revision": "sha256:72f6da55e3b78e42484083be4c345372597ebd6eb551fc453c1505c503bb1561",
-      "line_count": 64
+      "revision": "sha256:75905191d5084f32fc291e858b288cc1c18af153ef3d26690a49fd2209827a8a",
+      "line_count": 81
     },
     {
       "id": "DOC-TASKS",
       "type": "tasks",
       "title": "Canonical task ledger",
       "status": "active",
-      "updated": "2026-10-08",
+      "updated": "2026-10-10",
       "owner": "project-maintainer",
       "tags": [
         "area/product",
@@ -548,8 +706,8 @@
         "DOC-VALIDATION"
       ],
       "path": "TASKS.md",
-      "revision": "sha256:96514acbfe10486fdfa7f69f04715fedcbfa4291205aafc2e7afcc22a84be17f",
-      "line_count": 62
+      "revision": "sha256:3fe948c8177fd156c0c71e4f0ba2f2d5b6fb92636dabc3620aae853376153b89",
+      "line_count": 76
     },
     {
       "id": "DOC-TEMPLATES",
@@ -601,7 +759,7 @@
       "type": "spec",
       "title": "Validation and release plan",
       "status": "draft",
-      "updated": "2026-10-08",
+      "updated": "2026-10-10",
       "owner": "project-maintainer",
       "tags": [
         "area/quality",
@@ -618,8 +776,49 @@
         "DOC-SECURITY"
       ],
       "path": "docs/VALIDATION_RELEASE.md",
-      "revision": "sha256:46483cfc5a0bf9eafed36b164570ba684a00c9dfe05b645b5e5455973a0330d4",
-      "line_count": 282
+      "revision": "sha256:3455dfd144b8b5d3e04e05f9730c808745065ed665cdfe55a5b5dc8d2892788d",
+      "line_count": 139
+    },
+    {
+      "id": "DOC-VALIDATION-MANUAL",
+      "type": "spec",
+      "title": "Existing manual validation batches",
+      "status": "active",
+      "updated": "2026-10-10",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/memory",
+        "phase/r1"
+      ],
+      "summary": "Preserved records split to keep documents under 200 lines.",
+      "related": [
+        "DOC-STATE"
+      ],
+      "path": "docs/VALIDATION_MANUAL.md",
+      "revision": "sha256:150bcd689ab60c5aceac38a37b23a818619c31137a55fac124fdbde78a70d1ee",
+      "line_count": 175
+    },
+    {
+      "id": "DOC-VOICE-VALIDATION",
+      "type": "spec",
+      "title": "Voice validation and batch U",
+      "status": "active",
+      "updated": "2026-10-10",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/quality",
+        "area/macos",
+        "area/security",
+        "phase/r1"
+      ],
+      "summary": "Scripted voice checks, recognition evidence gate, and human sound review.",
+      "related": [
+        "PLAN-004",
+        "DOC-VALIDATION"
+      ],
+      "path": "docs/VOICE_VALIDATION.md",
+      "revision": "sha256:a300c682c8c6aaa1f6a58ee228f6e0e5166c13a57fae49c859fc13229085f115",
+      "line_count": 73
     },
     {
       "id": "PLAN-001",
@@ -690,8 +889,52 @@
         "PLAN-002"
       ],
       "path": "plans/PLAN-003-dock-states.md",
-      "revision": "sha256:410c7d6635aefd09b4ab53584a2c89410dee4d3e97ed61c4e0b664ee2c9abae1",
-      "line_count": 41
+      "revision": "sha256:f7448cb8b3eeaa37b58587dc57039dfdfb6b18b3bf86737c22df27cd99936f1f",
+      "line_count": 43
+    },
+    {
+      "id": "PLAN-004",
+      "type": "plan",
+      "title": "Hands-free: completion notices, spoken announcements and voice navigation",
+      "status": "active",
+      "updated": "2026-10-10",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/macos",
+        "area/ux",
+        "area/security",
+        "phase/r1"
+      ],
+      "summary": "Announce when an agent's turn ends (notification and, optionally, a spoken line with the task's name) and let the person say \"Porter, show the task\" or \"show <name>\" to bring it forward; all on the Mac, no cloud, no tokens. Dictating replies is the later composer milestone.",
+      "related": [
+        "PLAN-002",
+        "PLAN-003",
+        "DOC-PLAN"
+      ],
+      "path": "plans/PLAN-004-voice.md",
+      "revision": "sha256:ce5d36b138b80449b9999c80e9167276f92d0beff81e1cc55beaf6816789ec8a",
+      "line_count": 126
+    },
+    {
+      "id": "PLAN-005",
+      "type": "plan",
+      "title": "Live mascot: one character spec, shared animation rules, a liquid body that splits into agents",
+      "status": "proposed",
+      "updated": "2026-10-13",
+      "owner": "project-maintainer",
+      "tags": [
+        "area/macos",
+        "area/ux",
+        "phase/r1"
+      ],
+      "summary": "Turn the Rios Brand capsule-eye mascot into a live, expressive character: eyes that follow the cursor, blink and change expression, and a liquid body that can split into two or three agents and merge back. Rios Brand owns the character spec and a web renderer; Porter reads the spec and runs the same rules natively.",
+      "related": [
+        "PLAN-003",
+        "PLAN-004"
+      ],
+      "path": "plans/PLAN-005-live-mascot.md",
+      "revision": "sha256:c2dbcc74a1358f045dfeca7476cec9c3b8cdfd312c4c5db7e72dce9e6d2a867d",
+      "line_count": 75
     }
   ]
 }

@@ -31,12 +31,15 @@ public struct ItemStatus: Sendable, Equatable {
     public let ageSeconds: Int?
     /// What the most recent observation said, shown only as "last seen" when it is no longer fresh.
     public let lastKnown: DisplayStatus?
+    public let turnEnd: TurnEnd?
+    public var turnEndedAt: Date? { turnEnd?.at }
 
-    public init(display: DisplayStatus, freshness: Freshness, ageSeconds: Int?, lastKnown: DisplayStatus? = nil) {
+    public init(display: DisplayStatus, freshness: Freshness, ageSeconds: Int?, lastKnown: DisplayStatus? = nil, turnEnd: TurnEnd? = nil) {
         self.display = display
         self.freshness = freshness
         self.ageSeconds = ageSeconds
         self.lastKnown = lastKnown
+        self.turnEnd = turnEnd
     }
 
     public static let unknown = ItemStatus(display: .unknown, freshness: .unknown, ageSeconds: nil)

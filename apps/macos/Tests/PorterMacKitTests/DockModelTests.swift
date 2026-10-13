@@ -7,25 +7,23 @@ import Testing
 struct DockModelTests {
     private let screen = CGRect(x: 0, y: 40, width: 1_440, height: 860)
 
-    @Test("the capsule is as long as its dots need in either orientation, and the docked tab never shows fewer than one mark")
+    @Test("the capsule is as long as its dots need in either orientation, and the docked tab has room for its mark")
     func sizes() {
         let tall = DockGeometry.capsuleSize(orientation: .vertical, dotCount: 4, hasOverflow: false)
         let wide = DockGeometry.capsuleSize(orientation: .horizontal, dotCount: 4, hasOverflow: false)
         #expect(tall.width == Tokens.Size.capsuleWidth && wide.height == Tokens.Size.capsuleWidth && tall.height == wide.width)
         #expect(DockGeometry.capsuleSize(orientation: .vertical, dotCount: 99, hasOverflow: true).height > tall.height)
-        #expect(DockGeometry.tabSize(markCount: 0) == DockGeometry.tabSize(markCount: 1))
-        #expect(DockGeometry.tabSize(markCount: 9) == DockGeometry.tabSize(markCount: Tokens.Dock.maximumMarks))
-        #expect(DockGeometry.tabSize(markCount: 2).height > DockGeometry.tabSize(markCount: 1).height)
+        #expect(DockGeometry.tabSize.width == Tokens.Dock.tabDepth && DockGeometry.tabSize.height >= Tokens.Mascot.size)
     }
 
     @Test("a docked tab is flush with its edge, centred on its anchor, and its flares stay on the screen")
     func tab() {
-        let right = DockGeometry.tabFrame(edge: .right, anchor: 0.5, markCount: 2, in: screen)
+        let right = DockGeometry.tabFrame(edge: .right, anchor: 0.5, in: screen)
         #expect(right.maxX == screen.maxX && right.width == Tokens.Dock.tabDepth)
         #expect(abs(right.midY - screen.midY) <= 1)
-        #expect(DockGeometry.tabFrame(edge: .left, anchor: 0.5, markCount: 2, in: screen).minX == screen.minX)
-        let top = DockGeometry.tabFrame(edge: .right, anchor: 0, markCount: 3, in: screen)
-        let bottom = DockGeometry.tabFrame(edge: .right, anchor: 1, markCount: 3, in: screen)
+        #expect(DockGeometry.tabFrame(edge: .left, anchor: 0.5, in: screen).minX == screen.minX)
+        let top = DockGeometry.tabFrame(edge: .right, anchor: 0, in: screen)
+        let bottom = DockGeometry.tabFrame(edge: .right, anchor: 1, in: screen)
         let topWindow = DockGeometry.tabWindowFrame(top), bottomWindow = DockGeometry.tabWindowFrame(bottom)
         #expect(topWindow.maxY <= screen.maxY && bottomWindow.minY >= screen.minY)
     }

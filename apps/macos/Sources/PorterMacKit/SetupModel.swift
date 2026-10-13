@@ -1,8 +1,10 @@
 import AppKit
+import AVFoundation
 import Foundation
 import NativeSources
 import Observation
 import PorterPanelModel
+import Speech
 
 /// What the setup window shows and does. It reads the sources' state; it never changes a source by itself.
 @MainActor
@@ -13,6 +15,10 @@ public final class SetupModel {
     /// What the last setup step did, in plain words, shown under the list.
     public private(set) var message: String?
     public private(set) var isWorking = false
+    public let voiceSettings: VoiceSettings
+    public var previewVoice: () -> Void = {}
+    public var voiceInteraction: () -> Void = {}
+    public var voicePolicyChanged: () -> Void = {}
 
     private let readInputs: @MainActor () -> SetupInputs
     private let performer: any RecoveryPerformer
@@ -38,6 +44,7 @@ public final class SetupModel {
         loginItem: any LoginItemControlling = LiveLoginItem(),
         relaunch: @escaping @MainActor () -> Void = SetupModel.relaunchThisApp,
         requestNotifications: @escaping @MainActor () async -> Void = {},
+        voiceSettings: VoiceSettings = VoiceSettings(),
         readInputs: @escaping @MainActor () -> SetupInputs
     ) {
         self.performer = performer
@@ -48,6 +55,7 @@ public final class SetupModel {
         self.loginItem = loginItem
         self.relaunch = relaunch
         self.requestNotifications = requestNotifications
+        self.voiceSettings = voiceSettings
         self.readInputs = readInputs
         refresh()
     }
@@ -56,6 +64,33 @@ public final class SetupModel {
     public var canRestart: Bool { Bundle.main.bundlePath.hasSuffix(".app") }
 
     public func restart() { relaunch() }
+
+    public func requestMicrophone() {
+        guard Bundle.main.object(forInfoDictionaryKey: "NSMicrophoneUsageDescription") != nil else {
+            message = "Voice permissions require the bundled Porter app."
+            return
+        }
+        let callback: @Sendable (Bool) -> Void = { [weak self] allowed in
+            Task { @MainActor in self?.message = allowed ? "Microphone access is on." : "Microphone access was not granted. Check macOS Privacy & Security settings." }
+        }
+        AVCaptureDevice.requestAccess(for: .audio, completionHandler: callback)
+    }
+
+    public func requestSpeechRecognition() {
+        guard Bundle.main.object(forInfoDictionaryKey: "NSSpeechRecognitionUsageDescription") != nil else {
+            message = "Voice permissions require the bundled Porter app."
+            return
+        }
+        SFSpeechRecognizer.requestAuthorization(speechAuthorizationHandler())
+    }
+
+    func speechAuthorizationHandler() -> @Sendable (SFSpeechRecognizerAuthorizationStatus) -> Void {
+        { [weak self] status in
+            Task { @MainActor in
+                self?.message = status == .authorized ? "Speech Recognition access is on." : "Speech Recognition access was not granted. Check macOS Privacy & Security settings."
+            }
+        }
+    }
 
     /// Starts a new copy a moment after this one has quit, so the two never hold the registry's sockets together.
     public static func relaunchThisApp() {

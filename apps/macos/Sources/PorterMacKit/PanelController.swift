@@ -61,7 +61,7 @@ public final class PanelController {
         return PanelLayout(
             mode: settings.mode, edge: settings.edge, anchor: settings.anchor, floatCenter: settings.floatCenter,
             orientation: orientation, peeking: peeking, dotCount: items.count, hasOverflow: items.count > Tokens.Capsule.maximumDots,
-            markCount: model.tabMarks.count, rowCount: items.isEmpty ? 3 : items.count, sectionCount: sections
+            rowCount: items.isEmpty ? 3 : items.count, sectionCount: sections
         )
     }
 

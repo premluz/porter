@@ -75,6 +75,30 @@ public final class CodexThreadIndex: @unchecked Sendable {
         return threads
     }
 
+    /// The ids, among these threads, whose latest turn is still going (`CodexTurnState`).
+    public func workingThreadIds(among threads: [CodexThread], now: Date) -> Set<String> {
+        Set(threads.compactMap { thread in
+            guard let path = rolloutPath(for: thread.id), CodexTurnState.isOpen(atPath: path, now: now) else { return nil }
+            return thread.id
+        })
+    }
+
+    public func turnReports(among threads: [CodexThread], now: Date) throws -> [String: CodexTurnReport] {
+        var reports: [String: CodexTurnReport] = [:]
+        for thread in threads {
+            guard let path = rolloutPath(for: thread.id) else { continue }
+            do { reports[thread.id] = try CodexTurnState.report(atPath: path, now: now) }
+            catch { throw CocoaError(.fileReadUnknown, userInfo: [NSLocalizedDescriptionKey: "Could not inspect Codex thread \(thread.id): \(error)"]) }
+        }
+        return reports
+    }
+
+    private func rolloutPath(for id: String) -> String? {
+        lock.lock()
+        defer { lock.unlock() }
+        return sessionFile(for: id)
+    }
+
     private func meta(for id: String) -> SessionMeta? {
         lock.lock()
         defer { lock.unlock() }

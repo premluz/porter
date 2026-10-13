@@ -1,0 +1,13 @@
+{
+  "tabs": [],
+  "appEntries": [
+    {
+      "provider": "codex",
+      "providerConversationId": "example-thread",
+      "title": "Example task",
+      "bundleId": "com.openai.codex",
+      "ordinal": 0,
+      "lastTurnEndedAt": "2026-10-10T11:18:03.029Z"
+    }
+  ]
+}

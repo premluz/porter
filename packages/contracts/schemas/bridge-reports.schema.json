@@ -1,0 +1,158 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.porter.invalid/v1/bridge-reports.schema.json",
+  "$defs": {
+    "tabReport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tabId",
+        "windowId",
+        "provider",
+        "providerConversationId",
+        "title",
+        "canonicalUrl"
+      ],
+      "properties": {
+        "tabId": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "windowId": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "provider": {
+          "$ref": "common.schema.json#/$defs/provider"
+        },
+        "providerConversationId": {
+          "$ref": "common.schema.json#/$defs/opaqueId"
+        },
+        "title": {
+          "$ref": "common.schema.json#/$defs/title"
+        },
+        "canonicalUrl": {
+          "$ref": "common.schema.json#/$defs/httpsUrl"
+        },
+        "lastActiveAt": {
+          "$ref": "common.schema.json#/$defs/timestamp"
+        }
+      }
+    },
+    "editorTabReport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "providerConversationId",
+        "title",
+        "workspacePath",
+        "viewColumn",
+        "index"
+      ],
+      "properties": {
+        "provider": {
+          "$ref": "common.schema.json#/$defs/provider"
+        },
+        "providerConversationId": {
+          "$ref": "common.schema.json#/$defs/opaqueId"
+        },
+        "title": {
+          "$ref": "common.schema.json#/$defs/title"
+        },
+        "workspacePath": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 1024,
+          "pattern": "^/[^\\u0000]*$",
+          "not": {
+            "pattern": "(^|/)\\.\\.(/|$)"
+          }
+        },
+        "viewColumn": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "index": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 8
+        },
+        "lastActiveAt": {
+          "$ref": "common.schema.json#/$defs/timestamp"
+        }
+      }
+    },
+    "appEntryReport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "providerConversationId",
+        "title",
+        "bundleId",
+        "ordinal"
+      ],
+      "properties": {
+        "provider": {
+          "$ref": "common.schema.json#/$defs/provider"
+        },
+        "providerConversationId": {
+          "$ref": "common.schema.json#/$defs/opaqueId"
+        },
+        "title": {
+          "$ref": "common.schema.json#/$defs/title"
+        },
+        "bundleId": {
+          "$ref": "common.schema.json#/$defs/bundleId"
+        },
+        "ordinal": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 199
+        },
+        "unread": {
+          "type": "boolean"
+        },
+        "lastActiveAt": {
+          "$ref": "common.schema.json#/$defs/timestamp"
+        },
+        "position": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 199
+        },
+        "workspacePath": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 1024,
+          "pattern": "^/[^\\u0000]*$",
+          "not": {
+            "pattern": "(^|/)\\.\\.(/|$)"
+          }
+        },
+        "working": {
+          "type": "boolean"
+        },
+        "lastTurnEndedAt": {
+          "$ref": "common.schema.json#/$defs/timestamp"
+        },
+        "lastTurnEndKind": {
+          "enum": [
+            "completed",
+            "interrupted"
+          ]
+        }
+      },
+      "dependentRequired": {
+        "lastTurnEndedAt": [
+          "lastTurnEndKind"
+        ],
+        "lastTurnEndKind": [
+          "lastTurnEndedAt"
+        ]
+      }
+    }
+  }
+}
